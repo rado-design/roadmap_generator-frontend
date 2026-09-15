@@ -1,0 +1,29 @@
+.container {
+  margin-top: var(--space-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--color-on-surface-variant);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.link {
+  color: var(--color-primary);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  text-decoration: none;
+  transition: text-decoration 0.2s ease;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.icon {
+  font-size: 14px;
+}

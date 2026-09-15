@@ -5,10 +5,8 @@
   border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-sm);
   padding: var(--space-md);
-}
 
-@media (min-width: 768px) {
-  .card {
+  @media (min-width: 768px) {
     padding: var(--space-lg);
   }
 }

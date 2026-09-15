@@ -1,5 +1,6 @@
 import { Button } from "../../../../shared/components/Button";
-import styles from "./SocialAuthButtons.module.css";
+import styles from "./SocialAuthButtons.module.scss";
+
 
 /**
  * Boutons OAuth Google/Apple — purement visuels pour l'instant : le backend

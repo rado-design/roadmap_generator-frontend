@@ -1,5 +1,6 @@
 import { forwardRef, useId, type InputHTMLAttributes, type ReactNode } from "react";
-import styles from "./Checkbox.module.css";
+import styles from "./Checkbox.module.scss";
+
 
 export interface CheckboxProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, "type"> {

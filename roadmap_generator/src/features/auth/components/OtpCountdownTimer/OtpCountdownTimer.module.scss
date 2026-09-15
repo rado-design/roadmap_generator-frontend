@@ -1,0 +1,112 @@
+.container {
+  width: 100%;
+  background-color: var(--color-surface-container-low);
+  border-radius: var(--radius-lg);
+  padding: var(--space-sm);
+  margin-bottom: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  text-align: left;
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--color-on-surface-variant);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+}
+
+.labelGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.timerIcon {
+  font-size: 18px;
+  color: var(--color-primary);
+}
+
+.timeText {
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
+.expiredText {
+  font-weight: 600;
+  color: var(--color-error);
+}
+
+.track {
+  width: 100%;
+  height: 6px;
+  background-color: var(--color-surface-container-highest);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  background-color: var(--color-primary-container);
+  transition: width 1s linear;
+}
+
+.barExpired {
+  width: 0%;
+  background-color: var(--color-error);
+}
+
+.bottomRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--space-xs);
+}
+
+.question {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--color-on-surface-variant);
+}
+
+.resendBtn {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-base);
+  transition: color 0.2s ease;
+
+  &:hover:not(:disabled) {
+    color: var(--color-primary-container);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.spinIcon {
+  animation: spin 1s linear infinite;
+  font-size: 16px;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

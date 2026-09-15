@@ -6,3 +6,5 @@ export type { CheckboxProps } from "./Checkbox";
 export { Button } from "./Button";
 export type { ButtonProps } from "./Button";
 export { ErrorBoundary } from "./ErrorBoundary";
+export { Footer } from "./Footer";
+

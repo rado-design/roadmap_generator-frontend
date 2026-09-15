@@ -1,0 +1,84 @@
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: var(--space-md);
+}
+
+.iconWrapper {
+  position: relative;
+  margin-bottom: var(--space-md);
+
+  &:hover .halo {
+    transform: scale(1.5);
+  }
+}
+
+.halo {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background-color: rgba(14, 165, 233, 0.2);
+  filter: blur(8px);
+  transform: scale(1.25);
+  transition: transform 0.5s ease;
+}
+
+.mainBadge {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-surface-container-low);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary-container);
+  box-shadow: var(--shadow-sm);
+}
+
+.mainIcon {
+  font-size: 34px;
+}
+
+.subBadge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-on-secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.subIcon {
+  font-size: 14px;
+}
+
+.title {
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-on-surface);
+  margin-bottom: var(--space-xs);
+}
+
+.description {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--color-on-surface-variant);
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+.emailHighlight {
+  font-weight: 600;
+  color: var(--color-on-surface);
+}

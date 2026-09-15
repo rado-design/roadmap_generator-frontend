@@ -26,6 +26,10 @@
   z-index: -1;
   border-radius: var(--radius-full);
   filter: blur(100px);
+
+  @media (max-width: 640px) {
+    display: none;
+  }
 }
 
 .blobPrimary {
@@ -45,11 +49,4 @@
   background: var(--color-secondary-fixed);
   opacity: 0.1;
   filter: blur(120px);
-}
-
-@media (max-width: 640px) {
-  .blobPrimary,
-  .blobSecondary {
-    display: none;
-  }
 }

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import styles from "./AuthCard.module.css";
+import styles from "./AuthCard.module.scss";
+
 
 interface AuthCardProps {
   children: ReactNode;

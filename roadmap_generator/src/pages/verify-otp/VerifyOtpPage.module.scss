@@ -1,0 +1,100 @@
+.pageWrapper {
+  width: 100%;
+  min-height: 100dvh;
+  background-color: var(--color-background);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.contentContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.innerContainer {
+  position: relative;
+  width: 100%;
+  max-width: var(--container-max);
+  margin-left: auto;
+  margin-right: auto;
+  padding: var(--space-lg) var(--space-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Halos lumineux décoratifs d'arrière-plan */
+.ambientOrb1 {
+  position: absolute;
+  top: -48px;
+  width: 384px;
+  height: 384px;
+  background-color: rgba(201, 230, 255, 0.4);
+  border-radius: var(--radius-full);
+  filter: blur(64px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ambientOrb2 {
+  position: absolute;
+  top: 50%;
+  width: 320px;
+  height: 320px;
+  background-color: rgba(111, 251, 190, 0.3);
+  border-radius: var(--radius-full);
+  filter: blur(64px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Glass Card */
+.cardContainer {
+  width: 100%;
+  max-width: 520px;
+  background-color: var(--color-surface-container-lowest);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  border: 1px solid var(--color-surface-container);
+}
+
+.topAccentBar {
+  height: 6px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--color-primary) 0%,
+    var(--color-primary-container) 50%,
+    #4edea3 100%
+  );
+}
+
+.cardBody {
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  @media (min-width: 640px) {
+    padding: var(--space-lg);
+  }
+}
+
+.successMessage {
+  padding: var(--space-md);
+  background-color: var(--color-surface-container-low);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  width: 100%;
+}
+
+.successTitle {
+  color: var(--color-secondary);
+  margin-bottom: var(--space-xs);
+}

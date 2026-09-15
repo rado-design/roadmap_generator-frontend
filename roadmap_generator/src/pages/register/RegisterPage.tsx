@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import {
   AuthLayout,
   AuthBrandHeader,
@@ -7,10 +7,17 @@ import {
   RegisterForm,
   SocialAuthButtons,
 } from "../../features/auth";
-import styles from "./RegisterPage.module.css";
+import styles from "./RegisterPage.module.scss";
+
 
 export function RegisterPage() {
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  const handleSuccess = (email: string) => {
+    setRegisteredEmail(email);
+    navigate("/verify-otp", { state: { email } });
+  };
 
   return (
     <AuthLayout>
@@ -24,6 +31,11 @@ export function RegisterPage() {
               Un code de vérification a été envoyé à{" "}
               <strong>{registeredEmail}</strong>.
             </p>
+            <div style={{ marginTop: "16px" }}>
+              <Link to="/verify-otp" state={{ email: registeredEmail }}>
+                Accéder à la vérification OTP
+              </Link>
+            </div>
           </div>
         ) : (
           <>
@@ -34,7 +46,8 @@ export function RegisterPage() {
               </p>
             </div>
 
-            <RegisterForm onSuccess={setRegisteredEmail} />
+            <RegisterForm onSuccess={handleSuccess} />
+
 
             <div className={styles.divider}>
               <span>Ou s'inscrire avec</span>

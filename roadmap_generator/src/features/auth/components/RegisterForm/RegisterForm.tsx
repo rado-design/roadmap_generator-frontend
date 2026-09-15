@@ -5,7 +5,8 @@ import { Checkbox } from "../../../../shared/components/Checkbox";
 import { Button } from "../../../../shared/components/Button";
 import { registerSchema, type RegisterFormValues } from "../../schemas/registerSchema";
 import { useRegisterMutation } from "../../hooks/useRegisterMutation";
-import styles from "./RegisterForm.module.css";
+import styles from "./RegisterForm.module.scss";
+
 
 interface RegisterFormProps {
   /** Appelé avec l'email inscrit une fois l'inscription réussie côté API */

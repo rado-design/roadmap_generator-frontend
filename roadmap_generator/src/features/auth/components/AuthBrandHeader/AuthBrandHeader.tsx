@@ -1,5 +1,6 @@
 import { Icon } from "../../../../shared/components/Icon";
-import styles from "./AuthBrandHeader.module.css";
+import styles from "./AuthBrandHeader.module.scss";
+
 
 export function AuthBrandHeader() {
   return (

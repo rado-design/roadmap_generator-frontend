@@ -16,6 +16,10 @@
   position: relative;
   display: flex;
   align-items: center;
+
+  &:focus-within .icon {
+    color: var(--color-primary);
+  }
 }
 
 .icon {
@@ -40,31 +44,27 @@
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease;
-}
 
-.input.hasIcon {
-  padding-left: 40px;
-}
+  &.hasIcon {
+    padding-left: 40px;
+  }
 
-.input::placeholder {
-  color: var(--color-outline);
-}
+  &::placeholder {
+    color: var(--color-outline);
+  }
 
-.input:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px var(--color-primary-fixed);
-}
+  &:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px var(--color-primary-fixed);
+  }
 
-.inputWrapper:focus-within .icon {
-  color: var(--color-primary);
-}
+  &.hasError {
+    border-color: var(--color-error);
 
-.input.hasError {
-  border-color: var(--color-error);
-}
-
-.input.hasError:focus {
-  box-shadow: 0 0 0 2px var(--color-error-container);
+    &:focus {
+      box-shadow: 0 0 0 2px var(--color-error-container);
+    }
+  }
 }
 
 .errorText {

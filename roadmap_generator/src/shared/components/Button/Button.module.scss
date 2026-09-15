@@ -15,24 +15,24 @@
   transition:
     opacity 0.15s ease,
     transform 0.1s ease;
-}
 
-.button:active:not(:disabled) {
-  transform: scale(0.98);
-}
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
 
-.button:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
 }
 
 .primary {
   background: var(--color-primary-container);
   color: var(--color-on-primary-container);
-}
 
-.primary:hover:not(:disabled) {
-  opacity: 0.9;
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+  }
 }
 
 .outline {
@@ -40,10 +40,10 @@
   color: var(--color-on-surface);
   border: 1px solid var(--color-outline-variant);
   box-shadow: none;
-}
 
-.outline:hover:not(:disabled) {
-  background: var(--color-surface-container-low);
+  &:hover:not(:disabled) {
+    background: var(--color-surface-container-low);
+  }
 }
 
 .spinner {

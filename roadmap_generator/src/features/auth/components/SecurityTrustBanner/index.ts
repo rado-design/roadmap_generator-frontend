@@ -1,0 +1,1 @@
+export { SecurityTrustBanner } from "./SecurityTrustBanner";

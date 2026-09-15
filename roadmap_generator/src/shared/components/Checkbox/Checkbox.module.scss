@@ -28,15 +28,15 @@
   font-weight: 500;
   color: var(--color-on-surface-variant);
   cursor: pointer;
-}
 
-.label a {
-  font-weight: 600;
-  text-decoration: none;
-}
+  a {
+    font-weight: 600;
+    text-decoration: none;
 
-.label a:hover {
-  text-decoration: underline;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 }
 
 .errorText {
