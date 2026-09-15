@@ -1,0 +1,32 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.forgotRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: calc(var(--space-xs) * -1);
+
+  a {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+    color: var(--color-primary);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.formError {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--color-error);
+  background: var(--color-error-container);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-lg);
+}

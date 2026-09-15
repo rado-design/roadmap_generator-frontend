@@ -3,6 +3,7 @@ export { AuthBrandHeader } from "./components/AuthBrandHeader";
 export { AuthCard } from "./components/AuthCard";
 export { SocialAuthButtons } from "./components/SocialAuthButtons";
 export { RegisterForm } from "./components/RegisterForm";
+export { LoginForm } from "./components/LoginForm/LoginForm";
 
 export { SecurityTrustBanner } from "./components/SecurityTrustBanner";
 export { OtpShieldBadge, maskEmail } from "./components/OtpShieldBadge";
@@ -12,7 +13,7 @@ export { OtpForm } from "./components/OtpForm";
 export { SecurityTrustFootnote } from "./components/SecurityTrustFootnote";
 export { SecuritySupportLink } from "./components/SecuritySupportLink";
 
-export { registerUser, verifyOtp, resendOtp } from "./api";
+export { registerUser, verifyOtp, resendOtp, loginUser } from "./api";
 export type {
   RegisterPayload,
   RegisterResponse,
@@ -20,16 +21,22 @@ export type {
   VerifyOtpResponse,
   ResendOtpPayload,
   ResendOtpResponse,
+  LoginPayload,
+  LoginResponse,
 } from "./api";
 
 export {
   useRegisterMutation,
   useVerifyOtpMutation,
   useResendOtpMutation,
+  useLoginMutation,
 } from "./hooks";
 
 export { registerSchema } from "./schemas/registerSchema";
 export type { RegisterFormValues } from "./schemas/registerSchema";
 export { otpSchema } from "./schemas/otpSchema";
 export type { OtpFormValues } from "./schemas/otpSchema";
+export { loginSchema } from "./schemas/loginSchema";
+export type { LoginFormValues } from "./schemas/loginSchema";
+
 

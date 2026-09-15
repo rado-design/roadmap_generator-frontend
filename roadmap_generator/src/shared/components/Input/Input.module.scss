@@ -24,7 +24,7 @@
 
 .icon {
   position: absolute;
-  left: var(--space-sm);
+  left: 14px;
   color: var(--color-outline);
   pointer-events: none;
   transition: color 0.15s ease;
@@ -46,8 +46,13 @@
     box-shadow 0.15s ease;
 
   &.hasIcon {
-    padding-left: 40px;
+    padding-left: 48px;
   }
+
+  &.hasTrailingAction {
+    padding-right: 48px;
+  }
+
 
   &::placeholder {
     color: var(--color-outline);
@@ -78,3 +83,27 @@
   line-height: 16px;
   color: var(--color-on-surface-variant);
 }
+
+.togglePassword {
+  position: absolute;
+  right: var(--space-sm);
+  background: transparent;
+  border: none;
+  color: var(--color-outline);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: var(--color-on-surface);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+  }
+}
+

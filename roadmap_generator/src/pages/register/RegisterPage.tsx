@@ -59,7 +59,7 @@ export function RegisterPage() {
       </AuthCard>
 
       <p className={styles.footerLink}>
-        Vous avez déjà un compte ? <Link to="/login">Connectez-vous</Link>
+        Vous avez déjà un compte ? <Link to="/login">Se connecter</Link>
       </p>
     </AuthLayout>
   );
