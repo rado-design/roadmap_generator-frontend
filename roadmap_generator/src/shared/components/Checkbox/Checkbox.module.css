@@ -1,0 +1,47 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-base);
+  text-align: left;
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  margin-top: 2px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-outline-variant);
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.label {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+}
+
+.label a {
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.label a:hover {
+  text-decoration: underline;
+}
+
+.errorText {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--color-error);
+  margin-left: 36px;
+}
