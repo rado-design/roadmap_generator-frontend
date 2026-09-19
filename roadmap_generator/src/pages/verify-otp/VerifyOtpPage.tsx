@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router";
 
 import { Icon } from "../../shared/components/Icon";
 import { Footer } from "../../shared/components/Footer";
+import { useAuthStore } from "../../shared/lib/authStore";
 import {
   AuthBrandHeader,
   SecurityTrustBanner,
@@ -17,6 +18,7 @@ import styles from "./VerifyOtpPage.module.scss";
 export function VerifyOtpPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const setAccessToken = useAuthStore((state) => state.setAccessToken);
 
   // Email transmis depuis la page d'inscription ou paramètre d'URL
   const stateEmail = (location.state as { email?: string })?.email;
@@ -27,7 +29,8 @@ export function VerifyOtpPage() {
 
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleVerifySuccess = () => {
+  const handleVerifySuccess = (tokenData: { access_token: string }) => {
+    setAccessToken(tokenData.access_token);
     setIsSuccess(true);
     setTimeout(() => {
       navigate("/");

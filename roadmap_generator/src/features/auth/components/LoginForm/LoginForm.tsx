@@ -4,12 +4,13 @@ import { Input } from "../../../../shared/components/Input";
 import { Button } from "../../../../shared/components/Button";
 import { loginSchema, type LoginFormValues } from "../../schemas/loginSchema";
 import { useLoginMutation } from "../../hooks/useLoginMutation";
+import type { LoginResponse } from "../../api/loginUser";
 import styles from "./LoginForm.module.scss";
 
 
 interface LoginFormProps {
-  /** Appelé une fois la connexion réussie */
-  onSuccess: () => void;
+  /** Appelé avec les tokens une fois la connexion réussie */
+  onSuccess: (tokens: LoginResponse) => void;
 }
 
 export function LoginForm({ onSuccess }: LoginFormProps) {
@@ -31,7 +32,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   const onSubmit = (values: LoginFormValues) => {
     mutate(
       { email: values.email, password: values.password },
-      { onSuccess },
+      { onSuccess: (data) => onSuccess(data) },
     );
   };
 

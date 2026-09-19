@@ -11,7 +11,7 @@ import styles from "./OtpForm.module.scss";
 
 interface OtpFormProps {
   email: string;
-  onSuccess?: (tokenData: { access_token: string; refresh_token: string }) => void;
+  onSuccess?: (tokenData: { access_token: string }) => void;
 }
 
 export function OtpForm({ email, onSuccess }: OtpFormProps) {

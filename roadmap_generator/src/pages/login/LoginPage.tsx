@@ -6,13 +6,17 @@ import {
   SocialAuthButtons,
 } from "../../features/auth";
 import { LoginForm } from "../../features/auth/components/LoginForm/LoginForm";
+import type { LoginResponse } from "../../features/auth/api/loginUser";
+import { useAuthStore } from "../../shared/lib/authStore";
 import styles from "./LoginPage.module.scss";
 
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const setAccessToken = useAuthStore((state) => state.setAccessToken);
 
-  const handleSuccess = () => {
+  const handleSuccess = (tokens: LoginResponse) => {
+    setAccessToken(tokens.access_token);
     navigate("/");
   };
 
