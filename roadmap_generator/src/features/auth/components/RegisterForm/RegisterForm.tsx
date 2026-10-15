@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "../../../../shared/components/Input";
@@ -14,6 +15,8 @@ interface RegisterFormProps {
 }
 
 export function RegisterForm({ onSuccess }: RegisterFormProps) {
+  const [activeModal, setActiveModal] = useState<"terms" | "privacy" | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -43,7 +46,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       <Input
         label="Nom"
         icon="person"
-        placeholder=" Dupont"
+        placeholder="Dupont"
         error={errors.name?.message}
         {...register("name")}
       />
@@ -79,13 +82,21 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         label={
           <>
             J'accepte les{" "}
-            <a href="#" onClick={(e) => e.preventDefault()}>
+            <button
+              type="button"
+              className={styles.inlineLegalBtn}
+              onClick={() => setActiveModal("terms")}
+            >
               conditions d'utilisation
-            </a>{" "}
+            </button>{" "}
             et la{" "}
-            <a href="#" onClick={(e) => e.preventDefault()}>
+            <button
+              type="button"
+              className={styles.inlineLegalBtn}
+              onClick={() => setActiveModal("privacy")}
+            >
               politique de confidentialité
-            </a>
+            </button>
             .
           </>
         }
@@ -101,6 +112,46 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       <Button type="submit" icon="arrow_forward" isLoading={isPending}>
         S'inscrire gratuitement
       </Button>
+
+      {activeModal && (
+        <div
+          className={styles.modalOverlay}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="legal-modal-title"
+        >
+          <div className={styles.modalCard}>
+            <h3 id="legal-modal-title" className={styles.modalTitle}>
+              {activeModal === "terms"
+                ? "Conditions d'utilisation"
+                : "Politique de confidentialité"}
+            </h3>
+            <div className={styles.modalBody}>
+              {activeModal === "terms" ? (
+                <p>
+                  RoadmapAI est un outil d'accompagnement et de planification
+                  personnalisée par intelligence artificielle. Vos données de
+                  parcours restent sous votre contrôle et ne sont jamais
+                  revendues.
+                </p>
+              ) : (
+                <p>
+                  Nous collectons uniquement votre adresse e-mail pour sécuriser
+                  l'accès à votre compte via code OTP et vous transmettre vos
+                  parcours générés.
+                </p>
+              )}
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setActiveModal(null)}
+            >
+              Fermer
+            </Button>
+          </div>
+        </div>
+      )}
     </form>
   );
 }

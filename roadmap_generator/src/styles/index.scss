@@ -26,8 +26,9 @@
   --color-surface-container-lowest: #ffffff;
   --color-surface-container-low: #f2f4f6;
   --color-surface-container: #eceef0;
+  --color-surface-container-highest: #e0e3e5;
 
-  --color-outline: #6e7881;
+  --color-outline: #5c6670;
   --color-outline-variant: #bec8d2;
 
   /* Spacing */
@@ -98,6 +99,11 @@ button {
   font-family: var(--font-body);
 }
 
+::selection {
+  background-color: var(--color-primary-fixed);
+  color: var(--color-on-primary-container);
+}
+
 .material-symbols-outlined {
   font-variation-settings:
     "FILL" 0,
@@ -107,3 +113,4 @@ button {
   line-height: 1;
   user-select: none;
 }
+

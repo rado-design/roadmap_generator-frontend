@@ -56,7 +56,14 @@ export function OtpCountdownTimer({
         </span>
       </div>
 
-      <div className={styles.track}>
+      <div
+        className={styles.track}
+        role="progressbar"
+        aria-label="Validité restante du code de vérification"
+        aria-valuenow={seconds}
+        aria-valuemin={0}
+        aria-valuemax={initialSeconds}
+      >
         <div
           className={`${styles.bar} ${isExpired ? styles.barExpired : ""}`}
           style={{ width: `${percent}%` }}

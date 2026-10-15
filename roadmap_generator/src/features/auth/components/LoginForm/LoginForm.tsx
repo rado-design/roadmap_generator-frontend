@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "../../../../shared/components/Input";
@@ -57,9 +58,9 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       />
 
       <div className={styles.forgotRow}>
-        <a href="#" onClick={(e) => e.preventDefault()}>
+        <Link to="/forgot-password">
           Mot de passe oublié ?
-        </a>
+        </Link>
       </div>
 
       {error && (

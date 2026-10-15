@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router";
 import { HomePage } from "../pages/home";
 import { RegisterPage } from "../pages/register";
 import { LoginPage } from "../pages/login";
+import { ForgotPasswordPage } from "../pages/forgot-password";
 import { VerifyOtpPage } from "../pages/verify-otp";
 import { NotFoundPage } from "../pages/not-found";
 
@@ -13,6 +14,10 @@ export const router = createBrowserRouter([
   {
     path: "/login",
     element: <LoginPage />,
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPasswordPage />,
   },
   {
     path: "/register",

@@ -12,3 +12,69 @@
   padding: var(--space-xs) var(--space-sm);
   border-radius: var(--radius-lg);
 }
+
+.inlineLegalBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: inherit;
+  font-weight: 600;
+  color: var(--color-primary);
+  cursor: pointer;
+  text-decoration: underline;
+
+  &:hover {
+    color: var(--color-on-primary-container);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: var(--radius-default);
+  }
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(25, 28, 30, 0.4);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-md);
+  z-index: 100;
+}
+
+.modalCard {
+  background-color: var(--color-surface-container-lowest);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-md);
+  max-width: 480px;
+  width: 100%;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-outline-variant);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  text-align: left;
+}
+
+.modalTitle {
+  font-size: 18px;
+  line-height: 26px;
+  font-weight: 600;
+  color: var(--color-on-surface);
+  margin: 0;
+}
+
+.modalBody {
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--color-on-surface-variant);
+
+  p {
+    margin: 0;
+  }
+}

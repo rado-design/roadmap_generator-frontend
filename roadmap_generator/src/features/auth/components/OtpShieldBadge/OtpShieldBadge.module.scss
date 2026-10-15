@@ -9,20 +9,10 @@
 .iconWrapper {
   position: relative;
   margin-bottom: var(--space-md);
-
-  &:hover .halo {
-    transform: scale(1.5);
-  }
 }
 
 .halo {
-  position: absolute;
-  inset: 0;
-  border-radius: var(--radius-full);
-  background-color: rgba(14, 165, 233, 0.2);
-  filter: blur(8px);
-  transform: scale(1.25);
-  transition: transform 0.5s ease;
+  display: none;
 }
 
 .mainBadge {
@@ -30,11 +20,12 @@
   width: 64px;
   height: 64px;
   border-radius: var(--radius-full);
-  background-color: var(--color-surface-container-low);
+  background-color: var(--color-primary-fixed);
+  border: 1px solid var(--color-outline-variant);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-primary-container);
+  color: var(--color-primary);
   box-shadow: var(--shadow-sm);
 }
 

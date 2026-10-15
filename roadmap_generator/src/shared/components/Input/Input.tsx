@@ -64,7 +64,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                   ? "Masquer le mot de passe"
                   : "Afficher le mot de passe"
               }
-              tabIndex={-1}
             >
               <Icon name={showPassword ? "visibility_off" : "visibility"} />
             </button>
