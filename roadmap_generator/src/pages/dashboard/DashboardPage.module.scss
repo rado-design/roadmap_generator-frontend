@@ -149,25 +149,24 @@
   line-height: 19px;
 }
 
-.templateVisual {
+.templatePlaceholder {
   display: flex;
   height: 64px;
-  align-items: flex-end;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
   margin-top: 18px;
-  padding: 0 3px;
-  border-bottom: 1px solid var(--color-outline-variant);
+  padding-inline: 12px;
+  border: 1px dashed var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  color: var(--color-on-surface-variant);
+  font-size: 12px;
+  line-height: 16px;
 }
 
-.templateVisual span {
-  width: 14%;
-  border-radius: var(--radius-default) var(--radius-default) 0 0;
-  background: var(--color-surface-container);
+.templatePlaceholder :global(.material-symbols-outlined) {
+  color: var(--color-outline);
+  font-size: var(--icon-size-sm);
 }
-
-.templateVisual span:nth-child(1) { height: 42%; }
-.templateVisual span:nth-child(2) { height: 74%; }
-.templateVisual span:nth-child(3) { height: 56%; }
 
 .roadmapsSection {
   margin-top: 32px;

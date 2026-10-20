@@ -1,0 +1,56 @@
+.loading {
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background: var(--color-background);
+  color: var(--color-on-surface-variant);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-xs);
+  color: var(--color-primary);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 28px;
+}
+
+.brand :global(.material-symbols-outlined) {
+  font-size: var(--icon-size-md);
+}
+
+.progressTrack {
+  position: relative;
+  overflow: hidden;
+  width: 112px;
+  height: 3px;
+  margin-top: var(--space-xs);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-container-highest);
+}
+
+.progressTrack > span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 42%;
+  border-radius: inherit;
+  background: var(--color-primary);
+  animation: sessionProgress 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes sessionProgress {
+  from { transform: translateX(0); }
+  to { transform: translateX(140%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progressTrack > span { animation: none; }
+}

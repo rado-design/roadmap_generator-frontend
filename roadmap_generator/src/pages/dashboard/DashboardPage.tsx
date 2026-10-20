@@ -59,10 +59,9 @@ function TemplatePanel({ title, description }: { title: string; description: str
         <span className={styles.templateBadge}>Gabarit · backend à compléter</span>
       </div>
       <p className={styles.templateCopy}>{description}</p>
-      <div className={styles.templateVisual} aria-hidden="true">
-        <span />
-        <span />
-        <span />
+      <div className={styles.templatePlaceholder} role="note">
+        <Icon name="bar_chart" />
+        <span>Visualisation à connecter</span>
       </div>
     </section>
   );

@@ -1,6 +1,8 @@
 import { useEffect, type ReactNode } from "react";
 import { useAuthStore } from "../shared/lib/authStore";
 import { refreshAccessToken } from "../shared/lib/axios";
+import { Icon } from "../shared/components/Icon";
+import styles from "./SessionBootstrap.module.scss";
 
 interface SessionBootstrapProps {
   children: ReactNode;
@@ -25,7 +27,18 @@ export function SessionBootstrap({ children }: SessionBootstrapProps) {
   }, []);
 
   if (status === "idle") {
-    return null;
+    return (
+      <main className={styles.loading} role="status" aria-live="polite">
+        <div className={styles.brand}>
+          <Icon name="route" />
+          <span>RoadmapAI</span>
+        </div>
+        <p>Restauration de votre session…</p>
+        <span className={styles.progressTrack} aria-hidden="true">
+          <span />
+        </span>
+      </main>
+    );
   }
 
   return children;

@@ -52,3 +52,8 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 
 - Après login et validation OTP, l'utilisateur arrive au tableau de bord (ou reprend la route protégée demandée avant le login).
 - Une session déjà restaurée redirige les routes publiques d'entrée vers `/dashboard`; le tableau de bord renvoie une session déconnectée vers `/login`.
+
+### 2026-10-20 — Finition du parcours de session et des gabarits du tableau de bord
+
+- La restauration de session affiche un état d'attente de marque au lieu d'une page vide; l'animation respecte la préférence de réduction de mouvement.
+- Les emplacements des graphiques sans données backend affichent désormais un état « Visualisation à connecter » sans barres décoratives pouvant être prises pour des données.
