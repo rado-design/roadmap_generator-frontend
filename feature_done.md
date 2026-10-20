@@ -101,3 +101,13 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 
 - Les cartes des roadmaps récentes du tableau de bord ouvrent leur page détail.
 - La liste et le tableau de bord transmettent leur route d'origine à la page détail; le lien de retour ramène à la bonne page, avec `/roadmaps` comme destination de secours pour une ouverture directe.
+
+### 2026-10-20 — Formulaire de génération d'une roadmap
+
+- La page `/roadmaps/generate` reprend la maquette du formulaire et ses aides latérales; les champs objectif, catégorie, durée hebdomadaire, échéance, niveau et contexte sont validés selon le contrat backend.
+- L'action « Créer une roadmap » de la liste ouvre ce formulaire; la soumission appelle `POST /api/v1/roadmaps/generate` et ouvre le détail créé en cas de succès, avec un retour vers le formulaire.
+- La fiche backend dédiée est `ROADMAP_GENERATE_BACKEND_REQUIREMENTS.md`; le contrat actuel suffit. La génération en flux SSE reste une évolution frontend séparée.
+
+### 2026-10-20 — Accès à la création depuis la liste des roadmaps
+
+- La tuile « Nouvelle roadmap » de la liste ouvre maintenant le formulaire de génération; l'état vide de la liste propose aussi cette action.

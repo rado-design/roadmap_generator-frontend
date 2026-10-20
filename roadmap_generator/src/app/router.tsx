@@ -8,6 +8,7 @@ import { NotFoundPage } from "../pages/not-found";
 import { DashboardPage } from "../pages/dashboard";
 import { RoadmapsPage } from "../pages/roadmaps";
 import { RoadmapDetailPage } from "../pages/roadmap-detail";
+import { GenerateRoadmapPage } from "../pages/generate-roadmap";
 import { PublicOnlyRoute, RequireAuthRoute } from "./RouteGuards";
 
 export const router = createBrowserRouter([
@@ -16,6 +17,14 @@ export const router = createBrowserRouter([
     element: (
       <RequireAuthRoute>
         <DashboardPage />
+      </RequireAuthRoute>
+    ),
+  },
+  {
+    path: "/roadmaps/generate",
+    element: (
+      <RequireAuthRoute>
+        <GenerateRoadmapPage />
       </RequireAuthRoute>
     ),
   },

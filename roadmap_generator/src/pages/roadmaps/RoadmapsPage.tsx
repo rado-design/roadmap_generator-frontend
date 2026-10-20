@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link, useLocation } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { AppLayout, PageHeader } from "../../app/layouts";
 import { ROADMAPS_PAGE_SIZE, useRoadmaps, type RoadmapStatus, type RoadmapSummary } from "../../features/roadmaps";
 import { Button } from "../../shared/components/Button";
@@ -71,6 +71,7 @@ function RoadmapSkeleton() {
 
 export function RoadmapsPage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [offset, setOffset] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | RoadmapStatus>("all");
@@ -112,7 +113,7 @@ export function RoadmapsPage() {
             <Button variant="outline" disabled title="L'export sera ajouté dans une prochaine étape.">
               Exporter
             </Button>
-            <Button disabled icon="add" title="La page de génération sera intégrée dans une prochaine étape.">
+            <Button icon="add" onClick={() => navigate("/roadmaps/generate")}>
               Créer une roadmap
             </Button>
           </div>
@@ -177,6 +178,9 @@ export function RoadmapsPage() {
           <Icon name="route" />
           <h2>Aucune roadmap pour le moment</h2>
           <p>Les roadmaps que vous créerez apparaîtront ici.</p>
+          <Button icon="add" onClick={() => navigate("/roadmaps/generate")}>
+            Nouvelle roadmap
+          </Button>
         </section>
       ) : filteredRoadmaps.length === 0 ? (
         <section className={styles.emptyState}>
@@ -197,11 +201,16 @@ export function RoadmapsPage() {
                 from={{ pathname: location.pathname, search: location.search, hash: location.hash }}
               />
             ))}
-            <div className={styles.createCard} aria-label="Création de roadmap à venir">
+            <Link
+              className={styles.createCard}
+              to="/roadmaps/generate"
+              state={{ from: { pathname: location.pathname, search: location.search, hash: location.hash } }}
+              aria-label="Créer une nouvelle roadmap"
+            >
               <span className={styles.createIcon}><Icon name="add" /></span>
               <strong>Nouvelle roadmap</strong>
-              <span>La création sera disponible après l'intégration de sa page.</span>
-            </div>
+              <span>Créer un nouveau parcours personnalisé.</span>
+            </Link>
           </div>
           <div className={styles.listFooter}>
             <p>

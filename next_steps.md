@@ -110,3 +110,13 @@ Ajouter chaque nouvelle action de reprise tout en bas, avec sa date. La dernièr
 
 - Implémenter la page « Générer une roadmap » à partir de sa maquette; relire le contrat `RoadmapGenerateRequest` et créer/mettre à jour son fichier backend dédié avant d'intégrer le formulaire et la génération.
 - Après confirmation de la migration et des tests backend de progression, revenir activer les mises à jour de statut d'étape depuis le détail.
+
+### 2026-10-20 — Après intégration de la génération d'une roadmap
+
+- Intégrer la génération progressive avec `POST /api/v1/roadmaps/generate/stream` afin d'afficher les étapes au fur et à mesure; le contrat SSE existant et ses événements sont consignés dans `../roadmap_generator-backend/ROADMAP_GENERATE_BACKEND_REQUIREMENTS.md`.
+- Après la génération progressive, poursuivre les pages restantes à partir de leurs maquettes, en créant une fiche backend dédiée pour chaque page et en n'y reportant que les besoins backend réels.
+
+### 2026-10-20 — Après raccordement de « Nouvelle roadmap » dans la liste
+
+- Intégrer la génération progressive avec `POST /api/v1/roadmaps/generate/stream`; le contrat SSE existe déjà et la fiche backend est dans `../roadmap_generator-backend/ROADMAP_GENERATE_BACKEND_REQUIREMENTS.md`.
+- Ensuite, poursuivre les pages restantes à partir de leurs maquettes et relever seulement leurs besoins backend réels dans une fiche dédiée.

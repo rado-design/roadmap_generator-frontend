@@ -126,12 +126,19 @@ export function RoadmapDetailPage() {
   const origin = navigationState?.from;
   const returnToDashboard = origin?.pathname === "/dashboard";
   const returnToRoadmaps = origin?.pathname === "/roadmaps";
+  const returnToGenerator = origin?.pathname === "/roadmaps/generate";
   const returnPath = returnToDashboard
     ? `/dashboard${origin?.search ?? ""}${origin?.hash ?? ""}`
     : returnToRoadmaps
       ? `/roadmaps${origin?.search ?? ""}${origin?.hash ?? ""}`
+      : returnToGenerator
+        ? "/roadmaps/generate"
       : "/roadmaps";
-  const returnLabel = returnToDashboard ? "Retour au tableau de bord" : "Retour à toutes les roadmaps";
+  const returnLabel = returnToDashboard
+    ? "Retour au tableau de bord"
+    : returnToGenerator
+      ? "Retour au formulaire de génération"
+      : "Retour à toutes les roadmaps";
   const { roadmapId: routeId } = useParams();
   const parsedId = Number(routeId);
   const roadmapId = Number.isSafeInteger(parsedId) && parsedId > 0 ? parsedId : null;
