@@ -1,13 +1,14 @@
-import type { ReactNode } from "react";
-import { Link } from "react-router";
+import { useEffect, useState, type ReactNode } from "react";
 import { Footer } from "../../shared/components/Footer";
-import { Icon } from "../../shared/components/Icon";
+import { AppTopBar } from "../../shared/components/AppTopBar";
+import { Sidebar } from "../../shared/components/Sidebar";
 import styles from "./AppLayout.module.scss";
 
 interface AppLayoutProps {
   children: ReactNode;
   headerActions?: ReactNode;
   contentClassName?: string;
+  onSearch?: (query: string) => void;
 }
 
 /** Cadre commun des pages de l'application, distinct du shell public/auth. */
@@ -15,28 +16,50 @@ export function AppLayout({
   children,
   headerActions,
   contentClassName,
+  onSearch,
 }: AppLayoutProps) {
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const closeSidebar = () => setMobileSidebarOpen(false);
+
+  useEffect(() => {
+    if (!mobileSidebarOpen) return;
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMobileSidebarOpen(false);
+    };
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [mobileSidebarOpen]);
+
   return (
     <div className={styles.layout}>
-      <header className={styles.header}>
-        <div className={styles.headerInner}>
-          <Link to="/" className={styles.brand} aria-label="RoadmapAI, accueil">
-            <Icon name="route" className={styles.brandIcon} />
-            <span>RoadmapAI</span>
-          </Link>
-          {headerActions ? (
-            <div className={styles.headerActions}>{headerActions}</div>
-          ) : null}
-        </div>
-      </header>
+      <Sidebar mobileOpen={mobileSidebarOpen} onNavigate={closeSidebar} />
+      {mobileSidebarOpen ? (
+        <button
+          className={styles.backdrop}
+          type="button"
+          aria-label="Fermer la navigation"
+          onClick={closeSidebar}
+        />
+      ) : null}
 
-      <main className={styles.main}>
-        <div className={`${styles.content} ${contentClassName ?? ""}`.trim()}>
-          {children}
-        </div>
-      </main>
+      <div className={styles.workspace}>
+        <AppTopBar
+          actions={headerActions}
+          onMenuClick={() => setMobileSidebarOpen((open) => !open)}
+          onSearch={onSearch}
+          sidebarOpen={mobileSidebarOpen}
+        />
 
-      <Footer />
+        <main className={styles.main}>
+          <div className={`${styles.content} ${contentClassName ?? ""}`.trim()}>
+            {children}
+          </div>
+        </main>
+
+        <Footer />
+      </div>
     </div>
   );
 }

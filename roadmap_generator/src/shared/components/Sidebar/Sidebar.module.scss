@@ -1,0 +1,130 @@
+.sidebar {
+  position: sticky;
+  z-index: 30;
+  top: 0;
+  display: flex;
+  width: 248px;
+  height: 100dvh;
+  flex-direction: column;
+  gap: 24px;
+  padding: 20px 16px;
+  border-right: 1px solid var(--color-outline-variant);
+  background: var(--color-surface-container-low);
+}
+
+.brand {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 8px;
+  padding-inline: 8px;
+  color: var(--color-primary);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+}
+
+.brandIcon {
+  font-size: var(--icon-size-md);
+}
+
+.createLink {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 160ms ease;
+
+  &:hover {
+    background: var(--color-primary-fixed);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+.navigation {
+  display: grid;
+  gap: 4px;
+}
+
+.sectionLabel {
+  margin: 4px 8px 8px;
+  color: var(--color-on-surface-variant);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+}
+
+.navLink {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-lg);
+  color: var(--color-on-surface-variant);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  text-decoration: none;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+
+  &:hover {
+    background: var(--color-surface-container);
+    color: var(--color-on-surface);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+.active,
+.active:hover {
+  background: var(--color-primary-fixed);
+  color: var(--color-on-primary-container);
+}
+
+.navIcon {
+  font-size: var(--icon-size-sm);
+}
+
+@media (max-width: 899px) {
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: min(288px, calc(100vw - 56px));
+    box-shadow: var(--shadow-sm);
+    transform: translateX(-105%);
+    transition: transform 200ms ease-out;
+    visibility: hidden;
+  }
+
+  .mobileOpen {
+    transform: translateX(0);
+    visibility: visible;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .createLink,
+  .navLink {
+    transition: none;
+  }
+}

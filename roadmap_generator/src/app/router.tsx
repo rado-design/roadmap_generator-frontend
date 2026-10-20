@@ -5,31 +5,65 @@ import { LoginPage } from "../pages/login";
 import { ForgotPasswordPage } from "../pages/forgot-password";
 import { VerifyOtpPage } from "../pages/verify-otp";
 import { NotFoundPage } from "../pages/not-found";
+import { DashboardPage } from "../pages/dashboard";
+import { PublicOnlyRoute, RequireAuthRoute } from "./RouteGuards";
 
 export const router = createBrowserRouter([
   {
+    path: "/dashboard",
+    element: (
+      <RequireAuthRoute>
+        <DashboardPage />
+      </RequireAuthRoute>
+    ),
+  },
+  {
     path: "/",
-    element: <HomePage />,
+    element: (
+      <PublicOnlyRoute>
+        <HomePage />
+      </PublicOnlyRoute>
+    ),
   },
   {
     path: "/login",
-    element: <LoginPage />,
+    element: (
+      <PublicOnlyRoute>
+        <LoginPage />
+      </PublicOnlyRoute>
+    ),
   },
   {
     path: "/forgot-password",
-    element: <ForgotPasswordPage />,
+    element: (
+      <PublicOnlyRoute>
+        <ForgotPasswordPage />
+      </PublicOnlyRoute>
+    ),
   },
   {
     path: "/register",
-    element: <RegisterPage />,
+    element: (
+      <PublicOnlyRoute>
+        <RegisterPage />
+      </PublicOnlyRoute>
+    ),
   },
   {
     path: "/verify-otp",
-    element: <VerifyOtpPage />,
+    element: (
+      <PublicOnlyRoute>
+        <VerifyOtpPage />
+      </PublicOnlyRoute>
+    ),
   },
   {
     path: "/activate-account",
-    element: <VerifyOtpPage />,
+    element: (
+      <PublicOnlyRoute>
+        <VerifyOtpPage />
+      </PublicOnlyRoute>
+    ),
   },
   {
     path: "*",

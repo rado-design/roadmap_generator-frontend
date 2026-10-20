@@ -7,4 +7,6 @@ export { Button } from "./Button";
 export type { ButtonProps } from "./Button";
 export { ErrorBoundary } from "./ErrorBoundary";
 export { Footer } from "./Footer";
+export { Sidebar } from "./Sidebar";
+export { AppTopBar } from "./AppTopBar";
 

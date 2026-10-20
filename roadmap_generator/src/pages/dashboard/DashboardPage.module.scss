@@ -1,0 +1,323 @@
+.dataNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 24px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-low);
+  color: var(--color-on-surface-variant);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.dataNotice > :global(span) {
+  flex: none;
+  color: var(--color-primary);
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.metricCard,
+.panel,
+.roadmapCard,
+.statePanel {
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-2xl);
+  background: var(--color-surface-container-lowest);
+}
+
+.metricCard {
+  display: flex;
+  min-height: 150px;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 20px;
+}
+
+.liveMetric {
+  border-color: var(--color-primary-fixed);
+}
+
+.metricTopline {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--color-on-surface-variant);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.metricTopline :global(span.material-symbols-outlined) {
+  color: var(--color-primary);
+}
+
+.metricValue {
+  margin-top: 8px;
+  color: var(--color-on-surface);
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 38px;
+}
+
+.metricFootnote {
+  margin-top: auto;
+  padding-top: 8px;
+  color: var(--color-on-surface-variant);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.metricSkeleton,
+.roadmapSkeleton {
+  display: block;
+  overflow: hidden;
+  position: relative;
+  background: var(--color-surface-container);
+}
+
+.metricSkeleton {
+  width: 72px;
+  height: 38px;
+  margin-top: 8px;
+  border-radius: var(--radius-default);
+}
+
+.metricSkeleton::after,
+.roadmapSkeleton::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 58%), transparent);
+  content: "";
+  transform: translateX(-100%);
+  animation: shimmer 1.4s infinite;
+}
+
+.analysisGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.panel {
+  min-height: 208px;
+  padding: 20px;
+}
+
+.panelHeading,
+.sectionHeading,
+.roadmapTopline,
+.progressMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panelHeading h2,
+.sectionHeading h2 {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.templateBadge {
+  border-radius: var(--radius-full);
+  background: var(--color-surface-container-low);
+  padding: 4px 9px;
+  color: var(--color-on-surface-variant);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  text-align: center;
+}
+
+.templateCopy {
+  max-width: 48ch;
+  margin-top: 10px;
+  color: var(--color-on-surface-variant);
+  font-size: 13px;
+  line-height: 19px;
+}
+
+.templateVisual {
+  display: flex;
+  height: 64px;
+  align-items: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 0 3px;
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.templateVisual span {
+  width: 14%;
+  border-radius: var(--radius-default) var(--radius-default) 0 0;
+  background: var(--color-surface-container);
+}
+
+.templateVisual span:nth-child(1) { height: 42%; }
+.templateVisual span:nth-child(2) { height: 74%; }
+.templateVisual span:nth-child(3) { height: 56%; }
+
+.roadmapsSection {
+  margin-top: 32px;
+}
+
+.sectionHeading {
+  margin-bottom: 16px;
+}
+
+.sectionHeading p {
+  margin-top: 4px;
+  color: var(--color-on-surface-variant);
+  font-size: 14px;
+  line-height: 19px;
+}
+
+.allRoadmapsLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-primary);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.allRoadmapsLink:hover { text-decoration: underline; }
+
+.roadmapGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.roadmapCard {
+  min-width: 0;
+  padding: 20px;
+}
+
+.roadmapIcon {
+  display: inline-grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary-fixed);
+  color: var(--color-on-primary-container);
+}
+
+.stepCount {
+  color: var(--color-on-surface-variant);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.roadmapTitle {
+  overflow: hidden;
+  margin-top: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 23px;
+  text-overflow: ellipsis;
+}
+
+.roadmapGoal {
+  display: -webkit-box;
+  overflow: hidden;
+  min-height: 40px;
+  margin-top: 4px;
+  color: var(--color-on-surface-variant);
+  font-size: 14px;
+  line-height: 20px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.progressMeta {
+  margin-top: 18px;
+  color: var(--color-on-surface-variant);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.progressMeta span:last-child { color: var(--color-on-surface); font-weight: 600; }
+
+.progressTrack {
+  overflow: hidden;
+  height: 7px;
+  margin-top: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-container-highest);
+}
+
+.progressTrack span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-primary);
+}
+
+.roadmapSkeleton {
+  min-height: 194px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-2xl);
+}
+
+.statePanel {
+  display: flex;
+  min-height: 176px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  color: var(--color-on-surface-variant);
+  text-align: center;
+}
+
+.statePanel :global(span.material-symbols-outlined) {
+  color: var(--color-primary);
+  font-size: var(--icon-size-md);
+}
+
+.statePanel p { max-width: 52ch; font-size: 14px; line-height: 20px; }
+
+@keyframes shimmer {
+  to { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .metricSkeleton::after,
+  .roadmapSkeleton::after { animation: none; }
+  .progressTrack span { transition: none; }
+}
+
+@media (max-width: 1000px) {
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .roadmapGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 680px) {
+  .analysisGrid,
+  .roadmapGrid { grid-template-columns: 1fr; }
+  .panelHeading { align-items: flex-start; flex-direction: column; }
+  .panel { min-height: 188px; }
+}
+
+@media (max-width: 420px) {
+  .metrics { grid-template-columns: 1fr; }
+  .metricCard { min-height: 132px; }
+  .sectionHeading { align-items: flex-start; }
+  .allRoadmapsLink { flex: none; }
+}

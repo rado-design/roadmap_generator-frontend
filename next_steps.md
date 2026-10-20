@@ -63,3 +63,16 @@ Ajouter chaque nouvelle action de reprise tout en bas, avec sa date. La dernièr
 ### 2026-10-20
 
 - Commencer l'implémentation de la première page de maquette avec `AppLayout` et `PageHeader`, après vérification des endpoints backend nécessaires.
+
+### 2026-10-20 — Reprise après la base de navigation
+
+- Raccorder `AppLayout`, `Sidebar` et `AppTopBar` à la première page métier, puis brancher le callback de recherche sur les données effectivement disponibles pour cette page.
+
+### 2026-10-20 — Après la première version du tableau de bord
+
+- Implémenter la page « Toutes les roadmaps » à partir de la maquette, en vérifiant de nouveau pagination, progression et contrats dans le backend avant de brancher les interactions.
+- Garder la page de tableau de bord comme référence des indicateurs encore en gabarit; la liste des évolutions backend attendues est dans `../roadmap_generator-backend/DASHBOARD_BACKEND_REQUIREMENTS.md`.
+
+### 2026-10-20 — Après correction des redirections de session
+
+- Implémenter la page « Toutes les roadmaps » à partir de la maquette, après nouvelle vérification des contrats de pagination et de progression côté backend.

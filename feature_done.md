@@ -1,6 +1,6 @@
 # Fonctionnalités terminées — Frontend RoadmapAI
 
-Ce fichier décrit ce qui est réellement implémenté côté frontend et utilisable avec le backend. À relire au début de chaque session et à mettre à jour à la fin d'une fonctionnalité. Vérifier les contrats dans `../roadmap_generator-backend/features_done.md` avant toute intégration.
+Ce fichier décrit ce qui est réellement implémenté côté frontend (composants d'interface et fonctions reliées au backend). À relire au début de chaque session et à compléter à la fin d'une fonctionnalité. Vérifier les contrats dans `../roadmap_generator-backend/features_done.md` avant toute intégration.
 
 ## Conventions d'intégration
 
@@ -34,3 +34,21 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 - `AppLayout` fournit le cadre des pages applicatives : en-tête de marque avec emplacement d'actions, zone principale centrée et responsive, et pied de page partagé.
 - `PageHeader` fournit un titre, une description et un emplacement d'actions adaptatif.
 - Ces composants sont disponibles dans `src/app/layouts/`. Leur raccordement aux pages métier se fera lors de l'implémentation de ces pages.
+
+### 2026-10-20 — Sidebar et barre supérieure partagées
+
+- `Sidebar` dans `src/shared/components/Sidebar/` fournit les liens communs vers le tableau de bord, les roadmaps, les ressources et les paramètres, ainsi que l'action de création. Sur mobile, elle s'ouvre en panneau latéral et se ferme par sélection, clic sur le fond ou touche Échap.
+- `AppTopBar` dans `src/shared/components/AppTopBar/` fournit le champ de recherche et un emplacement pour les actions de page; son bouton menu contrôle l'ouverture de la sidebar mobile.
+- `AppLayout` assemble ces composants autour du contenu. La recherche reçoit un callback de la page; le backend ne propose pas d'endpoint de recherche globale.
+
+### 2026-10-20 — Tableau de bord, première intégration
+
+- La route `/dashboard` utilise `AppLayout` et `PageHeader`.
+- Le nombre total et les roadmaps récentes proviennent de `GET /api/v1/roadmaps`; la progression de chaque carte est calculée avec les nombres d'étapes fournis par le backend.
+- Les statistiques d'achèvement, le taux de réussite et les graphiques de catégories/états sont affichés comme gabarits signalés, sans chiffres fictifs présentés comme réels.
+- La recherche du haut filtre les roadmaps chargées par cette page; elle n'effectue pas de recherche globale côté serveur.
+
+### 2026-10-20 — Redirection et protection de session
+
+- Après login et validation OTP, l'utilisateur arrive au tableau de bord (ou reprend la route protégée demandée avant le login).
+- Une session déjà restaurée redirige les routes publiques d'entrée vers `/dashboard`; le tableau de bord renvoie une session déconnectée vers `/login`.

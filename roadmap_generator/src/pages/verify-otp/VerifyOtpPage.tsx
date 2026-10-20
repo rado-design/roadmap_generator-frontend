@@ -27,10 +27,10 @@ export function VerifyOtpPage() {
   const [isSuccess, setIsSuccess] = useState(false);
 
   const handleVerifySuccess = (tokenData: { access_token: string }) => {
-    setAccessToken(tokenData.access_token);
     setIsSuccess(true);
     setTimeout(() => {
-      navigate("/");
+      setAccessToken(tokenData.access_token);
+      navigate("/dashboard", { replace: true });
     }, 2000);
   };
 

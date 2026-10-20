@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import {
   AuthLayout,
   AuthBrandHeader,
@@ -13,11 +13,17 @@ import styles from "./LoginPage.module.scss";
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const setAccessToken = useAuthStore((state) => state.setAccessToken);
 
   const handleSuccess = (tokens: LoginResponse) => {
     setAccessToken(tokens.access_token);
-    navigate("/");
+    const from = (location.state as { from?: { pathname?: string; search?: string; hash?: string } } | null)
+      ?.from;
+    const destination = from?.pathname
+      ? `${from.pathname}${from.search ?? ""}${from.hash ?? ""}`
+      : "/dashboard";
+    navigate(destination, { replace: true });
   };
 
   return (
