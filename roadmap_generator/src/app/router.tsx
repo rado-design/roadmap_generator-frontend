@@ -7,6 +7,7 @@ import { VerifyOtpPage } from "../pages/verify-otp";
 import { NotFoundPage } from "../pages/not-found";
 import { DashboardPage } from "../pages/dashboard";
 import { RoadmapsPage } from "../pages/roadmaps";
+import { RoadmapDetailPage } from "../pages/roadmap-detail";
 import { PublicOnlyRoute, RequireAuthRoute } from "./RouteGuards";
 
 export const router = createBrowserRouter([
@@ -23,6 +24,14 @@ export const router = createBrowserRouter([
     element: (
       <RequireAuthRoute>
         <RoadmapsPage />
+      </RequireAuthRoute>
+    ),
+  },
+  {
+    path: "/roadmaps/:roadmapId",
+    element: (
+      <RequireAuthRoute>
+        <RoadmapDetailPage />
       </RequireAuthRoute>
     ),
   },

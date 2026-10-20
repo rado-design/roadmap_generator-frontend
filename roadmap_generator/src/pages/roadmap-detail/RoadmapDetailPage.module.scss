@@ -1,0 +1,250 @@
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  color: var(--color-primary);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+  &:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+  :global(.material-symbols-outlined) { font-size: var(--icon-size-sm); }
+}
+
+.summary,
+.stepCard,
+.asideCard,
+.statePanel {
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-2xl);
+  background: var(--color-surface-container-lowest);
+  padding: 24px;
+}
+
+.summary { margin-bottom: 24px; }
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-on-surface-variant);
+  font-size: 14px;
+  line-height: 20px;
+
+  a { color: inherit; text-decoration: none; }
+  a:hover { color: var(--color-primary); text-decoration: underline; }
+  > span:last-child { overflow: hidden; color: var(--color-primary); text-overflow: ellipsis; white-space: nowrap; }
+  :global(.material-symbols-outlined) { font-size: var(--icon-size-sm); }
+}
+
+.summaryHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 8px;
+}
+
+.summaryCopy { max-width: 720px; min-width: 0; }
+.summaryCopy h1 { font-size: 32px; font-weight: 600; line-height: 40px; letter-spacing: -0.01em; }
+.summaryCopy p { margin-top: 4px; color: var(--color-on-surface-variant); }
+
+.summaryProgress {
+  display: flex;
+  min-width: 96px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+
+  strong { color: var(--color-primary); font-size: 20px; font-weight: 500; line-height: 28px; }
+}
+
+.roadmapStatus,
+.stepStatus {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.ready { background: var(--color-secondary-container); color: var(--color-on-secondary-container); }
+.generating { background: var(--color-primary-fixed); color: var(--color-on-primary-container); }
+.failed { background: var(--color-error-container); color: var(--color-on-error-container); }
+
+.progressTrack {
+  overflow: hidden;
+  height: 8px;
+  margin: 16px 0 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-container-highest);
+
+  span { display: block; height: 100%; border-radius: inherit; background: var(--color-primary); }
+}
+
+.summaryMeta {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--color-on-surface-variant);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+  align-items: start;
+  gap: 24px;
+}
+
+.stepsColumn { min-width: 0; }
+.sectionTitle { display: flex; align-items: center; gap: 8px; margin: 16px 0; font-size: 16px; font-weight: 600; line-height: 24px; }
+.sectionTitle :global(.material-symbols-outlined) { color: var(--color-secondary); font-size: var(--icon-size-md); }
+.upcomingSection { margin-top: 32px; }
+.stepList { display: grid; gap: 16px; }
+
+.stepCard {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 24px;
+}
+
+.activeStep { border: 2px solid var(--color-primary-container); padding: 23px; }
+.checkpoint { display: grid; width: 28px; height: 28px; flex: none; place-items: center; border: 2px solid var(--color-outline-variant); border-radius: var(--radius-full); color: var(--color-on-primary); }
+.checkpoint :global(.material-symbols-outlined) { font-size: 16px; }
+.completedCheckpoint { border-color: var(--color-primary); background: var(--color-primary); }
+.activeCheckpoint { border-color: var(--color-primary-container); }
+.stepBody { min-width: 0; flex: 1; }
+
+.stepHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.stepTitle { min-width: 0; font-size: 16px; font-weight: 500; line-height: 24px; overflow-wrap: anywhere; }
+.completedTitle { color: var(--color-on-surface-variant); text-decoration: line-through; }
+.stepDescription { margin-top: 4px; color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; }
+.stepStatus { flex: none; height: 24px; border-radius: var(--radius-default); background: var(--color-surface-variant); color: var(--color-on-surface-variant); text-transform: uppercase; }
+.activeStatus { background: var(--color-primary-fixed); color: var(--color-on-primary-container); }
+
+.objectives {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+
+  li { padding: 4px 12px; border-radius: var(--radius-full); background: var(--color-surface-container-low); color: var(--color-on-surface-variant); font-size: 12px; line-height: 16px; }
+}
+
+.aside { display: grid; gap: 24px; }
+.asideCard h2,
+.momentumTemplate h2 { margin-bottom: 16px; font-size: 16px; font-weight: 600; line-height: 24px; }
+
+.momentumTemplate {
+  padding: 24px;
+  border-radius: var(--radius-2xl);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+
+  h2 { margin: 8px 0; }
+  p { margin-bottom: 16px; font-size: 14px; line-height: 20px; }
+  :global(button) { width: 100%; border: 0; background: var(--color-surface-container-lowest); color: var(--color-primary); box-shadow: none; }
+  :global(button:disabled) { opacity: 0.9; }
+}
+
+.templateLabel { font-size: 12px; line-height: 16px; opacity: 0.9; }
+.resourceList { display: grid; gap: 12px; }
+
+.resourceItem {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-low);
+  color: inherit;
+  text-decoration: none;
+
+  &:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+  &:hover { background: var(--color-surface-container); }
+}
+
+.resourceIcon { display: inline-flex; flex: none; color: var(--color-on-surface-variant); }
+.resourceIcon :global(.material-symbols-outlined) { font-size: var(--icon-size-md); }
+.resourceCopy { display: grid; min-width: 0; gap: 2px; }
+.resourceCopy strong { overflow: hidden; font-size: 14px; font-weight: 500; line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
+.resourceCopy small { overflow: hidden; color: var(--color-on-surface-variant); font-size: 12px; line-height: 16px; text-overflow: ellipsis; white-space: nowrap; }
+.externalIcon { flex: none; color: var(--color-on-surface-variant); font-size: var(--icon-size-sm); }
+.asideNote { color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; }
+.asideCard > :global(button) { width: 100%; margin-top: 16px; }
+
+.completionMessage,
+.noSteps,
+.statePanel {
+  color: var(--color-on-surface-variant);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.completionMessage { padding: 16px 0; }
+.noSteps { display: flex; align-items: center; gap: 12px; padding: 24px; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-2xl); background: var(--color-surface-container-lowest); }
+.noSteps :global(.material-symbols-outlined) { flex: none; color: var(--color-primary); }
+
+.statePanel { display: flex; min-height: 260px; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; }
+.statePanel h1 { color: var(--color-on-surface); font-size: 24px; font-weight: 600; line-height: 32px; }
+.statePanel p { max-width: 60ch; }
+.statePanel > :global(.material-symbols-outlined) { color: var(--color-primary); font-size: var(--icon-size-md); }
+.statePanel a { font-weight: 500; }
+
+.skeletonPage { display: grid; gap: 24px; }
+.skeletonSummary,
+.skeletonSteps span,
+.skeletonAside span { min-height: 180px; border-radius: var(--radius-2xl); background: var(--color-surface-container-low); animation: pulse 1.4s ease-in-out infinite alternate; }
+.skeletonColumns { display: grid; grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr); align-items: start; gap: 24px; }
+.skeletonSteps,
+.skeletonAside { display: grid; gap: 16px; }
+.skeletonSteps span { min-height: 140px; }
+.skeletonAside span { min-height: 160px; }
+
+@keyframes pulse { to { opacity: 0.55; } }
+
+@media (max-width: 900px) {
+  .columns,
+  .skeletonColumns { grid-template-columns: 1fr; }
+  .aside { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); align-items: start; }
+}
+
+@media (max-width: 600px) {
+  .summary,
+  .stepCard,
+  .asideCard,
+  .momentumTemplate { padding: 20px; }
+  .summaryHeading { flex-direction: column; gap: 16px; }
+  .summaryCopy h1 { font-size: 24px; line-height: 32px; }
+  .summaryProgress { flex-direction: row; align-items: center; justify-content: space-between; width: 100%; }
+  .summaryMeta { flex-direction: column; gap: 4px; }
+  .stepHeading { flex-direction: column; gap: 8px; }
+  .aside { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeletonSummary,
+  .skeletonSteps span,
+  .skeletonAside span { animation: none; }
+}

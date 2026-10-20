@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link, useLocation } from "react-router";
 import { AppLayout, PageHeader } from "../../app/layouts";
 import { ROADMAPS_PAGE_SIZE, useRoadmaps, type RoadmapStatus, type RoadmapSummary } from "../../features/roadmaps";
 import { Button } from "../../shared/components/Button";
@@ -29,7 +30,7 @@ function formatCreationDate(value: string) {
   }).format(date)}`;
 }
 
-function RoadmapCard({ roadmap }: { roadmap: RoadmapSummary }) {
+function RoadmapCard({ roadmap, from }: { roadmap: RoadmapSummary; from: { pathname: string; search: string; hash: string } }) {
   const progress = getProgress(roadmap);
   const statusClass = roadmap.status === "failed"
     ? styles.failed
@@ -38,7 +39,7 @@ function RoadmapCard({ roadmap }: { roadmap: RoadmapSummary }) {
       : styles.ready;
 
   return (
-    <article className={styles.card}>
+    <Link className={styles.card} to={`/roadmaps/${roadmap.id}`} state={{ from }}>
       <span className={`${styles.status} ${statusClass}`}>{statusLabels[roadmap.status]}</span>
       <h2 className={styles.cardTitle}>{roadmap.title}</h2>
       <p className={styles.goal}>{roadmap.goal}</p>
@@ -60,7 +61,7 @@ function RoadmapCard({ roadmap }: { roadmap: RoadmapSummary }) {
         <span className={styles.dateIcon} aria-hidden="true"><Icon name="calendar_today" /></span>
         <span>{formatCreationDate(roadmap.created_at)}</span>
       </div>
-    </article>
+    </Link>
   );
 }
 
@@ -69,6 +70,7 @@ function RoadmapSkeleton() {
 }
 
 export function RoadmapsPage() {
+  const location = useLocation();
   const [offset, setOffset] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | RoadmapStatus>("all");
@@ -188,7 +190,13 @@ export function RoadmapsPage() {
       ) : (
         <>
           <div className={styles.grid}>
-            {filteredRoadmaps.map((roadmap) => <RoadmapCard key={roadmap.id} roadmap={roadmap} />)}
+            {filteredRoadmaps.map((roadmap) => (
+              <RoadmapCard
+                key={roadmap.id}
+                roadmap={roadmap}
+                from={{ pathname: location.pathname, search: location.search, hash: location.hash }}
+              />
+            ))}
             <div className={styles.createCard} aria-label="Création de roadmap à venir">
               <span className={styles.createIcon}><Icon name="add" /></span>
               <strong>Nouvelle roadmap</strong>

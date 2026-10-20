@@ -100,3 +100,13 @@ Ajouter chaque nouvelle action de reprise tout en bas, avec sa date. La dernièr
 ### 2026-10-20 — Après ajustement des boutons et filtres des roadmaps
 
 - Implémenter la page de détail d'une roadmap depuis sa maquette avec `GET /api/v1/roadmaps/{roadmap_id}`; vérifier le contrat des étapes et l'état de validation backend de la progression avant ses interactions.
+
+### 2026-10-20 — Après intégration du détail d'une roadmap
+
+- Implémenter la page « Générer une roadmap » à partir de sa maquette; relire le contrat `RoadmapGenerateRequest` et créer/mettre à jour son fichier backend dédié avant d'intégrer le formulaire et la génération.
+- Après confirmation de la migration et des tests backend de progression, revenir activer les mises à jour de statut d'étape depuis le détail.
+
+### 2026-10-20 — Après la navigation vers le détail depuis les roadmaps récentes
+
+- Implémenter la page « Générer une roadmap » à partir de sa maquette; relire le contrat `RoadmapGenerateRequest` et créer/mettre à jour son fichier backend dédié avant d'intégrer le formulaire et la génération.
+- Après confirmation de la migration et des tests backend de progression, revenir activer les mises à jour de statut d'étape depuis le détail.

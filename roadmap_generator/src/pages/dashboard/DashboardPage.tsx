@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router";
 import { AppLayout, PageHeader } from "../../app/layouts";
 import { useDashboardRoadmaps, type DashboardRoadmap } from "../../features/dashboard";
 import { Button } from "../../shared/components/Button";
@@ -20,7 +21,7 @@ function RoadmapCard({ roadmap }: { roadmap: DashboardRoadmap }) {
   const progress = getProgress(roadmap);
 
   return (
-    <article className={styles.roadmapCard}>
+    <Link className={styles.roadmapCard} to={`/roadmaps/${roadmap.id}`} state={{ from: { pathname: "/dashboard" } }}>
       <div className={styles.roadmapTopline}>
         <span className={styles.roadmapIcon} aria-hidden="true">
           <Icon name="route" />
@@ -47,7 +48,7 @@ function RoadmapCard({ roadmap }: { roadmap: DashboardRoadmap }) {
       >
         <span style={{ width: `${progress}%` }} />
       </div>
-    </article>
+    </Link>
   );
 }
 

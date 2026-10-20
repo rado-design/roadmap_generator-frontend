@@ -89,3 +89,15 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 
 - Les actions « Exporter » et « Créer une roadmap » restent côte à côte, y compris dans la mise en page mobile.
 - Le padding des boutons d'action et la hauteur/typographie des champs de recherche et sélection ont été réduits.
+
+### 2026-10-20 — Détail d'une roadmap en lecture
+
+- La route protégée `/roadmaps/:roadmapId` reprend le résumé et la disposition deux colonnes de la maquette, et consomme `GET /api/v1/roadmaps/{roadmap_id}`.
+- Les étapes, leur progression persistée, leurs objectifs et ressources viennent de la réponse backend; les roadmaps sont accessibles depuis les cartes de la liste.
+- Les indicateurs Momentum/badges et les participants restent identifiés comme gabarits. Les contrôles de progression restent en lecture seule tant que la validation backend de la phase correspondante n'est pas confirmée.
+- Les besoins backend de cette page et de la liste ont des fichiers dédiés : `ROADMAP_DETAIL_BACKEND_REQUIREMENTS.md` et `ROADMAPS_LIST_BACKEND_REQUIREMENTS.md`.
+
+### 2026-10-20 — Navigation vers le détail depuis le tableau de bord et retour à l'origine
+
+- Les cartes des roadmaps récentes du tableau de bord ouvrent leur page détail.
+- La liste et le tableau de bord transmettent leur route d'origine à la page détail; le lien de retour ramène à la bonne page, avec `/roadmaps` comme destination de secours pour une ouverture directe.
