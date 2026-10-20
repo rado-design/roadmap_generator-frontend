@@ -72,3 +72,20 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 ### 2026-10-20 — Alignement de la largeur du contenu sur la maquette
 
 - Le contenu applicatif utilise maintenant toute la largeur disponible après le padding de 40 px du layout desktop, conformément au `.main` de la maquette du tableau de bord; le plafond de largeur de 1280 px qui ajoutait des marges n'est plus appliqué.
+
+### 2026-10-20 — Liste paginée des roadmaps
+
+- La route protégée `/roadmaps` reprend la maquette « Toutes les roadmaps » et charge les résumés depuis `GET /api/v1/roadmaps`, avec pagination backend de 20 éléments.
+- La progression affichée est calculée depuis `completed_steps / total_steps`; les statuts reprennent les valeurs réellement fournies (`generating`, `ready`, `failed`).
+- Recherche, filtre de statut et tri fonctionnent sur la page chargée. Le filtre de catégorie et les actions d'export/création restent désactivés tant que leur intégration n'est pas disponible; l'absence de catégorie et de recherche globale a été ajoutée à `../roadmap_generator-backend/DASHBOARD_BACKEND_REQUIREMENTS.md`.
+- Les états de chargement, erreur avec reprise, liste vide et filtres sans résultat sont implémentés.
+
+### 2026-10-20 — Défilement limité au contenu des pages
+
+- Le shell applicatif occupe la hauteur de la fenêtre; le contenu principal porte le défilement vertical, tandis que l'en-tête, la sidebar et le footer restent dans leur emplacement fixe.
+- La sidebar garde sa hauteur dans le shell et ne grandit plus avec le contenu des pages; le panneau mobile conserve son comportement hors-canvas.
+
+### 2026-10-20 — Ajustement des actions et filtres de la liste des roadmaps
+
+- Les actions « Exporter » et « Créer une roadmap » restent côte à côte, y compris dans la mise en page mobile.
+- Le padding des boutons d'action et la hauteur/typographie des champs de recherche et sélection ont été réduits.

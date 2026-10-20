@@ -88,3 +88,15 @@ Ajouter chaque nouvelle action de reprise tout en bas, avec sa date. La dernièr
 ### 2026-10-20 — Après alignement de la largeur du contenu
 
 - Implémenter la page « Toutes les roadmaps » en conservant les espacements du shell directement issus de sa maquette; vérifier les contrats backend avant les interactions.
+
+### 2026-10-20 — Après intégration de la liste des roadmaps
+
+- Implémenter la page de détail d'une roadmap depuis sa maquette avec `GET /api/v1/roadmaps/{roadmap_id}`; relire le contrat des étapes et l'état de validation backend de la progression avant d'ajouter ses interactions.
+
+### 2026-10-20 — Après correction du défilement du shell
+
+- Implémenter la page de détail d'une roadmap depuis sa maquette avec `GET /api/v1/roadmaps/{roadmap_id}`; vérifier le contrat des étapes et l'état de validation backend de la progression avant ses interactions.
+
+### 2026-10-20 — Après ajustement des boutons et filtres des roadmaps
+
+- Implémenter la page de détail d'une roadmap depuis sa maquette avec `GET /api/v1/roadmaps/{roadmap_id}`; vérifier le contrat des étapes et l'état de validation backend de la progression avant ses interactions.

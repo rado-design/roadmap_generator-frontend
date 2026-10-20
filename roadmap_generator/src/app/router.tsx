@@ -6,6 +6,7 @@ import { ForgotPasswordPage } from "../pages/forgot-password";
 import { VerifyOtpPage } from "../pages/verify-otp";
 import { NotFoundPage } from "../pages/not-found";
 import { DashboardPage } from "../pages/dashboard";
+import { RoadmapsPage } from "../pages/roadmaps";
 import { PublicOnlyRoute, RequireAuthRoute } from "./RouteGuards";
 
 export const router = createBrowserRouter([
@@ -14,6 +15,14 @@ export const router = createBrowserRouter([
     element: (
       <RequireAuthRoute>
         <DashboardPage />
+      </RequireAuthRoute>
+    ),
+  },
+  {
+    path: "/roadmaps",
+    element: (
+      <RequireAuthRoute>
+        <RoadmapsPage />
       </RequireAuthRoute>
     ),
   },
