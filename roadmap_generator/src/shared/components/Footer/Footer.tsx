@@ -2,11 +2,13 @@ import styles from "./Footer.module.scss";
 
 
 export function Footer() {
+  const year = new Date().getFullYear();
+
   return (
     <footer className={styles.footer}>
       <div className={styles.innerContainer}>
         <div className={styles.copyright}>
-          <span>© 2025 RoadmapAI par Skyline Systems. Tous droits réservés.</span>
+          <span>© {year} RoadmapAI. Tous droits réservés.</span>
         </div>
         <div className={styles.navLinks}>
           <a

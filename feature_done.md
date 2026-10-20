@@ -2,8 +2,6 @@
 
 Ce fichier décrit ce qui est réellement implémenté côté frontend et utilisable avec le backend. À relire au début de chaque session et à mettre à jour à la fin d'une fonctionnalité. Vérifier les contrats dans `../roadmap_generator-backend/features_done.md` avant toute intégration.
 
-Dernière mise à jour : 2026-10-15.
-
 ## Conventions d'intégration
 
 - Préfixe API : `/api/v1` (configuré via `VITE_API_BASE_URL`).
@@ -27,4 +25,12 @@ Dernière mise à jour : 2026-10-15.
 
 ## Règle de mise à jour
 
-Une fonctionnalité ne passe ici à « terminée » qu'après vérification de son parcours frontend et de son contrat backend. Mettre à jour la date et `next_steps.md` dans le même changement. Ne pas ajouter ici les domaines qui n'ont pas encore été implémentés côté frontend.
+Une fonctionnalité ne passe ici à « terminée » qu'après vérification de son parcours frontend et de son contrat backend. Ajouter chaque nouvelle réalisation tout en bas de l'historique avec sa date; ne pas remplacer les entrées précédentes par une date de mise à jour globale. Mettre aussi `next_steps.md` à jour dans le même changement. Ne pas ajouter ici les domaines qui n'ont pas encore été implémentés côté frontend.
+
+## Historique des réalisations
+
+### 2026-10-20 — Base de layouts partagés
+
+- `AppLayout` fournit le cadre des pages applicatives : en-tête de marque avec emplacement d'actions, zone principale centrée et responsive, et pied de page partagé.
+- `PageHeader` fournit un titre, une description et un emplacement d'actions adaptatif.
+- Ces composants sont disponibles dans `src/app/layouts/`. Leur raccordement aux pages métier se fera lors de l'implémentation de ces pages.
