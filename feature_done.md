@@ -111,3 +111,9 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 ### 2026-10-20 — Accès à la création depuis la liste des roadmaps
 
 - La tuile « Nouvelle roadmap » de la liste ouvre maintenant le formulaire de génération; l'état vide de la liste propose aussi cette action.
+
+### 2026-10-20 — Mise à jour de la progression des étapes
+
+- Le détail permet de modifier une étape entre « À faire », « En cours » et « Terminée » via `PUT /api/v1/roadmaps/{roadmap_id}/steps/{step_id}/progress`.
+- Le statut et les agrégats sont mis à jour optimistement; une erreur restaure les données précédentes. Les requêtes liste, dashboard et détail sont invalidées après la mutation.
+- L'endpoint existe déjà, sans besoin backend additionnel. La migration `a9d3f5b27c64` et la suite backend complète restent à valider; voir `../roadmap_generator-backend/ROADMAP_DETAIL_BACKEND_REQUIREMENTS.md`.

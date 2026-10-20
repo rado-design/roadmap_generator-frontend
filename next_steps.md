@@ -120,3 +120,8 @@ Ajouter chaque nouvelle action de reprise tout en bas, avec sa date. La dernièr
 
 - Intégrer la génération progressive avec `POST /api/v1/roadmaps/generate/stream`; le contrat SSE existe déjà et la fiche backend est dans `../roadmap_generator-backend/ROADMAP_GENERATE_BACKEND_REQUIREMENTS.md`.
 - Ensuite, poursuivre les pages restantes à partir de leurs maquettes et relever seulement leurs besoins backend réels dans une fiche dédiée.
+
+### 2026-10-20 — Après intégration de la mise à jour de progression
+
+- Valider côté backend que la migration `a9d3f5b27c64` est appliquée aux deux bases, puis exécuter entièrement `doppler run -- pytest tests/ --reuse-db -v`; la vérification reste en attente car les identifiants et Doppler ne sont pas disponibles dans l'environnement actuel.
+- Après validation, poursuivre la génération progressive avec `POST /api/v1/roadmaps/generate/stream`, puis les pages restantes à partir de leurs maquettes.

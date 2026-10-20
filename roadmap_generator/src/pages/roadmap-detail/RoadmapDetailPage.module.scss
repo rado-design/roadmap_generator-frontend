@@ -121,7 +121,23 @@
 }
 
 .activeStep { border: 2px solid var(--color-primary-container); padding: 23px; }
-.checkpoint { display: grid; width: 28px; height: 28px; flex: none; place-items: center; border: 2px solid var(--color-outline-variant); border-radius: var(--radius-full); color: var(--color-on-primary); }
+.checkpoint {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  place-items: center;
+  padding: 0;
+  border: 2px solid var(--color-outline-variant);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-on-primary);
+  cursor: pointer;
+
+  &:hover:not(:disabled) { border-color: var(--color-primary); }
+  &:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+  &:disabled { cursor: wait; opacity: 0.7; }
+}
 .checkpoint :global(.material-symbols-outlined) { font-size: 16px; }
 .completedCheckpoint { border-color: var(--color-primary); background: var(--color-primary); }
 .activeCheckpoint { border-color: var(--color-primary-container); }
@@ -137,8 +153,45 @@
 .stepTitle { min-width: 0; font-size: 16px; font-weight: 500; line-height: 24px; overflow-wrap: anywhere; }
 .completedTitle { color: var(--color-on-surface-variant); text-decoration: line-through; }
 .stepDescription { margin-top: 4px; color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; }
-.stepStatus { flex: none; height: 24px; border-radius: var(--radius-default); background: var(--color-surface-variant); color: var(--color-on-surface-variant); text-transform: uppercase; }
-.activeStatus { background: var(--color-primary-fixed); color: var(--color-on-primary-container); }
+.stepStatus {
+  flex: none;
+  height: 28px;
+  padding: 0 24px 0 10px;
+  appearance: none;
+  border: 0;
+  border-radius: var(--radius-default);
+  background-color: var(--color-surface-variant);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%233e4850' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-position: right 6px center;
+  background-repeat: no-repeat;
+  color: var(--color-on-surface-variant);
+  font: inherit;
+  font-size: 12px;
+  line-height: 16px;
+  text-transform: uppercase;
+  cursor: pointer;
+
+  &:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+  &:disabled { cursor: wait; opacity: 0.7; }
+}
+.activeStatus { background-color: var(--color-primary-fixed); color: var(--color-on-primary-container); }
+.doneStatus { background-color: var(--color-secondary-container); color: var(--color-on-secondary-container); }
+
+.progressError {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: -8px 0 24px;
+  padding: 12px 16px;
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-lg);
+  background: var(--color-error-container);
+  color: var(--color-on-error-container);
+  font-size: 14px;
+  line-height: 20px;
+
+  :global(.material-symbols-outlined) { flex: none; }
+}
 
 .objectives {
   display: flex;

@@ -3,6 +3,7 @@ import { Link, useLocation, useParams } from "react-router";
 import { AppLayout } from "../../app/layouts";
 import {
   useRoadmapDetail,
+  useSetStepProgress,
   type RoadmapDetail,
   type RoadmapResource,
   type RoadmapStep,
@@ -43,24 +44,46 @@ function ResourceIcon({ type }: { type: string }) {
   return <Icon name={icon} />;
 }
 
-function StepCard({ step }: { step: RoadmapStep }) {
+function StepCard({
+  step,
+  isUpdating,
+  onProgressChange,
+}: {
+  step: RoadmapStep;
+  isUpdating: boolean;
+  onProgressChange: (stepId: number, status: RoadmapStep["progress"]["status"]) => void;
+}) {
   const isDone = step.progress.status === "done";
   const isActive = step.progress.status === "in_progress";
 
   return (
     <article className={`${styles.stepCard} ${isActive ? styles.activeStep : ""}`}>
-      <span
+      <button
         className={`${styles.checkpoint} ${isDone ? styles.completedCheckpoint : ""} ${isActive ? styles.activeCheckpoint : ""}`}
-        aria-hidden="true"
+        type="button"
+        role="checkbox"
+        aria-checked={isDone}
+        aria-label={isDone ? `Marquer « ${step.title} » comme à faire` : `Marquer « ${step.title} » comme terminée`}
+        disabled={isUpdating}
+        aria-busy={isUpdating}
+        onClick={() => onProgressChange(step.id, isDone ? "todo" : "done")}
       >
         {isDone ? <Icon name="check" /> : null}
-      </span>
+      </button>
       <div className={styles.stepBody}>
         <div className={styles.stepHeading}>
           <h3 className={`${styles.stepTitle} ${isDone ? styles.completedTitle : ""}`}>{step.title}</h3>
-          <span className={`${styles.stepStatus} ${isActive ? styles.activeStatus : ""}`}>
-            {stepStatusLabels[step.progress.status]}
-          </span>
+          <select
+            className={`${styles.stepStatus} ${isActive ? styles.activeStatus : ""} ${isDone ? styles.doneStatus : ""}`}
+            aria-label={`Statut de l'étape ${step.title}`}
+            value={step.progress.status}
+            disabled={isUpdating}
+            onChange={(event) => onProgressChange(step.id, event.target.value as RoadmapStep["progress"]["status"])}
+          >
+            {Object.entries(stepStatusLabels).map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
         </div>
         <p className={styles.stepDescription}>{step.description}</p>
         {step.learning_objectives.length > 0 ? (
@@ -143,6 +166,7 @@ export function RoadmapDetailPage() {
   const parsedId = Number(routeId);
   const roadmapId = Number.isSafeInteger(parsedId) && parsedId > 0 ? parsedId : null;
   const { data, isLoading, isError, error, refetch, isFetching } = useRoadmapDetail(roadmapId);
+  const progressMutation = useSetStepProgress(roadmapId);
   const orderedSteps = useMemo(
     () => [...(data?.steps ?? [])].sort((left, right) => left.order - right.order),
     [data?.steps],
@@ -171,6 +195,13 @@ export function RoadmapDetailPage() {
     : typeof problemDetail === "string"
       ? problemDetail
       : "Impossible de charger cette roadmap. Vérifiez votre connexion puis réessayez.";
+  const progressError = typeof progressMutation.error === "object" && progressMutation.error !== null && "message" in progressMutation.error
+    ? String(progressMutation.error.message)
+    : "La progression n'a pas pu être enregistrée. Votre état précédent a été restauré; réessayez.";
+
+  const updateProgress = (stepId: number, status: RoadmapStep["progress"]["status"]) => {
+    progressMutation.mutate({ roadmapId: roadmapId!, stepId, status });
+  };
 
   return (
     <AppLayout>
@@ -236,6 +267,13 @@ export function RoadmapDetailPage() {
             </div>
           </section>
 
+          {progressMutation.isError ? (
+            <div className={styles.progressError} role="alert">
+              <Icon name="error" />
+              <span>{progressError}</span>
+            </div>
+          ) : null}
+
           <div className={styles.columns}>
             <div className={styles.stepsColumn}>
               {completedSteps.length > 0 ? (
@@ -244,7 +282,9 @@ export function RoadmapDetailPage() {
                     <Icon name="check_circle" />Étapes validées ({completedSteps.length})
                   </h2>
                   <div className={styles.stepList}>
-                    {completedSteps.map((step) => <StepCard key={step.id} step={step} />)}
+                    {completedSteps.map((step) => (
+                      <StepCard key={step.id} step={step} isUpdating={progressMutation.isPending} onProgressChange={updateProgress} />
+                    ))}
                   </div>
                 </section>
               ) : null}
@@ -253,7 +293,9 @@ export function RoadmapDetailPage() {
                 <h2 className={styles.sectionTitle} id="upcoming-steps-title">Prochaines étapes</h2>
                 {remainingSteps.length > 0 ? (
                   <div className={styles.stepList}>
-                    {remainingSteps.map((step) => <StepCard key={step.id} step={step} />)}
+                    {remainingSteps.map((step) => (
+                      <StepCard key={step.id} step={step} isUpdating={progressMutation.isPending} onProgressChange={updateProgress} />
+                    ))}
                   </div>
                 ) : completedSteps.length > 0 ? (
                   <p className={styles.completionMessage}>Toutes les étapes de cette roadmap sont terminées.</p>
