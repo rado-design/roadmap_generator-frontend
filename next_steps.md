@@ -76,3 +76,15 @@ Ajouter chaque nouvelle action de reprise tout en bas, avec sa date. La dernièr
 ### 2026-10-20 — Après correction des redirections de session
 
 - Implémenter la page « Toutes les roadmaps » à partir de la maquette, après nouvelle vérification des contrats de pagination et de progression côté backend.
+
+### 2026-10-20 — Après ajustement de la barre supérieure et de la sidebar
+
+- Implémenter la page « Toutes les roadmaps » avec le shell commun corrigé selon les maquettes; vérifier les contrats backend avant de brancher ses filtres et interactions.
+
+### 2026-10-20 — Après ajustement de la recherche et du titre d'accueil
+
+- Implémenter la page « Toutes les roadmaps » avec le shell commun; vérifier les contrats backend avant de brancher ses filtres et interactions.
+
+### 2026-10-20 — Après alignement de la largeur du contenu
+
+- Implémenter la page « Toutes les roadmaps » en conservant les espacements du shell directement issus de sa maquette; vérifier les contrats backend avant les interactions.

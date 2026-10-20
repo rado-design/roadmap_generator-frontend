@@ -1,4 +1,8 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { useNavigate } from "react-router";
+import { useAuthStore } from "../../shared/lib/authStore";
+import { apiClient } from "../../shared/lib/axios";
+import { queryClient } from "../../shared/lib/queryClient";
 import { Footer } from "../../shared/components/Footer";
 import { AppTopBar } from "../../shared/components/AppTopBar";
 import { Sidebar } from "../../shared/components/Sidebar";
@@ -19,7 +23,26 @@ export function AppLayout({
   onSearch,
 }: AppLayoutProps) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState<string>();
+  const clearAccessToken = useAuthStore((state) => state.clearAccessToken);
+  const navigate = useNavigate();
   const closeSidebar = () => setMobileSidebarOpen(false);
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    setLogoutError(undefined);
+    try {
+      await apiClient.post("api/v1/auth/logout");
+      queryClient.clear();
+      clearAccessToken();
+      navigate("/login", { replace: true });
+    } catch {
+      setLogoutError("Déconnexion impossible. Vérifiez votre connexion puis réessayez.");
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   useEffect(() => {
     if (!mobileSidebarOpen) return;
@@ -34,32 +57,40 @@ export function AppLayout({
 
   return (
     <div className={styles.layout}>
-      <Sidebar mobileOpen={mobileSidebarOpen} onNavigate={closeSidebar} />
-      {mobileSidebarOpen ? (
-        <button
-          className={styles.backdrop}
-          type="button"
-          aria-label="Fermer la navigation"
-          onClick={closeSidebar}
+      <AppTopBar
+        actions={headerActions}
+        onMenuClick={() => setMobileSidebarOpen((open) => !open)}
+        onSearch={onSearch}
+        sidebarOpen={mobileSidebarOpen}
+      />
+
+      <div className={styles.shell}>
+        <Sidebar
+          mobileOpen={mobileSidebarOpen}
+          isLoggingOut={isLoggingOut}
+          logoutError={logoutError}
+          onLogout={() => void handleLogout()}
+          onNavigate={closeSidebar}
         />
-      ) : null}
+        {mobileSidebarOpen ? (
+          <button
+            className={styles.backdrop}
+            type="button"
+            aria-label="Fermer la navigation"
+            onClick={closeSidebar}
+          />
+        ) : null}
 
-      <div className={styles.workspace}>
-        <AppTopBar
-          actions={headerActions}
-          onMenuClick={() => setMobileSidebarOpen((open) => !open)}
-          onSearch={onSearch}
-          sidebarOpen={mobileSidebarOpen}
-        />
-
-        <main className={styles.main}>
-          <div className={`${styles.content} ${contentClassName ?? ""}`.trim()}>
-            {children}
-          </div>
-        </main>
-
-        <Footer />
+        <div className={styles.workspace}>
+          <main className={styles.main}>
+            <div className={`${styles.content} ${contentClassName ?? ""}`.trim()}>
+              {children}
+            </div>
+          </main>
+        </div>
       </div>
+
+      <Footer />
     </div>
   );
 }

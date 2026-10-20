@@ -57,3 +57,18 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 
 - La restauration de session affiche un état d'attente de marque au lieu d'une page vide; l'animation respecte la préférence de réduction de mouvement.
 - Les emplacements des graphiques sans données backend affichent désormais un état « Visualisation à connecter » sans barres décoratives pouvant être prises pour des données.
+
+### 2026-10-20 — Ajustement du shell partagé selon les maquettes
+
+- La barre supérieure occupe maintenant toute la largeur au-dessus du contenu; elle contient la marque, la recherche et les actions d'interface.
+- La sidebar se place sous cette barre, à gauche du contenu, avec les entrées de navigation et les actions en bas comme sur les maquettes des pages principales.
+- Les mentions d'offre, d'identité utilisateur et de création qui n'étaient pas appuyées par les données ou le dessin de référence ont été retirées. La déconnexion utilise l'endpoint backend existant.
+
+### 2026-10-20 — Ajustement du centrage de la recherche et du titre du tableau de bord
+
+- Le champ de recherche est centré dans la barre supérieure sur écran large, indépendamment de la largeur de la marque et des actions.
+- L'emoji a été retiré du titre d'accueil du tableau de bord.
+
+### 2026-10-20 — Alignement de la largeur du contenu sur la maquette
+
+- Le contenu applicatif utilise maintenant toute la largeur disponible après le padding de 40 px du layout desktop, conformément au `.main` de la maquette du tableau de bord; le plafond de largeur de 1280 px qui ajoutait des marges n'est plus appliqué.

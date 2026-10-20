@@ -86,7 +86,7 @@ export function DashboardPage() {
   return (
     <AppLayout onSearch={setSearchQuery}>
       <PageHeader
-        title="Bonjour 👋"
+        title="Bonjour"
         description="Retrouvez vos parcours récents et suivez votre progression."
       />
 
