@@ -125,3 +125,8 @@ Ajouter chaque nouvelle action de reprise tout en bas, avec sa date. La dernièr
 
 - Valider côté backend que la migration `a9d3f5b27c64` est appliquée aux deux bases, puis exécuter entièrement `doppler run -- pytest tests/ --reuse-db -v`; la vérification reste en attente car les identifiants et Doppler ne sont pas disponibles dans l'environnement actuel.
 - Après validation, poursuivre la génération progressive avec `POST /api/v1/roadmaps/generate/stream`, puis les pages restantes à partir de leurs maquettes.
+
+### 2026-10-21 — Après l'intégration du dashboard et de la liste des roadmaps
+
+- Reprendre la page Ressources depuis sa maquette, vérifier les contrats disponibles et consigner uniquement les besoins backend qui manquent dans sa fiche dédiée.
+- Clarifier/ajouter côté backend le contrat de tendances mensuelles du dashboard si les variations de la maquette doivent être affichées.

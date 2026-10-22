@@ -117,3 +117,10 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 - Le détail permet de modifier une étape entre « À faire », « En cours » et « Terminée » via `PUT /api/v1/roadmaps/{roadmap_id}/steps/{step_id}/progress`.
 - Le statut et les agrégats sont mis à jour optimistement; une erreur restaure les données précédentes. Les requêtes liste, dashboard et détail sont invalidées après la mutation.
 - L'endpoint existe déjà, sans besoin backend additionnel. La migration `a9d3f5b27c64` et la suite backend complète restent à valider; voir `../roadmap_generator-backend/ROADMAP_DETAIL_BACKEND_REQUIREMENTS.md`.
+
+### 2026-10-21 — Intégration des données dashboard et des filtres de roadmaps
+
+- Le tableau de bord utilise `GET /api/v1/dashboard` pour les compteurs, le taux de complétion, les répartitions par catégorie/statut et les roadmaps récentes; le nom d'affichage vient aussi de l'API.
+- La liste `/roadmaps` transmet la recherche (max. 100 caractères), le statut, la catégorie, le tri et la pagination à `GET /api/v1/roadmaps`; filtres et compteurs couvrent maintenant tous les résultats côté serveur.
+- Les fiches backend des deux pages précisent les contrats consommés. Les tendances mensuelles du dashboard ne sont pas encore exposées par l'API et restent à spécifier dans la fiche dashboard.
+- Vérification: `git diff --check`, le contrôle TypeScript (`tsc -p tsconfig.app.json --ignoreDeprecations 6.0 --noEmit`), le build Vite et le lint ciblé des fichiers modifiés réussissent. `npm run build` complet reste bloqué par l'option `baseUrl` dépréciée de `tsconfig.app.json` avec TypeScript 6; le lint complet signale aussi une erreur préexistante dans `OtpShieldBadge.tsx`.

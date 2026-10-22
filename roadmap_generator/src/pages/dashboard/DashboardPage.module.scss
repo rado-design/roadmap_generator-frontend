@@ -130,6 +130,46 @@
   line-height: 24px;
 }
 
+.distributionList {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.distributionItem { min-width: 0; }
+
+.distributionMeta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--color-on-surface-variant);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.distributionMeta span:last-child { color: var(--color-on-surface); font-weight: 600; }
+
+.distributionTrack {
+  overflow: hidden;
+  height: 6px;
+  margin-top: 5px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-container-highest);
+}
+
+.distributionTrack span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-primary);
+}
+
+.distributionEmpty {
+  margin-top: 18px;
+  color: var(--color-on-surface-variant);
+  font-size: 13px;
+}
+
 .templateBadge {
   border-radius: var(--radius-full);
   background: var(--color-surface-container-low);

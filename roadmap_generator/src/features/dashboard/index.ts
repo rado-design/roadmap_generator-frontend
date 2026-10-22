@@ -1,2 +1,2 @@
 export { useDashboardRoadmaps } from "./hooks/useDashboardRoadmaps";
-export type { DashboardRoadmap } from "./api/getDashboardRoadmaps";
+export type { DashboardDistributionItem, DashboardResponse, DashboardRoadmap } from "./api/getDashboardRoadmaps";
