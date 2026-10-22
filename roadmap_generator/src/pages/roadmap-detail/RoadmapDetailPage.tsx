@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useParams } from "react-router";
 import { AppLayout } from "../../app/layouts";
 import {
@@ -44,14 +44,174 @@ function ResourceIcon({ type }: { type: string }) {
   return <Icon name={icon} />;
 }
 
+function getSafeResourceUrl(value: string | null) {
+  if (!value) return null;
+  try {
+    const url = new URL(value, window.location.origin);
+    return url.protocol === "http:" || url.protocol === "https:" ? url : null;
+  } catch {
+    return null;
+  }
+}
+
+function getVideoEmbedUrl(url: URL) {
+  const host = url.hostname.toLocaleLowerCase("fr").replace(/^www\./, "");
+  if (host === "youtu.be") {
+    const id = url.pathname.split("/").filter(Boolean)[0];
+    return id ? `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}` : null;
+  }
+  if (host === "youtube.com" || host === "m.youtube.com") {
+    const id = url.searchParams.get("v")
+      ?? url.pathname.match(/^\/(?:embed|shorts)\/([^/]+)/)?.[1];
+    return id ? `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}` : null;
+  }
+  if (host === "vimeo.com" || host === "player.vimeo.com") {
+    const id = url.pathname.match(/\/(?:video\/)?(\d+)/)?.[1];
+    return id ? `https://player.vimeo.com/video/${id}` : null;
+  }
+  return null;
+}
+
+function getResourceTypeLabel(type: string) {
+  const normalized = type.toLocaleLowerCase("fr");
+  if (normalized.includes("video")) return "Vidéo";
+  if (normalized.includes("article")) return "Article";
+  if (normalized.includes("course")) return "Cours";
+  if (normalized.includes("pdf")) return "PDF";
+  if (normalized.includes("doc")) return "Documentation";
+  return type;
+}
+
+function ResourcePreview({ resource }: { resource: RoadmapResource }) {
+  const url = getSafeResourceUrl(resource.url);
+  if (!url) {
+    return <p className={styles.previewFallback}>Aucun aperçu n'est disponible pour cette ressource.</p>;
+  }
+
+  const type = resource.type.toLocaleLowerCase("fr");
+  const isVideo = type.includes("video");
+  const isDirectVideo = isVideo && /\.(mp4|webm|ogg|m3u8)$/i.test(url.pathname);
+  const videoEmbedUrl = isVideo ? getVideoEmbedUrl(url) : null;
+  const previewUrl = videoEmbedUrl ?? url.href;
+
+  return (
+    <>
+      {isDirectVideo ? (
+        <video className={styles.resourceVideo} controls playsInline preload="metadata">
+          <source src={url.href} />
+          Votre navigateur ne peut pas lire cette vidéo.
+        </video>
+      ) : (
+        <iframe
+          className={styles.resourceFrame}
+          src={previewUrl}
+          title={`Aperçu : ${resource.title}`}
+          loading="lazy"
+          allow={isVideo ? "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen" : undefined}
+          allowFullScreen={isVideo}
+          referrerPolicy="strict-origin-when-cross-origin"
+          sandbox={isVideo ? "allow-scripts allow-same-origin allow-presentation" : "allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"}
+        />
+      )}
+      <p className={styles.previewHint}>
+        Si le site ne permet pas l'aperçu intégré, ouvrez la ressource dans un nouvel onglet.
+      </p>
+    </>
+  );
+}
+
+function ResourceModal({
+  step,
+  resourceIndex,
+  onResourceIndexChange,
+  onClose,
+}: {
+  step: RoadmapStep;
+  resourceIndex: number;
+  onResourceIndexChange: (index: number) => void;
+  onClose: () => void;
+}) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const resource = step.resources[resourceIndex];
+  const safeUrl = getSafeResourceUrl(resource?.url ?? null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (dialog && !dialog.open) dialog.showModal();
+    return () => {
+      if (dialog?.open) dialog.close();
+    };
+  }, []);
+
+  return (
+    <dialog
+      ref={dialogRef}
+      className={styles.resourceDialog}
+      aria-labelledby="resource-dialog-title"
+      onCancel={(event) => { event.preventDefault(); onClose(); }}
+      onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}
+    >
+      <div className={styles.resourceDialogContent}>
+        <header className={styles.resourceDialogHeader}>
+          <div className={styles.resourceDialogHeading}>
+            <p>Ressource {resourceIndex + 1} sur {step.resources.length} · {step.title}</p>
+            <h2 id="resource-dialog-title">{resource?.title ?? "Aperçu de la ressource"}</h2>
+            {resource ? <span>{getResourceTypeLabel(resource.type)}</span> : null}
+          </div>
+          <button className={styles.closeResourceDialog} type="button" onClick={onClose} aria-label="Fermer les ressources">
+            <Icon name="close" />
+          </button>
+        </header>
+
+        {resource ? (
+          <div className={styles.resourcePreview}>
+            <ResourcePreview resource={resource} />
+          </div>
+        ) : null}
+
+        <footer className={styles.resourceDialogFooter}>
+          <div className={styles.resourceNavigation}>
+            <Button
+              variant="outline"
+              icon="arrow_back"
+              disabled={resourceIndex === 0}
+              onClick={() => onResourceIndexChange(resourceIndex - 1)}
+              aria-label="Ressource précédente"
+            >
+              Précédente
+            </Button>
+            <span>{resourceIndex + 1} / {step.resources.length}</span>
+            <Button
+              variant="outline"
+              icon="arrow_forward"
+              disabled={resourceIndex >= step.resources.length - 1}
+              onClick={() => onResourceIndexChange(resourceIndex + 1)}
+              aria-label="Ressource suivante"
+            >
+              Suivante
+            </Button>
+          </div>
+          {safeUrl ? (
+            <a className={styles.openResourceLink} href={safeUrl.href} target="_blank" rel="noreferrer">
+              Ouvrir la ressource <Icon name="open_in_new" />
+            </a>
+          ) : null}
+        </footer>
+      </div>
+    </dialog>
+  );
+}
+
 function StepCard({
   step,
   isUpdating,
   onProgressChange,
+  onOpenResources,
 }: {
   step: RoadmapStep;
   isUpdating: boolean;
   onProgressChange: (stepId: number, status: RoadmapStep["progress"]["status"]) => void;
+  onOpenResources: (stepId: number) => void;
 }) {
   const isDone = step.progress.status === "done";
   const isActive = step.progress.status === "in_progress";
@@ -93,6 +253,20 @@ function StepCard({
             ))}
           </ul>
         ) : null}
+        {step.resources.length > 0 ? (
+          <Button
+            className={styles.stepResourcesButton}
+            variant="outline"
+            icon="collections_bookmark"
+            type="button"
+            onClick={() => onOpenResources(step.id)}
+            aria-label={`Voir les ${step.resources.length} ressources de l'étape ${step.title}`}
+          >
+            Ressources ({step.resources.length})
+          </Button>
+        ) : (
+          <p className={styles.noStepResources}>Aucune ressource liée à cette étape.</p>
+        )}
       </div>
     </article>
   );
@@ -110,7 +284,9 @@ function ResourceItem({ resource, stepTitle, index }: {
         <strong>{resource.title}</strong>
         <small>{resource.type} · {stepTitle}</small>
       </span>
-      {resource.url ? <Icon name="open_in_new" className={styles.externalIcon} /> : null}
+      <span className={styles.resourceActionSlot} aria-hidden="true">
+        {resource.url ? <Icon name="open_in_new" className={styles.externalIcon} /> : null}
+      </span>
     </>
   );
 
@@ -167,6 +343,7 @@ export function RoadmapDetailPage() {
   const roadmapId = Number.isSafeInteger(parsedId) && parsedId > 0 ? parsedId : null;
   const { data, isLoading, isError, error, refetch, isFetching } = useRoadmapDetail(roadmapId);
   const progressMutation = useSetStepProgress(roadmapId);
+  const [resourceViewer, setResourceViewer] = useState<{ stepId: number; index: number } | null>(null);
   const orderedSteps = useMemo(
     () => [...(data?.steps ?? [])].sort((left, right) => left.order - right.order),
     [data?.steps],
@@ -184,6 +361,9 @@ export function RoadmapDetailPage() {
   const resources = orderedSteps.flatMap((step) =>
     step.resources.map((resource) => ({ resource, stepTitle: step.title })),
   );
+  const resourceStep = resourceViewer
+    ? orderedSteps.find((step) => step.id === resourceViewer.stepId)
+    : undefined;
   const httpStatus = typeof error === "object" && error !== null && "response" in error
     ? (error as { response?: { status?: number } }).response?.status
     : undefined;
@@ -202,6 +382,9 @@ export function RoadmapDetailPage() {
   const updateProgress = (stepId: number, status: RoadmapStep["progress"]["status"]) => {
     progressMutation.mutate({ roadmapId: roadmapId!, stepId, status });
   };
+  const openStepResources = (stepId: number) => setResourceViewer({ stepId, index: 0 });
+  const changeResourceIndex = (index: number) => setResourceViewer((current) => current ? { ...current, index } : current);
+  const closeResourceViewer = useCallback(() => setResourceViewer(null), []);
 
   return (
     <AppLayout>
@@ -283,7 +466,7 @@ export function RoadmapDetailPage() {
                   </h2>
                   <div className={styles.stepList}>
                     {completedSteps.map((step) => (
-                      <StepCard key={step.id} step={step} isUpdating={progressMutation.isPending} onProgressChange={updateProgress} />
+                      <StepCard key={step.id} step={step} isUpdating={progressMutation.isPending} onProgressChange={updateProgress} onOpenResources={openStepResources} />
                     ))}
                   </div>
                 </section>
@@ -294,7 +477,7 @@ export function RoadmapDetailPage() {
                 {remainingSteps.length > 0 ? (
                   <div className={styles.stepList}>
                     {remainingSteps.map((step) => (
-                      <StepCard key={step.id} step={step} isUpdating={progressMutation.isPending} onProgressChange={updateProgress} />
+                      <StepCard key={step.id} step={step} isUpdating={progressMutation.isPending} onProgressChange={updateProgress} onOpenResources={openStepResources} />
                     ))}
                   </div>
                 ) : completedSteps.length > 0 ? (
@@ -338,6 +521,15 @@ export function RoadmapDetailPage() {
               </section>
             </aside>
           </div>
+          {resourceStep && resourceViewer ? (
+            <ResourceModal
+              key={resourceStep.id}
+              step={resourceStep}
+              resourceIndex={resourceViewer.index}
+              onResourceIndexChange={changeResourceIndex}
+              onClose={closeResourceViewer}
+            />
+          ) : null}
         </>
       ) : null}
     </AppLayout>

@@ -131,3 +131,22 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 - L'aperçu est réinitialisé sur `reset`; l'événement terminal `done` confirme la persistance, invalide les données de liste/dashboard puis ouvre le détail. Les erreurs pré-flux restent visibles dans le formulaire et les erreurs SSE dans l'aperçu.
 - La fiche backend de génération confirme que le contrat existant suffit; aucune modification de logique backend n'a été nécessaire.
 - Vérification: contrôle TypeScript ciblé, lint ciblé, build Vite et `git diff --check` réussis. Le build Vite signale seulement l'avertissement existant de chunk principal supérieur à 500 kB.
+
+### 2026-10-22 — Aperçu des ressources depuis les étapes du détail
+
+- Chaque étape indique le nombre de ressources associées et propose un bouton pour ouvrir leur aperçu dans un modal, sans perdre le contexte de l'étape.
+- Le modal affiche le titre et le type, permet de parcourir les ressources précédentes/suivantes et d'ouvrir la source dans un nouvel onglet. Les vidéos MP4/WebM/OGG s'ouvrent dans un lecteur; YouTube/Vimeo utilisent leur lecteur intégré; les articles et autres pages s'affichent dans un cadre intégré lorsque le site l'autorise.
+- La fiche backend du détail confirme que `steps[].resources` fournit déjà les données nécessaires; aucun endpoint supplémentaire n'est requis.
+- Vérification: contrôle TypeScript, lint ciblé, build Vite et `git diff --check` réussis. Le build Vite signale seulement l'avertissement existant de chunk principal supérieur à 500 kB.
+
+### 2026-10-22 — Alignement des icônes de redirection dans les ressources clés
+
+- La liste des ressources utilise maintenant une grille à trois colonnes avec un emplacement fixe pour l'icône de type, le texte et l'action externe; les titres longs ne décalent plus l'icône de redirection.
+- Un emplacement vide est conservé lorsqu'une ressource n'a pas d'URL afin que l'alignement reste identique entre les lignes.
+- Vérification: contrôle TypeScript, lint ciblé, build Vite et `git diff --check` réussis.
+
+### 2026-10-22 — Alignement des premières cartes du détail d'une roadmap
+
+- La première carte de la colonne droite est alignée avec la première carte d'étape, que des étapes terminées soient présentes ou non.
+- Le décalage est retiré sur les écrans où les colonnes sont empilées.
+- Vérification: contrôle TypeScript, lint ciblé et `git diff --check` réussis.

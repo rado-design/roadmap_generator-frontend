@@ -110,6 +110,7 @@
 .sectionTitle { display: flex; align-items: center; gap: 8px; margin: 16px 0; font-size: 16px; font-weight: 600; line-height: 24px; }
 .sectionTitle :global(.material-symbols-outlined) { color: var(--color-secondary); font-size: var(--icon-size-md); }
 .upcomingSection { margin-top: 32px; }
+.upcomingSection:first-child { margin-top: 0; }
 .stepList { display: grid; gap: 16px; }
 
 .stepCard {
@@ -153,6 +154,14 @@
 .stepTitle { min-width: 0; font-size: 16px; font-weight: 500; line-height: 24px; overflow-wrap: anywhere; }
 .completedTitle { color: var(--color-on-surface-variant); text-decoration: line-through; }
 .stepDescription { margin-top: 4px; color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; }
+.stepResourcesButton {
+  width: auto;
+  min-height: 36px;
+  margin-top: 14px;
+  padding: 6px 12px;
+  box-shadow: none;
+}
+.noStepResources { margin-top: 14px; color: var(--color-on-surface-variant); font-size: 12px; line-height: 18px; }
 .stepStatus {
   flex: none;
   height: 28px;
@@ -204,7 +213,7 @@
   li { padding: 4px 12px; border-radius: var(--radius-full); background: var(--color-surface-container-low); color: var(--color-on-surface-variant); font-size: 12px; line-height: 16px; }
 }
 
-.aside { display: grid; gap: 24px; }
+.aside { display: grid; gap: 24px; padding-top: 56px; }
 .asideCard h2,
 .momentumTemplate h2 { margin-bottom: 16px; font-size: 16px; font-weight: 600; line-height: 24px; }
 
@@ -224,9 +233,10 @@
 .resourceList { display: grid; gap: 12px; }
 
 .resourceItem {
-  display: flex;
+  display: grid;
   min-width: 0;
   align-items: center;
+  grid-template-columns: 24px minmax(0, 1fr) 20px;
   gap: 12px;
   padding: 12px;
   border-radius: var(--radius-lg);
@@ -238,14 +248,84 @@
   &:hover { background: var(--color-surface-container); }
 }
 
-.resourceIcon { display: inline-flex; flex: none; color: var(--color-on-surface-variant); }
+.resourceIcon { display: grid; width: 24px; height: 24px; place-items: center; color: var(--color-on-surface-variant); }
 .resourceIcon :global(.material-symbols-outlined) { font-size: var(--icon-size-md); }
 .resourceCopy { display: grid; min-width: 0; gap: 2px; }
 .resourceCopy strong { overflow: hidden; font-size: 14px; font-weight: 500; line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
 .resourceCopy small { overflow: hidden; color: var(--color-on-surface-variant); font-size: 12px; line-height: 16px; text-overflow: ellipsis; white-space: nowrap; }
-.externalIcon { flex: none; color: var(--color-on-surface-variant); font-size: var(--icon-size-sm); }
+.resourceActionSlot { display: grid; width: 20px; height: 20px; place-items: center; color: var(--color-on-surface-variant); }
+.externalIcon { font-size: var(--icon-size-sm); }
 .asideNote { color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; }
 .asideCard > :global(button) { width: 100%; margin-top: 16px; }
+
+.resourceDialog {
+  width: min(920px, calc(100% - 32px));
+  max-width: none;
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-2xl);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+
+  &::backdrop { background: rgb(25 28 30 / 56%); }
+}
+
+.resourceDialogContent {
+  display: grid;
+  max-height: calc(100dvh - 34px);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.resourceDialogHeader,
+.resourceDialogFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 24px;
+}
+
+.resourceDialogHeader { border-bottom: 1px solid var(--color-outline-variant); }
+.resourceDialogHeading { min-width: 0; }
+.resourceDialogHeading > p { overflow: hidden; color: var(--color-on-surface-variant); font-size: 12px; line-height: 18px; text-overflow: ellipsis; white-space: nowrap; }
+.resourceDialogHeading h2 { margin-top: 3px; font-size: 18px; font-weight: 600; line-height: 26px; overflow-wrap: anywhere; }
+.resourceDialogHeading > span { display: inline-block; margin-top: 4px; color: var(--color-on-surface-variant); font-size: 12px; line-height: 16px; }
+
+.closeResourceDialog {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+  cursor: pointer;
+
+  &:hover { background: var(--color-surface-container-low); }
+  &:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+}
+
+.resourcePreview { min-height: 0; overflow: auto; padding: 20px 24px; }
+.resourceFrame { display: block; width: 100%; height: min(60dvh, 560px); min-height: 280px; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-lg); background: var(--color-surface-container-low); }
+.resourceVideo { display: block; width: 100%; max-height: 65dvh; border-radius: var(--radius-lg); background: #101416; }
+.previewHint,
+.previewFallback { margin-top: 10px; color: var(--color-on-surface-variant); font-size: 12px; line-height: 18px; }
+.previewFallback { display: grid; min-height: 280px; place-items: center; margin: 0; border-radius: var(--radius-lg); background: var(--color-surface-container-low); text-align: center; }
+
+.resourceDialogFooter { border-top: 1px solid var(--color-outline-variant); }
+.resourceNavigation { display: flex; align-items: center; gap: 12px; }
+.resourceNavigation > span { min-width: 44px; color: var(--color-on-surface-variant); font-size: 12px; text-align: center; }
+.resourceNavigation :global(button) { width: auto; min-height: 40px; padding: 8px 12px; box-shadow: none; }
+.openResourceLink { display: inline-flex; align-items: center; gap: 6px; color: var(--color-primary); font-size: 14px; font-weight: 500; line-height: 20px; text-decoration: none; }
+.openResourceLink:hover { text-decoration: underline; text-underline-offset: 3px; }
+.openResourceLink:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+.openResourceLink :global(.material-symbols-outlined) { font-size: var(--icon-size-sm); }
 
 .completionMessage,
 .noSteps,
@@ -280,7 +360,7 @@
 @media (max-width: 900px) {
   .columns,
   .skeletonColumns { grid-template-columns: 1fr; }
-  .aside { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); align-items: start; }
+  .aside { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); align-items: start; padding-top: 0; }
 }
 
 @media (max-width: 600px) {
@@ -294,6 +374,25 @@
   .summaryMeta { flex-direction: column; gap: 4px; }
   .stepHeading { flex-direction: column; gap: 8px; }
   .aside { grid-template-columns: 1fr; }
+  .resourceDialog { width: calc(100% - 16px); max-height: calc(100dvh - 16px); }
+  .resourceDialogContent { max-height: calc(100dvh - 18px); }
+  .resourceDialogHeader,
+  .resourceDialogFooter { padding: 16px; }
+  .resourcePreview { padding: 16px; }
+  .resourceDialogFooter { align-items: stretch; flex-direction: column; }
+  .resourceNavigation { justify-content: space-between; }
+  .resourceNavigation :global(button) { flex: 1; }
+  .resourceFrame { height: 52dvh; min-height: 240px; }
+}
+
+@media (max-height: 560px) {
+  .resourceDialog { max-height: calc(100dvh - 16px); }
+  .resourceDialogContent { max-height: calc(100dvh - 18px); }
+  .resourceDialogHeader,
+  .resourceDialogFooter { padding-block: 10px; }
+  .resourcePreview { padding-block: 12px; }
+  .resourceFrame { height: 40dvh; min-height: 150px; }
+  .resourceVideo { max-height: 46dvh; }
 }
 
 @media (prefers-reduced-motion: reduce) {
