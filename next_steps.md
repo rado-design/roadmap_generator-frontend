@@ -130,3 +130,8 @@ Ajouter chaque nouvelle action de reprise tout en bas, avec sa date. La dernièr
 
 - Reprendre la page Ressources depuis sa maquette, vérifier les contrats disponibles et consigner uniquement les besoins backend qui manquent dans sa fiche dédiée.
 - Clarifier/ajouter côté backend le contrat de tendances mensuelles du dashboard si les variations de la maquette doivent être affichées.
+
+### 2026-10-22 — Après l'intégration de la génération progressive
+
+- Reprendre la page Ressources depuis sa maquette, vérifier les contrats disponibles et consigner uniquement les besoins backend manquants dans sa fiche dédiée.
+- Clarifier/ajouter côté backend le contrat des tendances mensuelles du dashboard si les variations de la maquette doivent être affichées.

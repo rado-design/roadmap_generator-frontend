@@ -124,3 +124,10 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 - La liste `/roadmaps` transmet la recherche (max. 100 caractères), le statut, la catégorie, le tri et la pagination à `GET /api/v1/roadmaps`; filtres et compteurs couvrent maintenant tous les résultats côté serveur.
 - Les fiches backend des deux pages précisent les contrats consommés. Les tendances mensuelles du dashboard ne sont pas encore exposées par l'API et restent à spécifier dans la fiche dashboard.
 - Vérification: `git diff --check`, le contrôle TypeScript (`tsc -p tsconfig.app.json --ignoreDeprecations 6.0 --noEmit`), le build Vite et le lint ciblé des fichiers modifiés réussissent. `npm run build` complet reste bloqué par l'option `baseUrl` dépréciée de `tsconfig.app.json` avec TypeScript 6; le lint complet signale aussi une erreur préexistante dans `OtpShieldBadge.tsx`.
+
+### 2026-10-22 — Génération progressive d'une roadmap par SSE
+
+- Le formulaire utilise maintenant `POST /api/v1/roadmaps/generate/stream` et affiche le titre, les étapes et les ressources au fil des événements SSE valides.
+- L'aperçu est réinitialisé sur `reset`; l'événement terminal `done` confirme la persistance, invalide les données de liste/dashboard puis ouvre le détail. Les erreurs pré-flux restent visibles dans le formulaire et les erreurs SSE dans l'aperçu.
+- La fiche backend de génération confirme que le contrat existant suffit; aucune modification de logique backend n'a été nécessaire.
+- Vérification: contrôle TypeScript ciblé, lint ciblé, build Vite et `git diff --check` réussis. Le build Vite signale seulement l'avertissement existant de chunk principal supérieur à 500 kB.

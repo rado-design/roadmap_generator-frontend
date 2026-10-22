@@ -48,6 +48,7 @@
 }
 
 .form,
+.generationProgress,
 .howItWorks,
 .inspiration {
   border: 1px solid var(--color-outline-variant);
@@ -60,6 +61,108 @@
   gap: 32px;
   padding: 40px;
 }
+
+.generationProgress {
+  display: grid;
+  gap: 24px;
+  padding: 40px;
+}
+
+.generationHeading {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+
+  h2 { font-size: 20px; font-weight: 600; line-height: 28px; }
+  p { margin-top: 4px; color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; }
+  > div { min-width: 0; }
+  h2,
+  p { overflow-wrap: anywhere; }
+}
+
+.generationIndicator,
+.streamPulse {
+  display: block;
+  width: 12px;
+  height: 12px;
+  flex: none;
+  margin-top: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+}
+
+.streamStatus {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-low);
+  color: var(--color-on-surface-variant);
+  font-size: 13px;
+}
+
+.streamPulse { width: 8px; height: 8px; margin: 0 4px; }
+
+.generatedSteps {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.generatedStep {
+  display: flex;
+  gap: 16px;
+  padding: 20px 0;
+  border-top: 1px solid var(--color-outline-variant);
+}
+
+.generatedStepMarker {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  place-items: center;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-fixed);
+  color: var(--color-on-primary-container);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.generatedStepContent {
+  min-width: 0;
+  flex: 1;
+
+  h3 { font-size: 15px; font-weight: 600; line-height: 22px; }
+  p { margin-top: 5px; color: var(--color-on-surface-variant); font-size: 13px; line-height: 19px; }
+  h3,
+  p,
+  li { overflow-wrap: anywhere; }
+  ul { display: grid; gap: 5px; margin: 10px 0 0; padding-left: 20px; color: var(--color-on-surface-variant); font-size: 12px; line-height: 18px; }
+}
+
+.generatedResources {
+  margin-top: 14px;
+  color: var(--color-on-surface);
+  font-size: 12px;
+
+  > strong { font-weight: 600; }
+  a { color: var(--color-primary); text-decoration: underline; text-underline-offset: 2px; }
+}
+
+.waitingForFirstStep {
+  padding: 20px 0;
+  border-top: 1px solid var(--color-outline-variant);
+  color: var(--color-on-surface-variant);
+  font-size: 13px;
+}
+
+.progressActions { padding-top: 4px; }
 
 .field { display: grid; min-width: 0; gap: 8px; }
 .fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
@@ -171,6 +274,7 @@
   .intro { margin-bottom: 32px; text-align: left; }
   .intro h1 { font-size: 24px; line-height: 32px; }
   .form { gap: 24px; padding: 24px; }
+  .generationProgress { gap: 20px; padding: 24px; }
   .scheduleFields,
   .aside { grid-template-columns: 1fr; }
   .formActions :global(button) { width: 100%; min-height: 44px; padding: 8px 16px; }

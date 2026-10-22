@@ -1,7 +1,15 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
 import { AppLayout } from "../../app/layouts";
-import { useGenerateRoadmap, type GenerateRoadmapRequest, type LearnerLevel, type RoadmapCategory } from "../../features/roadmaps";
+import {
+  useGenerateRoadmap,
+  type GeneratedRoadmapStep,
+  type GenerateRoadmapRequest,
+  type LearnerLevel,
+  type RoadmapCategory,
+  type RoadmapGenerationEvent,
+  type RoadmapResource,
+} from "../../features/roadmaps";
 import { Button } from "../../shared/components/Button";
 import { Icon } from "../../shared/components/Icon";
 import styles from "./GenerateRoadmapPage.module.scss";
@@ -29,9 +37,22 @@ const deadlines = [
   { value: "none", label: "Pas de limite" },
 ];
 
+interface PreviewStep extends GeneratedRoadmapStep {
+  resources: RoadmapResource[];
+}
+
+function getErrorMessage(error: unknown) {
+  if (typeof error === "object" && error !== null && "message" in error) {
+    return String(error.message);
+  }
+  return "La génération a échoué. Vérifiez votre connexion puis réessayez.";
+}
+
 export function GenerateRoadmapPage() {
   const navigate = useNavigate();
-  const { mutateAsync, isPending, error } = useGenerateRoadmap();
+  const { mutateAsync, isPending, error, reset } = useGenerateRoadmap();
+  const controllerRef = useRef<AbortController | null>(null);
+  const hasStartedStreamRef = useRef(false);
   const [goal, setGoal] = useState("");
   const [category, setCategory] = useState<RoadmapCategory>("programming");
   const [weeklyHours, setWeeklyHours] = useState("5");
@@ -39,10 +60,24 @@ export function GenerateRoadmapPage() {
   const [level, setLevel] = useState<LearnerLevel>("beginner");
   const [background, setBackground] = useState("");
   const [validationError, setValidationError] = useState<string>();
+  const [generationStarted, setGenerationStarted] = useState(false);
+  const [streamTitle, setStreamTitle] = useState<string>();
+  const [streamSteps, setStreamSteps] = useState<PreviewStep[]>([]);
+  const [streamAttempt, setStreamAttempt] = useState(1);
+  const [streamError, setStreamError] = useState<string>();
+
+  useEffect(() => () => controllerRef.current?.abort(), []);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setValidationError(undefined);
+    setStreamError(undefined);
+    setGenerationStarted(false);
+    hasStartedStreamRef.current = false;
+    setStreamTitle(undefined);
+    setStreamSteps([]);
+    setStreamAttempt(1);
+    reset();
 
     const hours = Number(weeklyHours);
     if (!Number.isInteger(hours) || hours < 1 || hours > 80) {
@@ -59,19 +94,71 @@ export function GenerateRoadmapPage() {
       background: background.trim() || null,
     };
 
+    const controller = new AbortController();
+    controllerRef.current = controller;
+
     try {
-      const roadmap = await mutateAsync(payload);
+      const roadmap = await mutateAsync({
+        payload,
+        signal: controller.signal,
+        onEvent: (event: RoadmapGenerationEvent) => {
+          switch (event.event) {
+            case "meta":
+              hasStartedStreamRef.current = true;
+              setGenerationStarted(true);
+              setStreamTitle(event.data.title);
+              break;
+            case "step":
+              hasStartedStreamRef.current = true;
+              setGenerationStarted(true);
+              setStreamSteps((steps) => [
+                ...steps,
+                { ...event.data, resources: [] },
+              ]);
+              break;
+            case "resources":
+              setStreamSteps((steps) => steps.map((step) => (
+                step.order === event.data.order
+                  ? { ...step, resources: event.data.resources }
+                  : step
+              )));
+              break;
+            case "reset":
+              setGenerationStarted(hasStartedStreamRef.current);
+              setStreamTitle(undefined);
+              setStreamSteps([]);
+              setStreamAttempt(event.data.attempt);
+              break;
+            case "error":
+              setStreamError(event.data.detail);
+              break;
+            case "done":
+              break;
+          }
+        },
+      });
       navigate(`/roadmaps/${roadmap.id}`, {
         state: { from: { pathname: "/roadmaps/generate" } },
       });
-    } catch {
-      // L'erreur de mutation est affichée sous le formulaire.
+    } catch (caughtError) {
+      if (!controller.signal.aborted && hasStartedStreamRef.current) {
+        setStreamError(getErrorMessage(caughtError));
+      }
+    } finally {
+      if (controllerRef.current === controller) controllerRef.current = null;
     }
   };
 
-  const apiError = typeof error === "object" && error !== null && "message" in error
-    ? String(error.message)
-    : "La génération a échoué. Vérifiez votre connexion puis réessayez.";
+  const apiError = getErrorMessage(error);
+
+  const returnToForm = () => {
+    setGenerationStarted(false);
+    hasStartedStreamRef.current = false;
+    setStreamError(undefined);
+    setStreamTitle(undefined);
+    setStreamSteps([]);
+    reset();
+  };
 
   return (
     <AppLayout>
@@ -87,6 +174,76 @@ export function GenerateRoadmapPage() {
           <p>Transformez vos idées complexes en trajectoires claires et actionnables grâce à notre moteur d'IA spécialisé.</p>
         </header>
 
+        {generationStarted ? (
+          <section className={styles.generationProgress} aria-labelledby="generation-progress-title" aria-live="polite">
+            <div className={styles.generationHeading}>
+              <span className={styles.generationIndicator} aria-hidden="true" />
+              <div>
+                <h2 id="generation-progress-title">
+                  {streamError ? "La génération a rencontré un problème" : streamTitle ?? "Votre roadmap se construit"}
+                </h2>
+                <p>
+                  {streamError
+                    ? "La génération n'a pas abouti. Vos paramètres sont conservés."
+                    : `Les étapes apparaissent au fil de la génération${streamAttempt > 1 ? ` · nouvelle tentative ${streamAttempt}` : ""}.`}
+                </p>
+              </div>
+            </div>
+
+            {streamError ? (
+              <div className={styles.error} role="alert">
+                <Icon name="error" />
+                <span>{streamError}</span>
+              </div>
+            ) : (
+              <div className={styles.streamStatus} role="status">
+                <span className={styles.streamPulse} aria-hidden="true" />
+                <span>{streamSteps.length} {streamSteps.length === 1 ? "étape reçue" : "étapes reçues"} · génération en cours</span>
+              </div>
+            )}
+
+            {streamSteps.length > 0 ? (
+              <ol className={styles.generatedSteps}>
+                {streamSteps.map((step) => (
+                  <li className={styles.generatedStep} key={step.order}>
+                    <div className={styles.generatedStepMarker}>{step.order}</div>
+                    <div className={styles.generatedStepContent}>
+                      <h3>{step.title}</h3>
+                      <p>{step.description}</p>
+                      {step.learning_objectives.length > 0 ? (
+                        <ul>
+                          {step.learning_objectives.map((objective) => <li key={objective}>{objective}</li>)}
+                        </ul>
+                      ) : null}
+                      {step.resources.length > 0 ? (
+                        <div className={styles.generatedResources}>
+                          <strong>Ressources</strong>
+                          <ul>
+                            {step.resources.map((resource, index) => (
+                              <li key={`${resource.url ?? resource.title}-${index}`}>
+                                {resource.url ? (
+                                  <a href={resource.url} target="_blank" rel="noreferrer">{resource.title}</a>
+                                ) : resource.title}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : null}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            ) : !streamError ? (
+              <p className={styles.waitingForFirstStep}>En attente de la première étape valide…</p>
+            ) : null}
+
+            {streamError ? (
+              <div className={styles.progressActions}>
+                <Button variant="outline" onClick={returnToForm}>Modifier les paramètres</Button>
+              </div>
+            ) : null}
+          </section>
+        ) : (
         <div className={styles.columns}>
           <form className={styles.form} onSubmit={(event) => void submit(event)}>
             <div className={styles.field}>
@@ -205,7 +362,7 @@ export function GenerateRoadmapPage() {
               <Button type="submit" isLoading={isPending} disabled={isPending} icon="arrow_forward">
                 {isPending ? "Génération en cours…" : "Générer la roadmap"}
               </Button>
-              {isPending ? <p role="status">La génération peut prendre quelques instants. Cette page reste ouverte pendant le traitement.</p> : null}
+              {isPending ? <p role="status">Connexion au flux de génération… Les étapes apparaîtront dès la première réponse valide.</p> : null}
             </div>
           </form>
 
@@ -223,7 +380,7 @@ export function GenerateRoadmapPage() {
                 </li>
                 <li>
                   <span>3</span>
-                  <div><strong>Laissez l'IA structurer le parcours</strong><p>Votre roadmap apparaît dès que sa génération est terminée.</p></div>
+                  <div><strong>Laissez l'IA structurer le parcours</strong><p>Les étapes apparaissent progressivement pendant la génération.</p></div>
                 </li>
               </ol>
             </section>
@@ -244,6 +401,7 @@ export function GenerateRoadmapPage() {
             </section>
           </aside>
         </div>
+        )}
         </div>
       </div>
     </AppLayout>
