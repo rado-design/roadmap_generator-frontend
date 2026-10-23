@@ -71,34 +71,90 @@ function RoadmapCard({ roadmap }: { roadmap: DashboardRoadmap }) {
   );
 }
 
-function DistributionPanel({
-  title,
-  items,
-  labels,
-  isLoading,
-}: {
-  title: string;
+const categoryColors = ["#006591", "#006c49", "#586377"];
+const statusColors: Record<string, string> = {
+  completed: "#006c49",
+  in_progress: "#006591",
+  not_started: "#586377",
+};
+
+function CategoryDistributionPanel({ items, isLoading }: {
   items: DashboardDistributionItem[];
-  labels: Record<string, string>;
+  isLoading: boolean;
+}) {
+  const total = items.reduce((sum, item) => sum + item.count, 0);
+  const circumference = 2 * Math.PI * 50;
+  let offset = 0;
+
+  return (
+    <section className={styles.panel} aria-label="Roadmaps par catégorie">
+      <div className={styles.panelHeading}>
+        <h2>Distribution par catégorie</h2>
+      </div>
+      {isLoading ? (
+        <p className={styles.distributionEmpty} aria-busy="true">Chargement…</p>
+      ) : total > 0 ? (
+        <div className={styles.categoryChart}>
+          <svg className={styles.donutChart} viewBox="0 0 120 120" role="img" aria-label={items.map((item) => `${categoryLabels[item.key] ?? item.key} ${item.percent} %`).join(", ")}>
+            {items.filter((item) => item.count > 0).map((item, index) => {
+              const segment = circumference * item.count / total;
+              const segmentOffset = offset;
+              offset += segment;
+              return (
+                <circle
+                  key={item.key}
+                  cx="60"
+                  cy="60"
+                  r="50"
+                  fill="none"
+                  stroke={categoryColors[index % categoryColors.length]}
+                  strokeWidth="14"
+                  strokeDasharray={`${segment} ${circumference - segment}`}
+                  strokeDashoffset={-segmentOffset}
+                  transform="rotate(-90 60 60)"
+                />
+              );
+            })}
+            <text className={styles.donutCaption} x="60" y="53" textAnchor="middle">Total</text>
+            <text className={styles.donutTotal} x="60" y="73" textAnchor="middle">{total}</text>
+          </svg>
+          <ul className={styles.categoryLegend}>
+            {items.map((item, index) => (
+              <li key={item.key}>
+                <i style={{ backgroundColor: categoryColors[index % categoryColors.length] }} aria-hidden="true" />
+                <span>{categoryLabels[item.key] ?? item.key} ({item.percent} %)</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <p className={styles.distributionEmpty}>Aucune donnée à afficher.</p>
+      )}
+    </section>
+  );
+}
+
+function StatusDistributionPanel({ items, isLoading }: {
+  items: DashboardDistributionItem[];
   isLoading: boolean;
 }) {
   return (
-    <section className={styles.panel} aria-label={title}>
+    <section className={styles.panel} aria-label="État des roadmaps">
       <div className={styles.panelHeading}>
-        <h2>{title}</h2>
+        <h2>État des roadmaps</h2>
       </div>
       {isLoading ? (
         <p className={styles.distributionEmpty} aria-busy="true">Chargement…</p>
       ) : items.length ? (
-        <ul className={styles.distributionList}>
+        <ul className={styles.statusDistribution}>
           {items.map((item) => (
-            <li className={styles.distributionItem} key={item.key}>
-              <div className={styles.distributionMeta}>
-                <span>{labels[item.key] ?? item.key}</span>
-                <span>{item.count} · {item.percent} %</span>
+            <li key={item.key}>
+              <div className={styles.statusMeta}>
+                <span>{statusLabels[item.key] ?? item.key} ({item.count})</span>
+                <span>{item.percent} %</span>
               </div>
-              <div className={styles.distributionTrack} aria-hidden="true">
-                <span style={{ width: `${item.percent}%` }} />
+              <div className={styles.statusTrack} role="progressbar" aria-label={`Roadmaps ${statusLabels[item.key] ?? item.key}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={item.percent}>
+                <span style={{ width: `${item.percent}%`, backgroundColor: statusColors[item.key] ?? "#006591" }} />
               </div>
             </li>
           ))}
@@ -177,18 +233,8 @@ export function DashboardPage() {
       </section>
 
       <section className={styles.analysisGrid} aria-label="Analyses">
-        <DistributionPanel
-          title="Roadmaps par catégorie"
-          items={data?.category_distribution ?? []}
-          labels={categoryLabels}
-          isLoading={isLoading}
-        />
-        <DistributionPanel
-          title="État des roadmaps"
-          items={data?.status_distribution ?? []}
-          labels={statusLabels}
-          isLoading={isLoading}
-        />
+        <CategoryDistributionPanel items={data?.category_distribution ?? []} isLoading={isLoading} />
+        <StatusDistributionPanel items={data?.status_distribution ?? []} isLoading={isLoading} />
       </section>
 
       <section className={styles.roadmapsSection} aria-labelledby="recent-roadmaps-title">

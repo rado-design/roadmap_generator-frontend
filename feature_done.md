@@ -219,3 +219,8 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 
 - Le lien du titre d'une étape dans Ressources ouvre le détail de sa roadmap et fait défiler jusqu'à la carte de cette étape.
 - Vérification: `git diff --check`.
+
+### 2026-10-23 — Graphiques du dashboard alignés sur la maquette
+
+- La distribution par catégorie utilise un graphique en anneau avec sa légende; l'état des roadmaps reprend les barres de progression horizontales de la maquette.
+- Vérification: `git diff --check`.

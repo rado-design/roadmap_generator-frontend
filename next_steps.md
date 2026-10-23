@@ -228,3 +228,9 @@ Ajouter chaque nouvelle action de reprise tout en bas, avec sa date. La dernièr
 - Ajouter à `GET /api/v1/resources` le statut de progression de l'étape et son filtre (`todo`, `in_progress`, `done`), selon la fiche backend dédiée, puis activer le filtre et afficher le statut réel dans les cartes.
 - Reprendre la page Paramètres depuis sa maquette.
 - Clarifier/ajouter côté backend le contrat des tendances mensuelles du dashboard si elles doivent correspondre à la maquette.
+
+### 2026-10-23 — Après les graphiques du dashboard
+
+- Ajouter à `GET /api/v1/resources` le statut de progression de l'étape et son filtre (`todo`, `in_progress`, `done`), selon la fiche backend dédiée, puis activer le filtre et afficher le statut réel dans les cartes.
+- Reprendre la page Paramètres depuis sa maquette.
+- Clarifier/ajouter côté backend le contrat des tendances mensuelles du dashboard si elles doivent correspondre à la maquette.
