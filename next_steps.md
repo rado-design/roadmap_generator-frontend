@@ -150,3 +150,81 @@ Ajouter chaque nouvelle action de reprise tout en bas, avec sa date. La dernièr
 
 - Reprendre la page Ressources depuis sa maquette, vérifier les contrats disponibles et consigner uniquement les besoins backend manquants dans sa fiche dédiée.
 - Clarifier/ajouter côté backend le contrat des tendances mensuelles du dashboard si les variations de la maquette doivent être affichées.
+
+### 2026-10-23 — Après l'implémentation de la page Ressources
+
+- Ajouter à `GET /api/v1/resources` le statut de progression de l'étape et son filtre (`todo`, `in_progress`, `done`), selon `../roadmap_generator-backend/RESOURCES_PAGE_BACKEND_REQUIREMENTS.md`; activer ensuite le filtre et afficher le statut réel dans les cartes.
+- Reprendre la page Paramètres depuis sa maquette.
+- Clarifier/ajouter côté backend le contrat des tendances mensuelles du dashboard si elles doivent correspondre à la maquette.
+
+### 2026-10-23 — Après la compaction des panneaux de filtres
+
+- Ajouter à `GET /api/v1/resources` le statut de progression de l'étape et son filtre (`todo`, `in_progress`, `done`), selon la fiche backend dédiée, puis activer le filtre et afficher le statut réel dans les cartes.
+- Reprendre la page Paramètres depuis sa maquette.
+- Clarifier/ajouter côté backend le contrat des tendances mensuelles du dashboard si elles doivent correspondre à la maquette.
+
+### 2026-10-23 — Après la simplification des filtres de ressources
+
+- Ajouter à `GET /api/v1/resources` le statut de progression de l'étape et son filtre (`todo`, `in_progress`, `done`), selon la fiche backend dédiée, puis activer le filtre et afficher le statut réel dans les cartes.
+- Reprendre la page Paramètres depuis sa maquette.
+- Clarifier/ajouter côté backend le contrat des tendances mensuelles du dashboard si elles doivent correspondre à la maquette.
+
+### 2026-10-23 — Après l'ajout de l'aperçu des ressources
+
+- Ajouter à `GET /api/v1/resources` le statut de progression de l'étape et son filtre (`todo`, `in_progress`, `done`), selon la fiche backend dédiée, puis activer le filtre et afficher le statut réel dans les cartes.
+- Reprendre la page Paramètres depuis sa maquette.
+- Clarifier/ajouter côté backend le contrat des tendances mensuelles du dashboard si elles doivent correspondre à la maquette.
+
+### 2026-10-23 — Après la limitation du modal à une ressource
+
+- Ajouter à `GET /api/v1/resources` le statut de progression de l'étape et son filtre (`todo`, `in_progress`, `done`), selon la fiche backend dédiée, puis activer le filtre et afficher le statut réel dans les cartes.
+- Reprendre la page Paramètres depuis sa maquette.
+- Clarifier/ajouter côté backend le contrat des tendances mensuelles du dashboard si elles doivent correspondre à la maquette.
+
+### 2026-10-23 — Après la restauration des filtres Roadmaps
+
+- Ajouter à `GET /api/v1/resources` le statut de progression de l'étape et son filtre (`todo`, `in_progress`, `done`), selon la fiche backend dédiée, puis activer le filtre et afficher le statut réel dans les cartes.
+- Reprendre la page Paramètres depuis sa maquette.
+- Clarifier/ajouter côté backend le contrat des tendances mensuelles du dashboard si elles doivent correspondre à la maquette.
+
+### 2026-10-23 — Après le passage à 10 ressources par page
+
+- Ajouter à `GET /api/v1/resources` le statut de progression de l'étape et son filtre (`todo`, `in_progress`, `done`), selon la fiche backend dédiée, puis activer le filtre et afficher le statut réel dans les cartes.
+- Reprendre la page Paramètres depuis sa maquette.
+- Clarifier/ajouter côté backend le contrat des tendances mensuelles du dashboard si elles doivent correspondre à la maquette.
+
+### 2026-10-23 — Après l'ajout du défilement infini des ressources
+
+- Ajouter à `GET /api/v1/resources` le statut de progression de l'étape et son filtre (`todo`, `in_progress`, `done`), selon la fiche backend dédiée, puis activer le filtre et afficher le statut réel dans les cartes.
+- Reprendre la page Paramètres depuis sa maquette.
+- Clarifier/ajouter côté backend le contrat des tendances mensuelles du dashboard si elles doivent correspondre à la maquette.
+
+### 2026-10-23 — Après l'ajout du défilement infini aux roadmaps
+
+- Ajouter à `GET /api/v1/resources` le statut de progression de l'étape et son filtre (`todo`, `in_progress`, `done`), selon la fiche backend dédiée, puis activer le filtre et afficher le statut réel dans les cartes.
+- Reprendre la page Paramètres depuis sa maquette.
+- Clarifier/ajouter côté backend le contrat des tendances mensuelles du dashboard si elles doivent correspondre à la maquette.
+
+### 2026-10-23 — Après l'ancrage des filtres pendant le défilement
+
+- Ajouter à `GET /api/v1/resources` le statut de progression de l'étape et son filtre (`todo`, `in_progress`, `done`), selon la fiche backend dédiée, puis activer le filtre et afficher le statut réel dans les cartes.
+- Reprendre la page Paramètres depuis sa maquette.
+- Clarifier/ajouter côté backend le contrat des tendances mensuelles du dashboard si elles doivent correspondre à la maquette.
+
+### 2026-10-23 — Après l'ajustement visuel des filtres collants
+
+- Ajouter à `GET /api/v1/resources` le statut de progression de l'étape et son filtre (`todo`, `in_progress`, `done`), selon la fiche backend dédiée, puis activer le filtre et afficher le statut réel dans les cartes.
+- Reprendre la page Paramètres depuis sa maquette.
+- Clarifier/ajouter côté backend le contrat des tendances mensuelles du dashboard si elles doivent correspondre à la maquette.
+
+### 2026-10-23 — Après le retour au défilement normal des filtres
+
+- Ajouter à `GET /api/v1/resources` le statut de progression de l'étape et son filtre (`todo`, `in_progress`, `done`), selon la fiche backend dédiée, puis activer le filtre et afficher le statut réel dans les cartes.
+- Reprendre la page Paramètres depuis sa maquette.
+- Clarifier/ajouter côté backend le contrat des tendances mensuelles du dashboard si elles doivent correspondre à la maquette.
+
+### 2026-10-23 — Après l'accès direct aux étapes depuis Ressources
+
+- Ajouter à `GET /api/v1/resources` le statut de progression de l'étape et son filtre (`todo`, `in_progress`, `done`), selon la fiche backend dédiée, puis activer le filtre et afficher le statut réel dans les cartes.
+- Reprendre la page Paramètres depuis sa maquette.
+- Clarifier/ajouter côté backend le contrat des tendances mensuelles du dashboard si elles doivent correspondre à la maquette.

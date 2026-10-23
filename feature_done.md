@@ -150,3 +150,72 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 - La première carte de la colonne droite est alignée avec la première carte d'étape, que des étapes terminées soient présentes ou non.
 - Le décalage est retiré sur les écrans où les colonnes sont empilées.
 - Vérification: contrôle TypeScript, lint ciblé et `git diff --check` réussis.
+
+### 2026-10-23 — Page Ressources et favoris
+
+- La page `/resources` affiche les ressources réelles avec leur type, date, roadmap et étape; les filtres de recherche, roadmap, catégorie, type, dates, tri et favoris sont transmis à `GET /api/v1/resources` avec pagination.
+- Les boutons étoile utilisent `PUT`/`DELETE /api/v1/resources/{resource_id}/favorite`; les liens permettent d'ouvrir la ressource et de revenir à sa roadmap.
+- L'API ne fournit pas encore le statut de progression des étapes. Le filtre reste désactivé et le manque est documenté dans `../roadmap_generator-backend/RESOURCES_PAGE_BACKEND_REQUIREMENTS.md`.
+- Vérification: contrôle TypeScript, lint ciblé, détecteur Impeccable et `git diff --check`.
+
+### 2026-10-23 — Réduction de l'espace des filtres
+
+- Les panneaux de filtres des pages Ressources et Roadmaps ont un padding et des espacements réduits; les champs passent à 40 px de hauteur, y compris sur mobile.
+- Vérification: `git diff --check`.
+
+### 2026-10-23 — Simplification des filtres de ressources
+
+- Retrait des filtres de dates « Depuis le » et « Jusqu'au » de la page Ressources.
+- Vérification: `git diff --check`.
+
+### 2026-10-23 — Aperçu des ressources depuis la page Ressources
+
+- Cliquer sur le titre ouvre un modal cohérent avec celui du détail d'une étape; il affiche un lecteur pour les vidéos directes, un lecteur intégré YouTube/Vimeo ou un aperçu de page, avec navigation dans les résultats et lien pour ouvrir la source.
+- Vérification: contrôle TypeScript, lint ciblé et `git diff --check`.
+
+### 2026-10-23 — Modal limité à la ressource sélectionnée
+
+- Le modal affiche uniquement la ressource cliquée; les commandes de navigation entre ressources ont été retirées.
+- Vérification: contrôle TypeScript, lint ciblé et `git diff --check`.
+
+### 2026-10-23 — Restauration des dimensions des filtres Roadmaps
+
+- Le panneau de filtres de Roadmaps retrouve ses dimensions précédentes; la compaction des filtres reste appliquée à la page Ressources uniquement.
+- Vérification: `git diff --check`.
+
+### 2026-10-23 — Pagination des ressources à 10 éléments
+
+- La page Ressources demande et affiche maintenant 10 éléments par page au lieu de 12; la pagination suit cette taille.
+- Vérification: contrôle TypeScript et `git diff --check`.
+
+### 2026-10-23 — Défilement infini des ressources
+
+- La page charge d'abord 10 ressources, puis récupère et ajoute les suivantes automatiquement quand la fin de liste approche. Un bouton accessible permet aussi de charger la suite ou de réessayer en cas d'erreur.
+- Les filtres relancent la liste depuis le début; la pagination par pages précédente/suivante est supprimée.
+- Vérification: contrôle TypeScript et `git diff --check`.
+
+### 2026-10-23 — Défilement infini de la liste des roadmaps
+
+- La page charge 20 roadmaps au départ puis ajoute les suivantes à mesure du défilement; les filtres et le tri redémarrent la liste depuis le début.
+- Le bouton accessible permet de charger la suite manuellement ou de réessayer après une erreur; la pagination précédente/suivante est retirée.
+- Vérification: contrôle TypeScript, lint ciblé et `git diff --check`.
+
+### 2026-10-23 — Filtres persistants pendant le défilement
+
+- Les filtres des pages Roadmaps et Ressources restent visibles en haut de la zone de contenu pendant le défilement des listes.
+- Vérification: `git diff --check`.
+
+### 2026-10-23 — Largeur et fond des filtres collants
+
+- Les panneaux de filtres Roadmaps et Ressources dépassent légèrement la largeur des grilles de cartes. Leur fond opaque est prolongé jusqu'au bord supérieur de la zone scrollable afin de masquer les cartes qui passent dessous.
+- Vérification: `git diff --check`.
+
+### 2026-10-23 — Défilement normal des filtres
+
+- Les panneaux de filtres Roadmaps et Ressources défilent avec le reste de leur page; le bandeau opaque et le comportement collant ont été retirés. La largeur légèrement supérieure aux grilles est conservée.
+- Vérification: `git diff --check`.
+
+### 2026-10-23 — Accès direct à l'étape depuis Ressources
+
+- Le lien du titre d'une étape dans Ressources ouvre le détail de sa roadmap et fait défiler jusqu'à la carte de cette étape.
+- Vérification: `git diff --check`.

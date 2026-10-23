@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { AppLayout, PageHeader } from "../../app/layouts";
-import { ROADMAPS_PAGE_SIZE, useRoadmaps, type RoadmapCategoryGroup, type RoadmapSort, type RoadmapStatus, type RoadmapSummary } from "../../features/roadmaps";
+import { useRoadmaps, type RoadmapCategoryGroup, type RoadmapSort, type RoadmapStatus, type RoadmapSummary } from "../../features/roadmaps";
 import { Button } from "../../shared/components/Button";
 import { Icon } from "../../shared/components/Icon";
 import styles from "./RoadmapsPage.module.scss";
@@ -82,7 +82,7 @@ function RoadmapSkeleton() {
 export function RoadmapsPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [offset, setOffset] = useState(0);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | RoadmapStatus>("all");
   const [categoryFilter, setCategoryFilter] = useState<"all" | RoadmapCategoryGroup>("all");
@@ -92,16 +92,25 @@ export function RoadmapsPage() {
     const timeout = window.setTimeout(() => setAppliedSearch(searchQuery.slice(0, 100)), 250);
     return () => window.clearTimeout(timeout);
   }, [searchQuery]);
-  const { data, isLoading, isError, error, refetch, isFetching } = useRoadmaps({
-    offset,
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
+    isFetchingNextPage,
+    isFetchNextPageError,
+  } = useRoadmaps({
     search: appliedSearch,
     status: statusFilter,
     category: categoryFilter,
     sort: sortOrder,
   });
-  const items = data?.items ?? EMPTY_ROADMAPS;
-  const pageCount = Math.ceil((data?.total ?? 0) / ROADMAPS_PAGE_SIZE);
-  const currentPage = Math.floor(offset / ROADMAPS_PAGE_SIZE) + 1;
+  const items = data?.pages.flatMap((page) => page.items) ?? EMPTY_ROADMAPS;
+  const total = data?.pages[0]?.total ?? 0;
   const problemDetail = typeof error === "object" && error !== null && "response" in error
     ? (error as { response?: { data?: { detail?: unknown } } }).response?.data?.detail
     : undefined;
@@ -109,8 +118,19 @@ export function RoadmapsPage() {
     ? problemDetail
     : "Impossible de charger vos roadmaps. Vérifiez votre connexion puis réessayez.";
 
+  useEffect(() => {
+    const sentinel = loadMoreRef.current;
+    if (!sentinel || !hasNextPage || isFetchingNextPage || isError || typeof IntersectionObserver === "undefined") return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) void fetchNextPage();
+    }, { rootMargin: "240px 0px" });
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isError, isFetchingNextPage, items.length]);
+
   return (
-    <AppLayout onSearch={(query) => { setSearchQuery(query.slice(0, 100)); setOffset(0); }}>
+    <AppLayout onSearch={(query) => setSearchQuery(query.slice(0, 100))}>
       <PageHeader
         title="Toutes les roadmaps"
         description="Gérez et suivez l'avancement de vos projets stratégiques."
@@ -135,7 +155,7 @@ export function RoadmapsPage() {
             placeholder="Titre du projet…"
             value={searchQuery}
             maxLength={100}
-            onChange={(event) => { setSearchQuery(event.target.value); setOffset(0); }}
+            onChange={(event) => setSearchQuery(event.target.value)}
           />
         </div>
         <div className={styles.filterField}>
@@ -143,7 +163,7 @@ export function RoadmapsPage() {
           <select
             id="roadmap-category"
             value={categoryFilter}
-            onChange={(event) => { setCategoryFilter(event.target.value as "all" | RoadmapCategoryGroup); setOffset(0); }}
+            onChange={(event) => setCategoryFilter(event.target.value as "all" | RoadmapCategoryGroup)}
           >
             <option value="all">Toutes les catégories</option>
             {Object.entries(categoryLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}
@@ -154,7 +174,7 @@ export function RoadmapsPage() {
           <select
             id="roadmap-status"
             value={statusFilter}
-            onChange={(event) => { setStatusFilter(event.target.value as "all" | RoadmapStatus); setOffset(0); }}
+            onChange={(event) => setStatusFilter(event.target.value as "all" | RoadmapStatus)}
           >
             <option value="all">Tous les statuts</option>
             <option value="generating">Génération en cours</option>
@@ -164,7 +184,7 @@ export function RoadmapsPage() {
         </div>
         <div className={styles.filterField}>
           <label htmlFor="roadmap-sort">Trier par</label>
-          <select id="roadmap-sort" value={sortOrder} onChange={(event) => { setSortOrder(event.target.value as RoadmapSort); setOffset(0); }}>
+          <select id="roadmap-sort" value={sortOrder} onChange={(event) => setSortOrder(event.target.value as RoadmapSort)}>
             <option value="recent">Plus récent</option>
             <option value="oldest">Plus ancien</option>
             <option value="progress">Progression</option>
@@ -179,13 +199,13 @@ export function RoadmapsPage() {
         <div className={styles.grid} aria-label="Chargement des roadmaps" aria-busy="true">
           {Array.from({ length: 6 }, (_, index) => <RoadmapSkeleton key={index} />)}
         </div>
-      ) : isError ? (
+      ) : isError && items.length === 0 ? (
         <section className={styles.emptyState} role="alert">
           <Icon name="cloud_off" />
           <p>{errorMessage}</p>
           <Button variant="outline" onClick={() => void refetch()} isLoading={isFetching}>Réessayer</Button>
         </section>
-      ) : data?.total === 0 && !appliedSearch.trim() && statusFilter === "all" && categoryFilter === "all" ? (
+      ) : total === 0 && !appliedSearch.trim() && statusFilter === "all" && categoryFilter === "all" ? (
         <section className={styles.emptyState}>
           <Icon name="route" />
           <h2>Aucune roadmap pour le moment</h2>
@@ -194,12 +214,12 @@ export function RoadmapsPage() {
             Nouvelle roadmap
           </Button>
         </section>
-      ) : data?.total === 0 ? (
+      ) : total === 0 ? (
         <section className={styles.emptyState}>
           <Icon name="search_off" />
           <h2>Aucun résultat</h2>
           <p>Modifiez la recherche ou les filtres pour afficher des roadmaps.</p>
-          <Button variant="outline" onClick={() => { setSearchQuery(""); setAppliedSearch(""); setStatusFilter("all"); setCategoryFilter("all"); setSortOrder("recent"); setOffset(0); }}>
+          <Button variant="outline" onClick={() => { setSearchQuery(""); setAppliedSearch(""); setStatusFilter("all"); setCategoryFilter("all"); setSortOrder("recent"); }}>
             Effacer les filtres
           </Button>
         </section>
@@ -226,18 +246,17 @@ export function RoadmapsPage() {
           </div>
           <div className={styles.listFooter}>
             <p>
-              {items.length} résultat{items.length === 1 ? "" : "s"} affiché{items.length === 1 ? "" : "s"} sur {data?.total ?? 0}
+              {items.length} résultat{items.length === 1 ? "" : "s"} affiché{items.length === 1 ? "" : "s"} sur {total}
             </p>
-            <nav className={styles.pagination} aria-label="Pagination des roadmaps">
-              <Button variant="outline" disabled={offset === 0 || isFetching} onClick={() => setOffset(Math.max(0, offset - ROADMAPS_PAGE_SIZE))}>
-                Précédent
-              </Button>
-              <span>Page {currentPage} sur {pageCount}</span>
-              <Button variant="outline" disabled={currentPage >= pageCount || isFetching} onClick={() => setOffset(offset + ROADMAPS_PAGE_SIZE)}>
-                Suivant
-              </Button>
-            </nav>
           </div>
+          {hasNextPage || isFetchingNextPage || isFetchNextPageError ? (
+            <div ref={loadMoreRef} className={styles.loadMoreArea}>
+              {isFetchNextPageError ? <p role="alert">Impossible de charger les roadmaps suivantes.</p> : null}
+              <Button variant="outline" onClick={() => void fetchNextPage()} isLoading={isFetchingNextPage} aria-label={isFetchingNextPage ? "Chargement des roadmaps suivantes" : undefined}>
+                {isFetchNextPageError ? "Réessayer" : "Charger plus"}
+              </Button>
+            </div>
+          ) : null}
         </>
       )}
     </AppLayout>

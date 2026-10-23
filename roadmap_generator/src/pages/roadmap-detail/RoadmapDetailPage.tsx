@@ -217,7 +217,7 @@ function StepCard({
   const isActive = step.progress.status === "in_progress";
 
   return (
-    <article className={`${styles.stepCard} ${isActive ? styles.activeStep : ""}`}>
+    <article id={`step-${step.id}`} className={`${styles.stepCard} ${isActive ? styles.activeStep : ""}`}>
       <button
         className={`${styles.checkpoint} ${isDone ? styles.completedCheckpoint : ""} ${isActive ? styles.activeCheckpoint : ""}`}
         type="button"
@@ -348,6 +348,14 @@ export function RoadmapDetailPage() {
     () => [...(data?.steps ?? [])].sort((left, right) => left.order - right.order),
     [data?.steps],
   );
+
+  useEffect(() => {
+    if (!data || !location.hash) return;
+    const targetId = decodeURIComponent(location.hash.slice(1));
+    requestAnimationFrame(() => {
+      document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, [data, location.hash]);
   const completedSteps = orderedSteps.filter((step) => step.progress.status === "done");
   const remainingSteps = orderedSteps
     .filter((step) => step.progress.status !== "done")
