@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router";
 import { AppLayout } from "../../app/layouts";
+import { getLearnerProfile } from "../../features/users";
 import {
   ROADMAP_CATEGORY_OPTIONS,
   useGenerateRoadmap,
@@ -43,6 +45,10 @@ function getErrorMessage(error: unknown) {
 
 export function GenerateRoadmapPage() {
   const navigate = useNavigate();
+  const learnerProfileQuery = useQuery({
+    queryKey: ["users", "me", "learner-profile"],
+    queryFn: getLearnerProfile,
+  });
   const { mutateAsync, isPending, error, reset } = useGenerateRoadmap();
   const controllerRef = useRef<AbortController | null>(null);
   const hasStartedStreamRef = useRef(false);
@@ -360,6 +366,32 @@ export function GenerateRoadmapPage() {
           </form>
 
           <aside className={styles.aside}>
+            <section className={styles.learnerProfile} aria-labelledby="learner-profile-title">
+              <div className={styles.learnerProfileHeading}>
+                <Icon name="person" />
+                <h2 id="learner-profile-title">
+                  {learnerProfileQuery.isSuccess && learnerProfileQuery.data.is_configured
+                    ? "Profil d’apprenant configuré"
+                    : learnerProfileQuery.isSuccess
+                      ? "Personnalisez votre profil d’apprenant"
+                      : "Profil d’apprenant"}
+                </h2>
+              </div>
+              <p>
+                {learnerProfileQuery.isSuccess && learnerProfileQuery.data.is_configured
+                  ? "Vos préférences de langue, de rythme et de style sont prises en compte pour générer vos roadmaps."
+                  : learnerProfileQuery.isSuccess
+                    ? "Configurez vos préférences pour adapter les prochaines roadmaps à votre façon d’apprendre."
+                    : "Vérifiez vos préférences pour adapter les prochaines roadmaps à votre façon d’apprendre."}
+              </p>
+              <Link to="/settings">
+                {learnerProfileQuery.isSuccess && learnerProfileQuery.data.is_configured
+                  ? "Modifier mon profil"
+                  : "Configurer mon profil"}
+                <Icon name="arrow_forward" />
+              </Link>
+            </section>
+
             <section className={styles.howItWorks} aria-labelledby="how-it-works-title">
               <h2 id="how-it-works-title">Comment ça marche ?</h2>
               <ol>

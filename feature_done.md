@@ -246,3 +246,9 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 - Le filtre Ressources réutilise les mêmes valeurs et libellés de catégories que le formulaire de génération; les valeurs sont temporairement traduites vers les groupes acceptés par l'API actuelle.
 - Le besoin de charger un catalogue de catégories depuis le backend et de filtrer par catégorie exacte est décrit dans `RESOURCES_CATEGORY_FILTER_BACKEND_REQUIREMENTS.md`.
 - Vérification: contrôle TypeScript et `git diff --check`.
+
+### 2026-10-26 — Accès au profil d'apprenant depuis la génération
+
+- La génération affiche l'état du profil d'apprenant et un lien vers Paramètres pour le configurer ou le modifier.
+- Le backend expose `is_configured` sur le profil global afin de distinguer un profil enregistré des valeurs par défaut.
+- Vérification: `git diff --check`.

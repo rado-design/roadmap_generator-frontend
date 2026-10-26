@@ -22,6 +22,7 @@ export type ExplanationTone = "encouraging" | "neutral" | "direct";
 export type SessionLength = "short" | "medium" | "long";
 
 export interface LearnerProfile {
+  is_configured: boolean;
   language: LearnerLanguage;
   learning_style: LearningStyle;
   learning_speed: LearningSpeed;
