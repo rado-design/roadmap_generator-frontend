@@ -357,6 +357,7 @@ export function RoadmapDetailPage() {
     });
   }, [data, location.hash]);
   const completedSteps = orderedSteps.filter((step) => step.progress.status === "done");
+  const inProgressSteps = orderedSteps.filter((step) => step.progress.status === "in_progress");
   const remainingSteps = orderedSteps
     .filter((step) => step.progress.status !== "done")
     .sort((left, right) => {
@@ -500,11 +501,22 @@ export function RoadmapDetailPage() {
             </div>
 
             <aside className={styles.aside} aria-label="Informations complémentaires">
-              <section className={styles.momentumTemplate}>
-                <span className={styles.templateLabel}>Gabarit · backend à compléter</span>
-                <h2>Momentum</h2>
-                <p>Les analyses de progression et les badges seront affichés lorsque les données correspondantes seront disponibles.</p>
-                <Button disabled title="Les badges ne sont pas encore disponibles.">Voir les badges</Button>
+              <section className={styles.asideCard} aria-labelledby="overview-title">
+                <h2 id="overview-title">Vue d'ensemble</h2>
+                <dl className={styles.overviewStats}>
+                  <div className={styles.overviewStat}>
+                    <dt>Validées</dt>
+                    <dd>{completedSteps.length} / {data.total_steps}</dd>
+                  </div>
+                  <div className={styles.overviewStat}>
+                    <dt>En cours</dt>
+                    <dd>{inProgressSteps.length}</dd>
+                  </div>
+                  <div className={styles.overviewStat}>
+                    <dt>Ressources</dt>
+                    <dd>{resources.length}</dd>
+                  </div>
+                </dl>
               </section>
 
               <section className={styles.asideCard} aria-labelledby="resources-title">
@@ -518,14 +530,6 @@ export function RoadmapDetailPage() {
                 ) : (
                   <p className={styles.asideNote}>Aucune ressource n'est associée aux étapes de cette roadmap.</p>
                 )}
-              </section>
-
-              <section className={styles.asideCard} aria-labelledby="participants-title">
-                <h2 id="participants-title">Participants</h2>
-                <p className={styles.asideNote}>La gestion des participants n'est pas encore disponible.</p>
-                <Button variant="outline" disabled title="Les invitations ne sont pas encore disponibles.">
-                  Inviter un collègue
-                </Button>
               </section>
             </aside>
           </div>

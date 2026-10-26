@@ -1,21 +1,3 @@
-.dataNotice {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin: 24px 0;
-  padding: 14px 16px;
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface-container-low);
-  color: var(--color-on-surface-variant);
-  font-size: 14px;
-  line-height: 20px;
-}
-
-.dataNotice > :global(span) {
-  flex: none;
-  color: var(--color-primary);
-}
 
 .metrics {
   display: grid;
@@ -34,46 +16,40 @@
 
 .metricCard {
   display: flex;
-  min-height: 150px;
+  min-height: 120px;
   flex-direction: column;
   align-items: flex-start;
   padding: 20px;
-}
-
-.liveMetric {
-  border-color: var(--color-primary-fixed);
 }
 
 .metricTopline {
   display: flex;
   width: 100%;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  color: var(--color-on-surface-variant);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
+  gap: 10px;
+  color: var(--color-primary);
+  margin-bottom: 4px;
 }
 
 .metricTopline :global(span.material-symbols-outlined) {
-  color: var(--color-primary);
+  font-size: var(--icon-size-md);
+  flex: none;
+}
+
+.metricLabel {
+  color: var(--color-on-surface-variant);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
 }
 
 .metricValue {
-  margin-top: 8px;
+  margin-top: 4px;
   color: var(--color-on-surface);
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 600;
-  line-height: 38px;
-}
-
-.metricFootnote {
-  margin-top: auto;
-  padding-top: 8px;
-  color: var(--color-on-surface-variant);
-  font-size: 12px;
-  line-height: 16px;
+  line-height: 36px;
+  letter-spacing: -0.02em;
 }
 
 .metricSkeleton,

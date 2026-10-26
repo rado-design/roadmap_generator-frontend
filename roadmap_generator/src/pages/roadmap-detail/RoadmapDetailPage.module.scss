@@ -122,7 +122,10 @@
   padding: 24px;
 }
 
-.activeStep { border: 2px solid var(--color-primary-container); padding: 23px; }
+.activeStep {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
 .checkpoint {
   display: grid;
   width: 28px;
@@ -135,6 +138,7 @@
   background: transparent;
   color: var(--color-on-primary);
   cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
 
   &:hover:not(:disabled) { border-color: var(--color-primary); }
   &:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
@@ -178,7 +182,6 @@
   font: inherit;
   font-size: 12px;
   line-height: 16px;
-  text-transform: uppercase;
   cursor: pointer;
 
   &:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
@@ -215,22 +218,39 @@
 }
 
 .aside { display: grid; gap: 24px; padding-top: 56px; }
-.asideCard h2,
-.momentumTemplate h2 { margin-bottom: 16px; font-size: 16px; font-weight: 600; line-height: 24px; }
+.asideCard h2 { margin-bottom: 16px; font-size: 16px; font-weight: 600; line-height: 24px; }
 
-.momentumTemplate {
-  padding: 24px;
-  border-radius: var(--radius-2xl);
-  background: var(--color-primary);
-  color: var(--color-on-primary);
-
-  h2 { margin: 8px 0; }
-  p { margin-bottom: 16px; font-size: 14px; line-height: 20px; }
-  :global(button) { width: 100%; border: 0; background: var(--color-surface-container-lowest); color: var(--color-primary); box-shadow: none; }
-  :global(button:disabled) { opacity: 0.9; }
+.overviewStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 0;
+  padding: 0;
 }
 
-.templateLabel { font-size: 12px; line-height: 16px; opacity: 0.9; }
+.overviewStat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-low);
+
+  dt {
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--color-on-surface-variant);
+  }
+
+  dd {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 22px;
+    color: var(--color-on-surface);
+  }
+}
+
 .resourceList { display: grid; gap: 12px; }
 
 .resourceItem {
@@ -367,8 +387,7 @@
 @media (max-width: 600px) {
   .summary,
   .stepCard,
-  .asideCard,
-  .momentumTemplate { padding: 20px; }
+  .asideCard { padding: 20px; }
   .summaryHeading { flex-direction: column; gap: 16px; }
   .summaryCopy h1 { font-size: 24px; line-height: 32px; }
   .summaryProgress { flex-direction: row; align-items: center; justify-content: space-between; width: 100%; }

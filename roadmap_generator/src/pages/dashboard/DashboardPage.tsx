@@ -26,9 +26,9 @@ const statusLabels: Record<string, string> = {
 const EMPTY_ROADMAPS: DashboardRoadmap[] = [];
 
 const metricLabels = [
+  { label: "Roadmaps prêtes", icon: "route", key: "total" as const },
   { label: "Roadmaps terminées", icon: "task_alt", key: "completed" as const },
-  { label: "Roadmaps en cours", icon: "pending_actions", key: "in_progress" as const },
-  { label: "Taux de complétion", icon: "trending_up", key: "completion_rate" as const },
+  { label: "En cours", icon: "pending_actions", key: "in_progress" as const },
 ];
 
 function getProgress(roadmap: DashboardRoadmap) {
@@ -189,47 +189,41 @@ export function DashboardPage() {
         description="Retrouvez vos parcours récents et suivez votre progression."
       />
 
-      <div className={styles.dataNotice} role="note">
-        <Icon name="info" />
-        <p>
-          Les indicateurs portent sur les roadmaps prêtes. Le taux de complétion correspond à la
-          part des roadmaps terminées parmi celles-ci.
-        </p>
-      </div>
-
       <section className={styles.metrics} aria-label="Indicateurs du tableau de bord">
-        <article className={`${styles.metricCard} ${styles.liveMetric}`}>
+        {metricLabels.map(({ label, icon, key }) => (
+          <article className={styles.metricCard} key={label}>
+            <div className={styles.metricTopline}>
+              <Icon name={icon} aria-hidden="true" />
+              <span className={styles.metricLabel}>{label}</span>
+            </div>
+            {isLoading ? (
+              <span className={styles.metricSkeleton} aria-label="Chargement" />
+            ) : isError ? (
+              <span className={styles.metricValue}>—</span>
+            ) : (
+              <span className={styles.metricValue}>
+                {key === "total"
+                  ? data?.roadmaps.total ?? 0
+                  : data?.roadmaps[key] ?? 0}
+              </span>
+            )}
+          </article>
+        ))}
+        <article className={styles.metricCard}>
           <div className={styles.metricTopline}>
-            <span>Roadmaps prêtes</span>
-            <Icon name="route" />
+            <Icon name="trending_up" aria-hidden="true" />
+            <span className={styles.metricLabel}>Taux de complétion</span>
           </div>
           {isLoading ? (
             <span className={styles.metricSkeleton} aria-label="Chargement" />
           ) : isError ? (
             <span className={styles.metricValue}>—</span>
           ) : (
-            <span className={styles.metricValue}>{data?.roadmaps.total ?? 0}</span>
+            <span className={styles.metricValue}>
+              {data?.completion_rate == null ? "—" : `${data.completion_rate} %`}
+            </span>
           )}
-          <span className={styles.metricFootnote}>Nombre fourni par votre compte</span>
         </article>
-        {metricLabels.map(({ label, icon, key }) => (
-          <article className={styles.metricCard} key={label}>
-            <div className={styles.metricTopline}>
-              <span>{label}</span>
-              <Icon name={icon} />
-            </div>
-            {isLoading ? <span className={styles.metricSkeleton} aria-label="Chargement" /> : isError ? (
-              <span className={styles.metricValue}>—</span>
-            ) : (
-              <span className={styles.metricValue}>
-                {key === "completion_rate"
-                  ? data?.completion_rate == null ? "—" : `${data.completion_rate} %`
-                  : data?.roadmaps[key] ?? 0}
-              </span>
-            )}
-            <span className={styles.metricFootnote}>{key === "completion_rate" ? "Roadmaps terminées" : "Nombre fourni par votre compte"}</span>
-          </article>
-        ))}
       </section>
 
       <section className={styles.analysisGrid} aria-label="Analyses">
@@ -243,6 +237,10 @@ export function DashboardPage() {
             <h2 id="recent-roadmaps-title">Roadmaps récentes</h2>
             <p>Les trois plus récentes parmi vos roadmaps prêtes.</p>
           </div>
+          <Link to="/roadmaps" className={styles.allRoadmapsLink}>
+            Toutes les roadmaps
+            <Icon name="arrow_forward" />
+          </Link>
         </div>
 
         {isLoading ? (
@@ -271,7 +269,7 @@ export function DashboardPage() {
             <p>
               {searchQuery
                 ? "Aucune roadmap récente ne correspond à cette recherche."
-                : "Vous n’avez pas encore de roadmap. Votre premier parcours apparaîtra ici."}
+                : "Vous n'avez pas encore de roadmap. Votre premier parcours apparaîtra ici."}
             </p>
           </div>
         )}

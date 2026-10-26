@@ -371,28 +371,28 @@ export function GenerateRoadmapPage() {
               <h2 id="how-it-works-title">Comment ça marche ?</h2>
               <ol>
                 <li>
-                  <span>1</span>
+                  <span aria-hidden="true" />
                   <div><strong>Définissez l'objectif</strong><p>Soyez aussi précis que possible pour obtenir un parcours pertinent.</p></div>
                 </li>
                 <li>
-                  <span>2</span>
+                  <span aria-hidden="true" />
                   <div><strong>Choisissez les domaines</strong><p>Sélectionnez la catégorie et le rythme adaptés à votre projet.</p></div>
                 </li>
                 <li>
-                  <span>3</span>
+                  <span aria-hidden="true" />
                   <div><strong>Laissez l'IA structurer le parcours</strong><p>Les étapes apparaissent progressivement pendant la génération.</p></div>
                 </li>
               </ol>
             </section>
 
             <section className={styles.inspiration} aria-labelledby="inspiration-title">
-              <h2 id="inspiration-title">Inspiration</h2>
+              <h2 id="inspiration-title">Exemple</h2>
               <p>« Apprendre le développement mobile avec Flutter en 6 mois »</p>
               <button
                 type="button"
                 onClick={() => {
                   setGoal("Apprendre le développement mobile avec Flutter en 6 mois");
-                  setCategory("mobile_dev");
+                  setCategory("programming");
                 }}
                 disabled={isPending}
               >
