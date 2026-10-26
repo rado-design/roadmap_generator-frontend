@@ -224,3 +224,8 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 
 - La distribution par catégorie utilise un graphique en anneau avec sa légende; l'état des roadmaps reprend les barres de progression horizontales de la maquette.
 - Vérification: `git diff --check`.
+
+### 2026-10-26 — Statut des étapes dans Ressources
+
+- Le filtre des ressources envoie `step_status` (`todo`, `in_progress`, `done`) au backend; chaque carte affiche le libellé français du statut renvoyé par `step.status`.
+- Vérification: `git diff --check`.

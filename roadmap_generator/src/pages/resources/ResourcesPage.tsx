@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppLayout, PageHeader } from "../../app/layouts";
 import { listRoadmaps } from "../../features/roadmaps/api/listRoadmaps";
-import { RESOURCES_PAGE_SIZE, useResources, useSetResourceFavorite, type ResourceCategory, type ResourceItem, type ResourceSort } from "../../features/resources";
+import { RESOURCES_PAGE_SIZE, useResources, useSetResourceFavorite, type ResourceCategory, type ResourceItem, type ResourceSort, type StepProgressStatus } from "../../features/resources";
 import { Button, Icon } from "../../shared/components";
 import styles from "./ResourcesPage.module.scss";
 
@@ -11,7 +11,11 @@ const categories: Record<ResourceCategory, string> = {
   tech: "Technologie", languages: "Langues", sciences: "Sciences", business: "Business",
   creative: "Création", trades: "Métiers", life: "Vie pratique", hobbies: "Loisirs", other: "Autre",
 };
-const statusNote = "Le statut d'étape sera disponible lorsque l'API l'exposera.";
+const stepStatusLabels: Record<StepProgressStatus, string> = {
+  todo: "À faire",
+  in_progress: "En cours",
+  done: "Terminée",
+};
 
 function getSafeResourceUrl(value: string | null) {
   if (!value) return null;
@@ -158,7 +162,9 @@ function ResourceCard({ resource, pending, onFavorite, onOpenPreview, from }: {
         <span className={styles.stepLabel}>Étape {resource.step.order + 1}</span>
         <div className={styles.stepRow}>
           <Link to={`/roadmaps/${resource.roadmap.id}#step-${resource.step.id}`} state={{ from }} title={resource.step.title}>{resource.step.title}</Link>
-          <span className={styles.statusUnavailable} title={statusNote}>Statut indisponible</span>
+          <span className={`${styles.stepStatusBadge} ${styles[`stepStatus_${resource.step.status}`]}`}>
+            {stepStatusLabels[resource.step.status]}
+          </span>
         </div>
       </div>
     </article>
@@ -173,6 +179,7 @@ export function ResourcesPage() {
   const [roadmapId, setRoadmapId] = useState("all");
   const [category, setCategory] = useState<"all" | ResourceCategory>("all");
   const [type, setType] = useState("all");
+  const [stepStatus, setStepStatus] = useState<"all" | StepProgressStatus>("all");
   const [favoriteOnly, setFavoriteOnly] = useState(false);
   const [sort, setSort] = useState<ResourceSort>("recent");
   const [previewResource, setPreviewResource] = useState<ResourceItem | null>(null);
@@ -190,6 +197,7 @@ export function ResourcesPage() {
     roadmap_id: roadmapId === "all" ? undefined : Number(roadmapId),
     category: category === "all" ? undefined : category,
     type: type === "all" ? undefined : type,
+    step_status: stepStatus === "all" ? undefined : stepStatus,
     favorite: favoriteOnly ? true : undefined,
     sort,
   };
@@ -216,7 +224,7 @@ export function ResourcesPage() {
   const errorMessage = error && typeof error === "object" && "message" in error && typeof error.message === "string"
     ? error.message
     : "Impossible de charger vos ressources. Vérifiez votre connexion puis réessayez.";
-  const hasFilters = Boolean(appliedSearch || roadmapId !== "all" || category !== "all" || type !== "all" || favoriteOnly);
+  const hasFilters = Boolean(appliedSearch || roadmapId !== "all" || category !== "all" || type !== "all" || stepStatus !== "all" || favoriteOnly);
 
   useEffect(() => {
     const sentinel = loadMoreRef.current;
@@ -230,7 +238,7 @@ export function ResourcesPage() {
   }, [fetchNextPage, hasNextPage, isError, isFetchingNextPage, resources.length]);
 
   const clearFilters = () => {
-    setSearch(""); setAppliedSearch(""); setRoadmapId("all"); setCategory("all"); setType("all");
+    setSearch(""); setAppliedSearch(""); setRoadmapId("all"); setCategory("all"); setType("all"); setStepStatus("all");
     setFavoriteOnly(false); setSort("recent");
   };
 
@@ -271,7 +279,12 @@ export function ResourcesPage() {
         </div>
         <div className={styles.filterField}>
           <label htmlFor="resource-step-status">Statut de l'étape</label>
-          <select id="resource-step-status" disabled title={statusNote} value="unavailable"><option value="unavailable">À connecter au backend</option></select>
+          <select id="resource-step-status" value={stepStatus} onChange={(event) => setStepStatus(event.target.value as "all" | StepProgressStatus)}>
+            <option value="all">Tous les statuts</option>
+            <option value="todo">À faire</option>
+            <option value="in_progress">En cours</option>
+            <option value="done">Terminée</option>
+          </select>
         </div>
         <div className={styles.filterField}>
           <label htmlFor="resource-category">Catégorie</label>
@@ -291,7 +304,6 @@ export function ResourcesPage() {
             <input type="checkbox" checked={favoriteOnly} onChange={(event) => setFavoriteOnly(event.target.checked)} />
             <Icon name="star" />Mes favoris
           </label>
-          <span className={styles.filterHint}>{statusNote}</span>
         </div>
       </section>
 

@@ -12,6 +12,7 @@ export type ResourceCategory =
   | "other";
 
 export type ResourceSort = "recent" | "oldest";
+export type StepProgressStatus = "todo" | "in_progress" | "done";
 
 export interface ResourceItem {
   id: number;
@@ -21,7 +22,7 @@ export interface ResourceItem {
   created_at: string;
   category: ResourceCategory;
   is_favorite: boolean;
-  step: { id: number; order: number; title: string };
+  step: { id: number; order: number; title: string; status: StepProgressStatus };
   roadmap: { id: number; title: string };
 }
 
@@ -43,6 +44,7 @@ export interface ResourceListParams {
   created_to?: string;
   sort?: ResourceSort;
   favorite?: boolean;
+  step_status?: StepProgressStatus;
 }
 
 export async function listResources(params: ResourceListParams) {
