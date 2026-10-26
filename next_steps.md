@@ -254,3 +254,8 @@ Ajouter chaque nouvelle action de reprise tout en bas, avec sa date. La dernièr
 
 - Ajouter les capacités e-mail, photo de profil et suppression du compte décrites dans `SETTINGS_PAGE_BACKEND_REQUIREMENTS.md`, puis activer les actions correspondantes sur la page Paramètres.
 - Clarifier/ajouter côté backend le contrat des tendances mensuelles du dashboard si elles doivent correspondre à la maquette.
+
+### 2026-10-26 — Après l'alignement des catégories Ressources
+
+- Charger les catégories depuis le backend et filtrer les ressources par catégorie exacte selon `RESOURCES_CATEGORY_FILTER_BACKEND_REQUIREMENTS.md`.
+- Clarifier/ajouter côté backend le contrat des tendances mensuelles du dashboard si elles doivent correspondre à la maquette.

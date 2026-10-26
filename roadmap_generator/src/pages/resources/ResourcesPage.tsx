@@ -3,14 +3,11 @@ import { Link, useLocation } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppLayout, PageHeader } from "../../app/layouts";
 import { listRoadmaps } from "../../features/roadmaps/api/listRoadmaps";
-import { RESOURCES_PAGE_SIZE, useResources, useSetResourceFavorite, type ResourceCategory, type ResourceItem, type ResourceSort, type StepProgressStatus } from "../../features/resources";
+import { ROADMAP_CATEGORY_GROUPS, ROADMAP_CATEGORY_OPTIONS, type RoadmapCategory } from "../../features/roadmaps";
+import { RESOURCES_PAGE_SIZE, useResources, useSetResourceFavorite, type ResourceItem, type ResourceSort, type StepProgressStatus } from "../../features/resources";
 import { Button, Icon } from "../../shared/components";
 import styles from "./ResourcesPage.module.scss";
 
-const categories: Record<ResourceCategory, string> = {
-  tech: "Technologie", languages: "Langues", sciences: "Sciences", business: "Business",
-  creative: "Création", trades: "Métiers", life: "Vie pratique", hobbies: "Loisirs", other: "Autre",
-};
 const stepStatusLabels: Record<StepProgressStatus, string> = {
   todo: "À faire",
   in_progress: "En cours",
@@ -177,7 +174,7 @@ export function ResourcesPage() {
   const [search, setSearch] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
   const [roadmapId, setRoadmapId] = useState("all");
-  const [category, setCategory] = useState<"all" | ResourceCategory>("all");
+  const [category, setCategory] = useState<"all" | RoadmapCategory>("all");
   const [type, setType] = useState("all");
   const [stepStatus, setStepStatus] = useState<"all" | StepProgressStatus>("all");
   const [favoriteOnly, setFavoriteOnly] = useState(false);
@@ -195,7 +192,7 @@ export function ResourcesPage() {
     limit: RESOURCES_PAGE_SIZE,
     search: appliedSearch || undefined,
     roadmap_id: roadmapId === "all" ? undefined : Number(roadmapId),
-    category: category === "all" ? undefined : category,
+    category: category === "all" ? undefined : ROADMAP_CATEGORY_GROUPS[category],
     type: type === "all" ? undefined : type,
     step_status: stepStatus === "all" ? undefined : stepStatus,
     favorite: favoriteOnly ? true : undefined,
@@ -288,9 +285,9 @@ export function ResourcesPage() {
         </div>
         <div className={styles.filterField}>
           <label htmlFor="resource-category">Catégorie</label>
-          <select id="resource-category" value={category} onChange={(event) => setCategory(event.target.value as "all" | ResourceCategory)}>
+          <select id="resource-category" value={category} onChange={(event) => setCategory(event.target.value as "all" | RoadmapCategory)}>
             <option value="all">Toutes les catégories</option>
-            {Object.entries(categories).map(([key, label]) => <option key={key} value={key}>{label}</option>)}
+            {ROADMAP_CATEGORY_OPTIONS.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
           </select>
         </div>
         <div className={styles.filterField}>

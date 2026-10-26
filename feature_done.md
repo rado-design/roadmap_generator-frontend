@@ -240,3 +240,9 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 
 - Les boutons de déconnexion de la barre latérale et de la page Paramètres utilisent une boîte de dialogue stylisée; annuler conserve la session active.
 - Vérification: `git diff --check`.
+
+### 2026-10-26 — Catégories du filtre Ressources alignées sur la génération
+
+- Le filtre Ressources réutilise les mêmes valeurs et libellés de catégories que le formulaire de génération; les valeurs sont temporairement traduites vers les groupes acceptés par l'API actuelle.
+- Le besoin de charger un catalogue de catégories depuis le backend et de filtrer par catégorie exacte est décrit dans `RESOURCES_CATEGORY_FILTER_BACKEND_REQUIREMENTS.md`.
+- Vérification: contrôle TypeScript et `git diff --check`.

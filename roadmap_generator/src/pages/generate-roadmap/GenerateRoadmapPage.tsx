@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
 import { AppLayout } from "../../app/layouts";
 import {
+  ROADMAP_CATEGORY_OPTIONS,
   useGenerateRoadmap,
   type GeneratedRoadmapStep,
   type GenerateRoadmapRequest,
@@ -13,14 +14,6 @@ import {
 import { Button } from "../../shared/components/Button";
 import { Icon } from "../../shared/components/Icon";
 import styles from "./GenerateRoadmapPage.module.scss";
-
-const categories: { value: RoadmapCategory; label: string }[] = [
-  { value: "programming", label: "Développement" },
-  { value: "marketing_sales", label: "Marketing" },
-  { value: "project_management", label: "Produit" },
-  { value: "ux_ui_design", label: "Design" },
-  { value: "other", label: "Autre domaine" },
-];
 
 const levels: { value: LearnerLevel; label: string }[] = [
   { value: "beginner", label: "Débutant" },
@@ -265,7 +258,7 @@ export function GenerateRoadmapPage() {
             <fieldset className={styles.fieldset}>
               <legend className={styles.label}>Catégorie de la roadmap</legend>
               <div className={styles.choices}>
-                {categories.map((item) => (
+                {ROADMAP_CATEGORY_OPTIONS.map((item) => (
                   <label className={`${styles.choice} ${category === item.value ? styles.selected : ""}`} key={item.value}>
                     <input
                       type="radio"
