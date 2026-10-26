@@ -10,6 +10,7 @@ import { RoadmapsPage } from "../pages/roadmaps";
 import { RoadmapDetailPage } from "../pages/roadmap-detail";
 import { GenerateRoadmapPage } from "../pages/generate-roadmap";
 import { ResourcesPage } from "../pages/resources";
+import { SettingsPage } from "../pages/settings";
 import { PublicOnlyRoute, RequireAuthRoute } from "./RouteGuards";
 
 export const router = createBrowserRouter([
@@ -42,6 +43,14 @@ export const router = createBrowserRouter([
     element: (
       <RequireAuthRoute>
         <ResourcesPage />
+      </RequireAuthRoute>
+    ),
+  },
+  {
+    path: "/settings",
+    element: (
+      <RequireAuthRoute>
+        <SettingsPage />
       </RequireAuthRoute>
     ),
   },

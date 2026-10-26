@@ -1,0 +1,68 @@
+.settingsForm { display: grid; gap: 24px; }
+
+.card,
+.loadingPanel,
+.statePanel {
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-2xl);
+  background: var(--color-surface-container-lowest);
+}
+
+.card { min-width: 0; padding: 24px; }
+.sectionTitle { font-size: 16px; font-weight: 600; line-height: 24px; }
+.sectionDescription { margin-top: 4px; color: var(--color-on-surface-variant); font-size: 12px; line-height: 16px; }
+.helper { margin-top: 4px; color: var(--color-on-surface-variant); font-size: 12px; line-height: 16px; }
+
+.avatarRow { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin: 16px 0 24px; }
+.avatar { display: grid; width: 72px; height: 72px; flex: none; place-items: center; border-radius: var(--radius-full); background: var(--color-primary-fixed); color: var(--color-on-primary-container); font-size: 20px; font-weight: 600; }
+.avatarRow :global(button) { width: auto; min-height: 40px; padding: 8px 16px; box-shadow: none; }
+
+.personalFields { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
+.field { display: flex; min-width: 0; flex-direction: column; gap: 6px; }
+.field label,
+.choiceFieldset legend { color: var(--color-on-surface); font-size: 14px; font-weight: 500; line-height: 20px; }
+.field input,
+.field select { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-lg); background: var(--color-surface-container-lowest); color: var(--color-on-surface); font: inherit; font-size: 14px; line-height: 20px; }
+.field input:focus-visible,
+.field select:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.field input[readonly] { background: var(--color-surface-container-low); color: var(--color-on-surface-variant); }
+
+.lowerGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); align-items: start; gap: 24px; }
+.learnerCard { display: grid; gap: 24px; }
+.choiceFieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+.choiceFieldset legend { margin-bottom: 8px; padding: 0; }
+.choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.choice { display: inline-flex; min-height: 40px; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-full); background: var(--color-surface-container-lowest); color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; cursor: pointer; }
+.choice input { width: 16px; height: 16px; margin: 0; accent-color: var(--color-primary); }
+.choice:focus-within { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.selectedChoice { border-color: var(--color-primary); background: var(--color-primary-fixed); color: var(--color-on-primary-container); }
+
+.rightColumn { display: grid; gap: 24px; }
+.securityCard { display: grid; gap: 24px; }
+.accountCard { display: grid; gap: 16px; }
+.accountActions { display: flex; flex-wrap: wrap; gap: 12px; }
+.accountActions :global(button) { width: auto; min-height: 40px; padding: 8px 16px; box-shadow: none; }
+.accountActions .deleteButton { border-color: var(--color-error); color: var(--color-error); }
+.deleteButton:disabled { cursor: not-allowed; opacity: 0.65; }
+
+.formActions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; }
+.formActions :global(button) { width: auto; min-height: 44px; padding: 10px 16px; }
+.errorMessage,
+.successMessage { padding: 12px 16px; border-radius: var(--radius-lg); font-size: 14px; line-height: 20px; }
+.errorMessage { background: var(--color-error-container); color: var(--color-on-error-container); }
+.successMessage { background: var(--color-secondary-container); color: var(--color-on-secondary-container); }
+.loadingPanel,
+.statePanel { display: flex; min-height: 180px; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; color: var(--color-on-surface-variant); text-align: center; }
+.statePanel :global(.material-symbols-outlined) { color: var(--color-primary); font-size: var(--icon-size-md); }
+.statePanel p { max-width: 52ch; font-size: 14px; line-height: 20px; }
+.statePanel :global(button) { width: auto; }
+
+@media (max-width: 680px) {
+  .card { padding: 20px; }
+  .lowerGrid { grid-template-columns: 1fr; }
+  .accountActions { align-items: flex-start; flex-direction: column; }
+  .accountActions :global(button) { width: 100%; }
+  .formActions { align-items: stretch; flex-direction: column-reverse; }
+  .formActions :global(button) { width: 100%; }
+}
+

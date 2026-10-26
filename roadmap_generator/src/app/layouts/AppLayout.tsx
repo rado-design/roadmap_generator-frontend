@@ -6,6 +6,7 @@ import { queryClient } from "../../shared/lib/queryClient";
 import { Footer } from "../../shared/components/Footer";
 import { AppTopBar } from "../../shared/components/AppTopBar";
 import { Sidebar } from "../../shared/components/Sidebar";
+import { LogoutConfirmDialog } from "../../shared/components/LogoutConfirmDialog/LogoutConfirmDialog";
 import styles from "./AppLayout.module.scss";
 
 interface AppLayoutProps {
@@ -25,6 +26,7 @@ export function AppLayout({
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState<string>();
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const clearAccessToken = useAuthStore((state) => state.clearAccessToken);
   const navigate = useNavigate();
   const closeSidebar = () => setMobileSidebarOpen(false);
@@ -39,6 +41,7 @@ export function AppLayout({
       navigate("/login", { replace: true });
     } catch {
       setLogoutError("Déconnexion impossible. Vérifiez votre connexion puis réessayez.");
+      setLogoutConfirmOpen(false);
     } finally {
       setIsLoggingOut(false);
     }
@@ -69,7 +72,7 @@ export function AppLayout({
           mobileOpen={mobileSidebarOpen}
           isLoggingOut={isLoggingOut}
           logoutError={logoutError}
-          onLogout={() => void handleLogout()}
+          onLogout={() => setLogoutConfirmOpen(true)}
           onNavigate={closeSidebar}
         />
         {mobileSidebarOpen ? (
@@ -89,6 +92,13 @@ export function AppLayout({
           </main>
         </div>
       </div>
+
+      <LogoutConfirmDialog
+        open={logoutConfirmOpen}
+        isLoading={isLoggingOut}
+        onConfirm={() => void handleLogout()}
+        onCancel={() => setLogoutConfirmOpen(false)}
+      />
 
       <Footer />
     </div>

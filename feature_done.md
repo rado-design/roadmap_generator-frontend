@@ -229,3 +229,14 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 
 - Le filtre des ressources envoie `step_status` (`todo`, `in_progress`, `done`) au backend; chaque carte affiche le libellé français du statut renvoyé par `step.status`.
 - Vérification: `git diff --check`.
+
+### 2026-10-26 — Page Paramètres
+
+- La page Paramètres reprend les sections et la disposition de la maquette; les informations de compte, les préférences d'apprenant et le mot de passe utilisent les endpoints utilisateur existants.
+- Le changement d'e-mail, la photo de profil et la suppression du compte restent désactivés faute d'endpoints correspondants; les besoins sont consignés dans `SETTINGS_PAGE_BACKEND_REQUIREMENTS.md`.
+- Vérification: `git diff --check`.
+
+### 2026-10-26 — Confirmation avant déconnexion
+
+- Les boutons de déconnexion de la barre latérale et de la page Paramètres utilisent une boîte de dialogue stylisée; annuler conserve la session active.
+- Vérification: `git diff --check`.

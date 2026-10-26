@@ -9,4 +9,5 @@ export { ErrorBoundary } from "./ErrorBoundary";
 export { Footer } from "./Footer";
 export { Sidebar } from "./Sidebar";
 export { AppTopBar } from "./AppTopBar";
+export { LogoutConfirmDialog } from "./LogoutConfirmDialog/LogoutConfirmDialog";
 
