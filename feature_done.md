@@ -252,3 +252,15 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 - La génération affiche l'état du profil d'apprenant et un lien vers Paramètres pour le configurer ou le modifier.
 - Le backend expose `is_configured` sur le profil global afin de distinguer un profil enregistré des valeurs par défaut.
 - Vérification: `git diff --check`.
+
+### 2026-10-28 — Archivage des roadmaps et de leurs ressources
+
+- La liste des roadmaps distingue les éléments actifs et archivés; chaque carte permet d'archiver ou de restaurer une roadmap via les endpoints backend.
+- Le détail reste consultable en lecture seule lorsqu'il est archivé, et les ressources qui lui appartiennent sont retirées de la liste Ressources par le backend; les caches roadmaps, dashboard et ressources sont actualisés après l'action.
+- L'onglet actif/archivé est conservé dans l'URL pour revenir à la bonne liste depuis le détail.
+- Vérification: contrôle TypeScript avec `--ignoreDeprecations 6.0` et `git diff --check`.
+
+### 2026-10-28 — Documentation générale du frontend
+
+- Le README racine décrit maintenant les fonctionnalités présentes, l’architecture, les routes, les contrats API, la configuration locale, les commandes, les consignes de maquette et les limites connues; le README du package renvoie vers cette référence.
+- Vérification: `git diff --check`.

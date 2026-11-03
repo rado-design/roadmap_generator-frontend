@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { AppLayout, PageHeader } from "../../app/layouts";
-import { useRoadmaps, type RoadmapCategoryGroup, type RoadmapSort, type RoadmapStatus, type RoadmapSummary } from "../../features/roadmaps";
+import { useRoadmaps, useSetRoadmapArchived, type RoadmapCategoryGroup, type RoadmapSort, type RoadmapStatus, type RoadmapSummary } from "../../features/roadmaps";
 import { Button } from "../../shared/components/Button";
 import { Icon } from "../../shared/components/Icon";
 import styles from "./RoadmapsPage.module.scss";
@@ -40,7 +40,13 @@ function formatCreationDate(value: string) {
   }).format(date)}`;
 }
 
-function RoadmapCard({ roadmap, from }: { roadmap: RoadmapSummary; from: { pathname: string; search: string; hash: string } }) {
+function RoadmapCard({ roadmap, from, archived, pending, onArchive }: {
+  roadmap: RoadmapSummary;
+  from: { pathname: string; search: string; hash: string };
+  archived: boolean;
+  pending: boolean;
+  onArchive: (roadmap: RoadmapSummary) => void;
+}) {
   const progress = getProgress(roadmap);
   const statusClass = roadmap.status === "failed"
     ? styles.failed
@@ -49,9 +55,10 @@ function RoadmapCard({ roadmap, from }: { roadmap: RoadmapSummary; from: { pathn
       : styles.ready;
 
   return (
-    <Link className={styles.card} to={`/roadmaps/${roadmap.id}`} state={{ from }}>
+    <article className={`${styles.card} ${archived ? styles.archivedCard : ""}`}>
       <span className={`${styles.status} ${statusClass}`}>{statusLabels[roadmap.status]}</span>
-      <h2 className={styles.cardTitle}>{roadmap.title}</h2>
+      {archived ? <span className={styles.archivedBadge}>Archivée</span> : null}
+      <h2 className={styles.cardTitle}><Link to={`/roadmaps/${roadmap.id}`} state={{ from }}>{roadmap.title}</Link></h2>
       <p className={styles.goal}>{roadmap.goal}</p>
       <div className={styles.progressMeta}>
         <span>Progression</span>
@@ -71,7 +78,13 @@ function RoadmapCard({ roadmap, from }: { roadmap: RoadmapSummary; from: { pathn
         <span className={styles.dateIcon} aria-hidden="true"><Icon name="calendar_today" /></span>
         <span>{formatCreationDate(roadmap.created_at)}</span>
       </div>
-    </Link>
+      <div className={styles.cardActions}>
+        <button type="button" onClick={() => onArchive(roadmap)} disabled={pending} aria-busy={pending}>
+          <Icon name={archived ? "unarchive" : "archive"} />
+          {archived ? "Désarchiver" : "Archiver"}
+        </button>
+      </div>
+    </article>
   );
 }
 
@@ -87,6 +100,8 @@ export function RoadmapsPage() {
   const [statusFilter, setStatusFilter] = useState<"all" | RoadmapStatus>("all");
   const [categoryFilter, setCategoryFilter] = useState<"all" | RoadmapCategoryGroup>("all");
   const [sortOrder, setSortOrder] = useState<RoadmapSort>("recent");
+  const showArchived = new URLSearchParams(location.search).get("archived") === "true";
+  const archiveMutation = useSetRoadmapArchived();
   const [appliedSearch, setAppliedSearch] = useState("");
   useEffect(() => {
     const timeout = window.setTimeout(() => setAppliedSearch(searchQuery.slice(0, 100)), 250);
@@ -108,6 +123,7 @@ export function RoadmapsPage() {
     status: statusFilter,
     category: categoryFilter,
     sort: sortOrder,
+    archived: showArchived,
   });
   const items = data?.pages.flatMap((page) => page.items) ?? EMPTY_ROADMAPS;
   const total = data?.pages[0]?.total ?? 0;
@@ -117,6 +133,14 @@ export function RoadmapsPage() {
   const errorMessage = typeof problemDetail === "string"
     ? problemDetail
     : "Impossible de charger vos roadmaps. Vérifiez votre connexion puis réessayez.";
+
+  const setArchiveView = (archived: boolean) => {
+    const params = new URLSearchParams(location.search);
+    if (archived) params.set("archived", "true");
+    else params.delete("archived");
+    const query = params.toString();
+    navigate(`${location.pathname}${query ? `?${query}` : ""}`, { replace: true });
+  };
 
   useEffect(() => {
     const sentinel = loadMoreRef.current;
@@ -132,8 +156,8 @@ export function RoadmapsPage() {
   return (
     <AppLayout onSearch={(query) => setSearchQuery(query.slice(0, 100))}>
       <PageHeader
-        title="Toutes les roadmaps"
-        description="Gérez et suivez l'avancement de vos projets stratégiques."
+        title={showArchived ? "Roadmaps archivées" : "Toutes les roadmaps"}
+        description={showArchived ? "Consultez et restaurez vos roadmaps archivées." : "Gérez et suivez l'avancement de vos projets stratégiques."}
         actions={(
           <div className={styles.headerActions}>
             <Button variant="outline" disabled title="L'export sera ajouté dans une prochaine étape.">
@@ -145,6 +169,11 @@ export function RoadmapsPage() {
           </div>
         )}
       />
+
+      <div className={styles.archiveToggle} aria-label="Filtrer les roadmaps par archivage">
+        <button type="button" aria-pressed={!showArchived} className={!showArchived ? styles.archiveToggleActive : ""} onClick={() => setArchiveView(false)}>Actives</button>
+        <button type="button" aria-pressed={showArchived} className={showArchived ? styles.archiveToggleActive : ""} onClick={() => setArchiveView(true)}>Archivées</button>
+      </div>
 
       <section className={styles.filters} aria-label="Recherche et filtres des roadmaps">
         <div className={styles.filterField}>
@@ -208,11 +237,9 @@ export function RoadmapsPage() {
       ) : total === 0 && !appliedSearch.trim() && statusFilter === "all" && categoryFilter === "all" ? (
         <section className={styles.emptyState}>
           <Icon name="route" />
-          <h2>Aucune roadmap pour le moment</h2>
-          <p>Les roadmaps que vous créerez apparaîtront ici.</p>
-          <Button icon="add" onClick={() => navigate("/roadmaps/generate")}>
-            Nouvelle roadmap
-          </Button>
+          <h2>{showArchived ? "Aucune roadmap archivée" : "Aucune roadmap pour le moment"}</h2>
+          <p>{showArchived ? "Les roadmaps que vous archivez apparaîtront ici." : "Les roadmaps que vous créerez apparaîtront ici."}</p>
+          {!showArchived ? <Button icon="add" onClick={() => navigate("/roadmaps/generate")}>Nouvelle roadmap</Button> : null}
         </section>
       ) : total === 0 ? (
         <section className={styles.emptyState}>
@@ -225,15 +252,19 @@ export function RoadmapsPage() {
         </section>
       ) : (
         <>
+          {archiveMutation.isError ? <p className={styles.archiveError} role="alert">Impossible de modifier l’archivage de cette roadmap. Réessayez.</p> : null}
           <div className={styles.grid}>
             {items.map((roadmap) => (
               <RoadmapCard
                 key={roadmap.id}
                 roadmap={roadmap}
                 from={{ pathname: location.pathname, search: location.search, hash: location.hash }}
+                archived={showArchived}
+                pending={archiveMutation.isPending && archiveMutation.variables?.roadmapId === roadmap.id}
+                onArchive={(item) => archiveMutation.mutate({ roadmapId: item.id, archived: !showArchived })}
               />
             ))}
-            <Link
+            {!showArchived ? <Link
               className={styles.createCard}
               to="/roadmaps/generate"
               state={{ from: { pathname: location.pathname, search: location.search, hash: location.hash } }}
@@ -242,7 +273,7 @@ export function RoadmapsPage() {
               <span className={styles.createIcon}><Icon name="add" /></span>
               <strong>Nouvelle roadmap</strong>
               <span>Créer un nouveau parcours personnalisé.</span>
-            </Link>
+            </Link> : null}
           </div>
           <div className={styles.listFooter}>
             <p>

@@ -22,6 +22,7 @@ export interface RoadmapSummary {
   created_at: string;
   total_steps: number;
   completed_steps: number;
+  archived_at: string | null;
 }
 
 export interface RoadmapListResponse {
@@ -38,11 +39,12 @@ export interface RoadmapListParams {
   status?: RoadmapStatus;
   category?: RoadmapCategoryGroup;
   sort?: RoadmapSort;
+  archived?: boolean;
 }
 
 export async function listRoadmaps(params: RoadmapListParams) {
   const response = await apiClient.get<RoadmapListResponse>("api/v1/roadmaps", {
-    params,
+    params: { ...params, archived: params.archived ?? false },
   });
   return response.data;
 }

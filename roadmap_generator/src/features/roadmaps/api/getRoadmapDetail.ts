@@ -30,6 +30,7 @@ export interface RoadmapDetail {
   goal: string;
   status: RoadmapStatus;
   created_at: string;
+  archived_at: string | null;
   total_steps: number;
   completed_steps: number;
   steps: RoadmapStep[];

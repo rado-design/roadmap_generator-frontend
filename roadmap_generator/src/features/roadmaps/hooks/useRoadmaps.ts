@@ -8,15 +8,17 @@ export interface UseRoadmapsParams {
   status: RoadmapStatus | "all";
   category: RoadmapCategoryGroup | "all";
   sort: RoadmapSort;
+  archived: boolean;
 }
 
-export function useRoadmaps({ search, status, category, sort }: UseRoadmapsParams) {
+export function useRoadmaps({ search, status, category, sort, archived }: UseRoadmapsParams) {
   const params = {
     limit: ROADMAPS_PAGE_SIZE,
     search: search.trim() || undefined,
     status: status === "all" ? undefined : status,
     category: category === "all" ? undefined : category,
     sort,
+    archived,
   };
 
   return useInfiniteQuery({

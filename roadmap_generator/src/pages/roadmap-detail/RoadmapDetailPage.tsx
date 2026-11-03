@@ -459,6 +459,13 @@ export function RoadmapDetailPage() {
             </div>
           </section>
 
+          {data.archived_at ? (
+            <div className={styles.archivedNotice} role="status">
+              <Icon name="archive" />
+              <span>Cette roadmap est archivée et consultable en lecture seule. Désarchivez-la depuis la liste des roadmaps pour modifier sa progression.</span>
+            </div>
+          ) : null}
+
           {progressMutation.isError ? (
             <div className={styles.progressError} role="alert">
               <Icon name="error" />
@@ -475,7 +482,7 @@ export function RoadmapDetailPage() {
                   </h2>
                   <div className={styles.stepList}>
                     {completedSteps.map((step) => (
-                      <StepCard key={step.id} step={step} isUpdating={progressMutation.isPending} onProgressChange={updateProgress} onOpenResources={openStepResources} />
+                      <StepCard key={step.id} step={step} isUpdating={progressMutation.isPending || Boolean(data.archived_at)} onProgressChange={updateProgress} onOpenResources={openStepResources} />
                     ))}
                   </div>
                 </section>
@@ -486,7 +493,7 @@ export function RoadmapDetailPage() {
                 {remainingSteps.length > 0 ? (
                   <div className={styles.stepList}>
                     {remainingSteps.map((step) => (
-                      <StepCard key={step.id} step={step} isUpdating={progressMutation.isPending} onProgressChange={updateProgress} onOpenResources={openStepResources} />
+                      <StepCard key={step.id} step={step} isUpdating={progressMutation.isPending || Boolean(data.archived_at)} onProgressChange={updateProgress} onOpenResources={openStepResources} />
                     ))}
                   </div>
                 ) : completedSteps.length > 0 ? (

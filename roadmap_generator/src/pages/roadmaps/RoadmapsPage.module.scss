@@ -23,6 +23,32 @@
   background: var(--color-surface-container-lowest);
 }
 
+.archiveToggle {
+  display: inline-flex;
+  gap: 4px;
+  margin: 0 0 20px;
+  padding: 4px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-container-low);
+
+  button {
+    min-height: 36px;
+    padding: 6px 16px;
+    border: 0;
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: var(--color-on-surface-variant);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  button:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+}
+
+.archiveToggleActive { background: var(--color-surface-container-lowest) !important; color: var(--color-on-surface) !important; box-shadow: 0 1px 3px rgb(0 0 0 / 12%); }
+
 .filterField {
   display: flex;
   min-width: 0;
@@ -89,18 +115,27 @@
 }
 
 .card {
-  display: block;
+  display: flex;
+  flex-direction: column;
   color: inherit;
   text-decoration: none;
   transition: border-color 0.15s ease;
 
   &:hover { border-color: var(--color-primary); }
-
-  &:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
-  }
 }
+
+.cardTitle a { color: inherit; text-decoration: none; }
+.cardTitle a:hover { color: var(--color-primary); text-decoration: underline; text-underline-offset: 3px; }
+.cardTitle a:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.archivedCard { border-color: var(--color-outline); }
+.archivedBadge { display: inline-flex; align-self: flex-start; margin-top: 8px; padding: 4px 10px; border-radius: var(--radius-full); background: var(--color-surface-container-high); color: var(--color-on-surface-variant); font-size: 11px; font-weight: 600; }
+.cardActions { display: flex; justify-content: flex-end; margin-top: auto; padding-top: 16px; }
+.cardActions button { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 6px 12px; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-lg); background: var(--color-surface-container-lowest); color: var(--color-on-surface); font: inherit; font-size: 13px; cursor: pointer; }
+.cardActions button:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.cardActions button:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.cardActions button:disabled { opacity: 0.6; cursor: wait; }
+.cardActions :global(.material-symbols-outlined) { font-size: var(--icon-size-sm); }
+.archiveError { margin: 0 0 16px; color: var(--color-error); font-size: 14px; }
 
 .status {
   display: inline-flex;
