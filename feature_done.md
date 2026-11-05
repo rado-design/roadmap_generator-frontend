@@ -25,9 +25,17 @@ Ce fichier décrit ce qui est réellement implémenté côté frontend (composan
 
 ## Règle de mise à jour
 
-Une fonctionnalité ne passe ici à « terminée » qu'après vérification de son parcours frontend et de son contrat backend. Ajouter chaque nouvelle réalisation tout en haut de l'historique avec sa date; ne pas remplacer les entrées précédentes par une date de mise à jour globale. Mettre aussi `next_steps.md` à jour dans le même changement. Ne pas ajouter ici les domaines qui n'ont pas encore été implémentés côté frontend.
+Une fonctionnalité ne passe ici à « terminée » qu'après vérification de son parcours frontend et de son contrat backend. Ajouter chaque nouvelle réalisation tout en bas de l'historique avec sa date; ne pas remplacer les entrées précédentes par une date de mise à jour globale. Mettre aussi `next_steps.md` à jour dans le même changement. Ne pas ajouter ici les domaines qui n'ont pas encore été implémentés côté frontend.
 
 ## Historique des réalisations
+
+### 2026-11-05 — Adaptation en streaming et annulation d'une roadmap
+
+- Le détail d'une roadmap permet d'adapter la suite avec une consigne facultative et affiche le plan, les étapes et les ressources à mesure que le flux SSE les envoie.
+- L'aperçu affiche maintenant chaque ressource reçue sous son étape, avec son titre, son type et un lien d'ouverture lorsqu'une URL est disponible.
+- Le cache du détail est remplacé par la réponse `done` du backend; le flux signale ses erreurs et les étapes commencées ou terminées sont conservées conformément au contrat.
+- L'action « Annuler la dernière adaptation » utilise `POST /roadmaps/{id}/adapt/undo`; le détail, la liste, les ressources et le dashboard sont invalidés après adaptation ou annulation.
+- Vérification: contrôle TypeScript, build de production, détection Impeccable et `git diff --check`.
 
 ### 2026-11-03 — Espacement des actions dans les modals de régénération
 
@@ -301,3 +309,21 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 - Le détail permet de demander un ajustement d’une étape « À faire », de comparer les contenus actuels et proposés, puis d’accepter ou de refuser. La mise à jour et les caches associés sont synchronisés avec le backend.
 - La régénération de la suite d’une roadmap n’est pas enregistrée comme terminée : la route `POST /roadmaps/{id}/adapt/stream` n’est pas présente dans le routeur backend courant; besoin décrit dans `ROADMAP_REGENERATION_BACKEND_REQUIREMENTS.md`.
 - Vérification: contrôle TypeScript avec `--ignoreDeprecations 6.0`, détection Impeccable et `git diff --check`.
+
+### 2026-11-05 — Historique ciblé d'une étape adaptée
+
+- La barre d'actions du détail propose « Historique (n) » à côté des actions d'adaptation et d'annulation, et chaque étape modifiée conserve son propre accès à l'historique. Le modal global ne liste que les anciennes versions dont le contenu diffère; l'accès d'une étape ne montre que son ancienne version.
+- La comparaison associe temporairement les étapes par numéro d'ordre; le backend doit fournir un lien explicite entre ancienne et nouvelle étape. L'instantané reste limité à `sessionStorage` pour la session de l'onglet; voir `ROADMAP_ADAPTATION_HISTORY_BACKEND_REQUIREMENTS.md`.
+- L'annulation de la dernière adaptation demande une confirmation stylée et explique les contraintes backend (étapes adaptées encore « À faire »; les favoris des anciennes ressources ne sont pas restaurés).
+- L'annulation complète de la dernière adaptation reste disponible. L'annulation d'une seule étape n'est pas encore reliée : elle nécessite une route backend dédiée et une règle de cohérence avec l'annulation complète.
+- Vérification: contrôle TypeScript ciblé avec `--ignoreDeprecations 6.0`, build Vite et `git diff --check`; `npm run build` reste bloqué par l'option `baseUrl` préexistante avec TypeScript 6.
+
+### 2026-11-05 — Aperçu des ressources adapté aux petits écrans
+
+- Le modal d'aperçu des ressources tient dans la hauteur disponible sur mobile; son iframe, sa vidéo et ses contrôles de navigation s'adaptent à l'espace restant pour éviter le débordement hors écran.
+- Vérification: contrôle TypeScript ciblé avec `--ignoreDeprecations 6.0`, build Vite et `git diff --check`.
+
+### 2026-11-05 — Correction du débordement horizontal de l'aperçu mobile
+
+- La grille interne du modal est maintenant contrainte à sa largeur; un contenu d'iframe large ne décale plus l'en-tête hors écran. Les boutons précédent/suivant partagent également la largeur disponible.
+- Vérification: contrôle TypeScript ciblé avec `--ignoreDeprecations 6.0`, build Vite et `git diff --check`.

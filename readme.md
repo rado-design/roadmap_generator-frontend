@@ -43,6 +43,7 @@ Application web de RoadmapAI : elle permet de créer un compte, de générer des
 - Le détail montre les étapes, la progression, les objectifs d’apprentissage et les ressources; les ressources d’une étape s’ouvrent dans un aperçu navigable.
 - Une étape « À faire » peut être régénérée avec une consigne, puis comparée à la version actuelle avant acceptation ou refus. Les étapes commencées ou terminées doivent d’abord être remises à « À faire ».
 - Les ressources de chaque étape peuvent être actualisées avec une consigne facultative. Une proposition est comparée aux ressources actuelles avant d’être acceptée ou refusée; cela fonctionne aussi sur les étapes commencées ou terminées.
+- La suite d’une roadmap peut être adaptée en streaming selon la progression et le profil. Les étapes commencées ou terminées sont conservées, les étapes « À faire » sont remplacées après confirmation du flux; la dernière adaptation peut être annulée depuis le détail.
 
 ### Ressources
 
@@ -136,12 +137,12 @@ L’URL racine de l’API est configurée avec `VITE_API_BASE_URL`. Le client Ax
 | Authentification | `POST /api/v1/auth/register`, `/verify-otp`, `/resend-otp`, `/login`, `/refresh`, `/logout` |
 | Compte et préférences | `GET/PATCH /api/v1/users/me`, `GET/PUT /api/v1/users/me/learner-profile`, `PUT /api/v1/users/me/password` |
 | Tableau de bord | `GET /api/v1/dashboard` |
-| Roadmaps | `GET /api/v1/roadmaps`, `GET /api/v1/roadmaps/{id}`, `POST /api/v1/roadmaps/generate/stream`, `POST /api/v1/roadmaps/{id}/archive`, `POST /api/v1/roadmaps/{id}/unarchive`, `PUT /api/v1/roadmaps/{id}/steps/{step_id}/progress`, `POST /api/v1/roadmaps/{id}/steps/{step_id}/adjustments` et routes `accept` / `reject` associées |
+| Roadmaps | `GET /api/v1/roadmaps`, `GET /api/v1/roadmaps/{id}`, `POST /api/v1/roadmaps/generate/stream`, `POST /api/v1/roadmaps/{id}/adapt/stream`, `POST /api/v1/roadmaps/{id}/adapt/undo`, archivage, progression et ajustements des étapes/ressources |
 | Ressources | `GET /api/v1/resources`, `PUT/DELETE /api/v1/resources/{id}/favorite` |
 
 Le filtre `archived=true` de `GET /api/v1/roadmaps` renvoie les roadmaps archivées; sans ce paramètre, seules les roadmaps actives sont listées. L’archivage est une opération sur la roadmap : il la rend non modifiable et masque ses ressources de la liste générale. Le frontend invalide les caches des roadmaps, du tableau de bord et des ressources après archivage ou restauration.
 
-L’ajustement d’une étape crée d’abord une proposition persistée côté backend; l’étape n’est modifiée qu’après acceptation. L’API de régénération de toute la suite de la roadmap (`POST /api/v1/roadmaps/{id}/adapt/stream`) n’est pas encore exposée dans le routeur backend du workspace; le frontend ne l’appelle donc pas.
+L’ajustement d’une étape crée d’abord une proposition persistée côté backend; l’étape n’est modifiée qu’après acceptation. L’adaptation complète remplace la suite « À faire » via le flux SSE, préserve les étapes commencées ou terminées et peut être annulée avec `POST /api/v1/roadmaps/{id}/adapt/undo` après confirmation dans l’interface. L’historique est accessible dans la barre d’actions et individuellement sur chaque étape modifiée; l’association entre anciennes et nouvelles étapes est temporairement déduite du numéro d’ordre, car le backend ne fournit pas encore de lien explicite. L’annulation ciblée d’une étape attend aussi une route backend; les besoins d’historique durable et d’annulation partielle sont documentés dans `ROADMAP_ADAPTATION_HISTORY_BACKEND_REQUIREMENTS.md`.
 
 Le contrat détaillé et les règles métier vivent dans le dépôt backend. Pour les démarrer ou vérifier leurs prérequis, consulter le [README backend](../roadmap_generator-backend/README.md).
 

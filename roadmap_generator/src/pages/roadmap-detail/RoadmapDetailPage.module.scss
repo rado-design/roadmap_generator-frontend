@@ -101,6 +101,10 @@
   line-height: 16px;
 }
 
+.roadmapActions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 18px; }
+.roadmapActions :global(button) { width: auto; min-height: 40px; padding: 8px 16px; box-shadow: none; }
+.adaptationUndoError { flex-basis: 100%; color: var(--color-error); font-size: 14px; line-height: 20px; }
+
 .columns {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
@@ -284,6 +288,7 @@
 
 .resourceDialog,
 .adjustmentDialog {
+  box-sizing: border-box;
   max-width: none;
   max-height: calc(100dvh - 32px);
   margin: auto;
@@ -331,16 +336,65 @@
 .adjustmentVersion a { color: var(--color-primary); text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere; }
 .adjustmentVersion .adjustmentEmpty { margin-top: 4px; font-size: 12px; }
 .adjustmentResourceType { display: block; margin-top: 3px; color: var(--color-on-surface-variant); font-size: 12px; line-height: 16px; }
+.adaptationProgress { display: grid; min-height: 0; grid-template-rows: auto auto minmax(0, 1fr) auto; overflow: auto; }
+.adaptationSummary { display: flex; align-items: flex-start; gap: 12px; margin: 24px 24px 0; padding: 16px; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-lg); background: var(--color-surface-container-low); }
+.adaptationSummary > :global(.material-symbols-outlined) { flex: none; color: var(--color-primary); }
+.adaptationSummary > span { flex: none; width: 8px; height: 8px; margin: 6px 4px 0; border-radius: var(--radius-full); background: var(--color-primary); animation: pulse 1.4s ease-in-out infinite alternate; }
+.adaptationSummary strong { font-size: 14px; font-weight: 600; line-height: 20px; }
+.adaptationSummary p { margin-top: 3px; color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; overflow-wrap: anywhere; }
+.adaptationPlan { margin: 16px 24px 0; color: var(--color-on-surface-variant); font-size: 12px; line-height: 18px; }
+.adaptationSteps { display: grid; align-content: start; gap: 12px; min-height: 0; overflow: auto; margin: 16px 24px; padding: 0; list-style: none; }
+.adaptationSteps li { padding: 16px; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-lg); background: var(--color-surface-container-lowest); }
+.adaptationSteps strong { font-size: 14px; font-weight: 600; line-height: 20px; overflow-wrap: anywhere; }
+.adaptationSteps p { margin-top: 4px; color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; overflow-wrap: anywhere; }
+.adaptationStepResources { display: grid; gap: 8px; margin-top: 12px; }
+.adaptationStepResources > strong { font-size: 12px; line-height: 16px; }
+.adaptationStepResources ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.adaptationStepResources ul li { display: grid; gap: 3px; padding: 10px 12px; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-default); background: var(--color-surface-container-low); }
+.adaptationStepResources ul li > span { color: var(--color-on-surface); font-size: 12px; font-weight: 500; line-height: 16px; overflow-wrap: anywhere; }
+.adaptationStepResources small,
+.adaptationResourceWaiting { color: var(--color-on-surface-variant); font-size: 12px; line-height: 16px; }
+.adaptationStepResources a { display: inline-flex; width: fit-content; align-items: center; gap: 4px; color: var(--color-primary); font-size: 12px; line-height: 16px; text-decoration: underline; text-underline-offset: 2px; }
+.adaptationStepResources a:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.adaptationStepResources a :global(.material-symbols-outlined) { font-size: var(--icon-size-sm); }
+.adaptationWaiting { margin: 16px 24px; color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; }
+.adaptationProgress > .adjustmentActions { padding: 8px 24px 24px; }
+.adaptedStepHistory { display: inline-flex; align-items: center; gap: 6px; width: fit-content; margin-top: 10px; padding: 5px 10px; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-full); background: var(--color-surface-container-low); color: var(--color-primary); font: inherit; font-size: 12px; line-height: 16px; cursor: pointer; }
+.adaptedStepHistory:hover { background: var(--color-surface-container); }
+.adaptedStepHistory:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.adaptedStepHistory :global(.material-symbols-outlined) { font-size: var(--icon-size-sm); }
+.previousVersionContent { min-height: 0; overflow: auto; }
+.previousVersionNote { margin: 24px 24px 0; color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; }
+.previousVersionList { display: grid; gap: 12px; padding: 24px 24px 0; }
+.previousVersionList .adjustmentVersion { min-height: 0; }
+.previousVersionFooter { display: flex; justify-content: flex-end; padding: 8px 24px 24px; }
+.previousVersionFooter :global(button) { width: auto; min-height: 40px; padding: 8px 16px; }
+.undoAdaptationDialog { width: min(500px, calc(100% - 32px)); max-width: none; margin: auto; padding: 0; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-2xl); background: var(--color-surface-container-lowest); color: var(--color-on-surface); box-shadow: var(--shadow-sm); }
+.undoAdaptationDialog::backdrop { background: rgb(25 28 30 / 48%); }
+.undoAdaptationContent { display: grid; justify-items: center; padding: 28px 24px 24px; text-align: center; }
+.undoAdaptationIcon { display: grid; width: 48px; height: 48px; place-items: center; margin-bottom: 16px; border-radius: var(--radius-full); background: var(--color-primary-fixed); color: var(--color-on-primary-container); }
+.undoAdaptationIcon :global(.material-symbols-outlined) { font-size: var(--icon-size-md); }
+.undoAdaptationContent h2 { font-size: 18px; font-weight: 600; line-height: 26px; }
+.undoAdaptationContent > p { max-width: 42ch; margin-top: 8px; color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; }
+.undoAdaptationContent .undoAdaptationError { width: 100%; margin-top: 16px; padding: 12px; border: 1px solid var(--color-error); border-radius: var(--radius-lg); background: var(--color-error-container); color: var(--color-on-error-container); }
+.undoAdaptationActions { display: flex; justify-content: center; gap: 12px; margin-top: 24px; }
+.undoAdaptationActions :global(button) { width: auto; min-height: 44px; padding: 10px 16px; }
 
 .resourceDialogContent {
   display: grid;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
   max-height: calc(100dvh - 34px);
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: hidden;
 }
 
 .resourceDialogHeader,
 .resourceDialogFooter {
   display: flex;
+  min-width: 0;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
@@ -370,17 +424,17 @@
   &:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
 }
 
-.resourcePreview { min-height: 0; overflow: auto; padding: 20px 24px; }
-.resourceFrame { display: block; width: 100%; height: min(60dvh, 560px); min-height: 280px; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-lg); background: var(--color-surface-container-low); }
-.resourceVideo { display: block; width: 100%; max-height: 65dvh; border-radius: var(--radius-lg); background: #101416; }
+.resourcePreview { min-width: 0; min-height: 0; overflow: auto; padding: 20px 24px; }
+.resourceFrame { display: block; width: 100%; max-width: 100%; min-width: 0; height: min(60dvh, 560px); min-height: 280px; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-lg); background: var(--color-surface-container-low); }
+.resourceVideo { display: block; width: 100%; max-width: 100%; max-height: 65dvh; border-radius: var(--radius-lg); background: #101416; }
 .previewHint,
 .previewFallback { margin-top: 10px; color: var(--color-on-surface-variant); font-size: 12px; line-height: 18px; }
 .previewFallback { display: grid; min-height: 280px; place-items: center; margin: 0; border-radius: var(--radius-lg); background: var(--color-surface-container-low); text-align: center; }
 
 .resourceDialogFooter { border-top: 1px solid var(--color-outline-variant); }
-.resourceNavigation { display: flex; align-items: center; gap: 12px; }
-.resourceNavigation > span { min-width: 44px; color: var(--color-on-surface-variant); font-size: 12px; text-align: center; }
-.resourceNavigation :global(button) { width: auto; min-height: 40px; padding: 8px 12px; box-shadow: none; }
+.resourceNavigation { display: flex; min-width: 0; align-items: center; gap: 12px; }
+.resourceNavigation > span { min-width: 44px; flex: none; color: var(--color-on-surface-variant); font-size: 12px; text-align: center; }
+.resourceNavigation :global(button) { width: auto; min-width: 0; min-height: 40px; flex: 1 1 0; padding: 8px 12px; box-shadow: none; }
 .openResourceLink { display: inline-flex; align-items: center; gap: 6px; color: var(--color-primary); font-size: 14px; font-weight: 500; line-height: 20px; text-decoration: none; }
 .openResourceLink:hover { text-decoration: underline; text-underline-offset: 3px; }
 .openResourceLink:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
@@ -432,9 +486,9 @@
   .summaryMeta { flex-direction: column; gap: 4px; }
   .stepHeading { flex-direction: column; gap: 8px; }
   .aside { grid-template-columns: 1fr; }
-  .resourceDialog { width: calc(100% - 16px); max-height: calc(100dvh - 16px); }
+  .resourceDialog { width: calc(100vw - 16px); height: calc(100dvh - 16px); max-height: calc(100dvh - 16px); }
   .adjustmentDialog { width: calc(100% - 16px); max-height: calc(100dvh - 16px); }
-  .resourceDialogContent { max-height: calc(100dvh - 18px); }
+  .resourceDialogContent { height: 100%; max-height: none; grid-template-rows: auto minmax(0, 1fr) auto; }
   .adjustmentDialogContent { max-height: calc(100dvh - 18px); }
   .resourceDialogHeader,
   .resourceDialogFooter { padding: 16px; }
@@ -447,22 +501,36 @@
   .adjustmentVersion { padding: 16px; }
   .adjustmentActions { flex-direction: column-reverse; padding: 0 16px 16px; }
   .adjustmentProposal > .adjustmentActions { padding: 0 16px 16px; }
+  .adaptationSummary { margin: 16px 16px 0; }
+  .adaptationPlan { margin-inline: 16px; }
+  .adaptationSteps { margin-inline: 16px; }
+  .adaptationWaiting { margin-inline: 16px; }
+  .adaptationProgress > .adjustmentActions { padding: 0 16px 16px; }
+  .previousVersionNote { margin-inline: 16px; }
+  .previousVersionList { padding: 16px 16px 0; }
+  .previousVersionFooter { padding: 8px 16px 16px; }
+  .undoAdaptationContent { padding: 24px 20px 20px; }
+  .undoAdaptationActions { width: 100%; flex-direction: column-reverse; }
+  .undoAdaptationActions :global(button) { width: 100%; }
   .adjustmentActions :global(button) { width: 100%; }
-  .resourceNavigation { justify-content: space-between; }
-  .resourceNavigation :global(button) { flex: 1; }
-  .resourceFrame { height: 52dvh; min-height: 240px; }
+  .resourceNavigation { min-width: 0; justify-content: space-between; gap: 8px; }
+  .resourceNavigation > span { min-width: 36px; }
+  .resourceNavigation :global(button) { min-width: 0; flex: 1 1 0; padding-inline: 8px; }
+  .resourceFrame { height: clamp(160px, 42dvh, 420px); min-height: 0; }
+  .resourceVideo { max-height: 42dvh; }
+  .previewFallback { min-height: clamp(160px, 42dvh, 420px); }
 }
 
 @media (max-height: 560px) {
-  .resourceDialog { max-height: calc(100dvh - 16px); }
+  .resourceDialog { height: calc(100dvh - 16px); max-height: calc(100dvh - 16px); }
   .adjustmentDialog { max-height: calc(100dvh - 16px); }
-  .resourceDialogContent { max-height: calc(100dvh - 18px); }
+  .resourceDialogContent { height: 100%; max-height: none; }
   .adjustmentDialogContent { max-height: calc(100dvh - 18px); }
   .resourceDialogHeader,
   .resourceDialogFooter { padding-block: 10px; }
   .resourcePreview { padding-block: 12px; }
-  .resourceFrame { height: 40dvh; min-height: 150px; }
-  .resourceVideo { max-height: 46dvh; }
+  .resourceFrame { height: clamp(140px, 36dvh, 320px); min-height: 0; }
+  .resourceVideo { max-height: 36dvh; }
 }
 
 @media (prefers-reduced-motion: reduce) {

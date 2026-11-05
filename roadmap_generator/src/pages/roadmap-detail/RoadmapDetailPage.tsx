@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type FormEvent } from "react";
 import { Link, useLocation, useParams } from "react-router";
 import { AppLayout } from "../../app/layouts";
 import {
@@ -7,6 +7,8 @@ import {
   useDecideStepAdjustment,
   useProposeResourceAdjustment,
   useDecideResourceAdjustment,
+  useAdaptRoadmap,
+  useUndoRoadmapAdaptation,
   useSetStepProgress,
   type RoadmapDetail,
   type RoadmapResource,
@@ -14,6 +16,9 @@ import {
   type StepAdjustment,
   type StepContent,
   type ResourceAdjustment,
+  type RoadmapAdaptEvent,
+  type RoadmapAdaptPlan,
+  type GeneratedRoadmapStep,
 } from "../../features/roadmaps";
 import { Button } from "../../shared/components/Button";
 import { Icon } from "../../shared/components/Icon";
@@ -242,10 +247,346 @@ function StepAdjustmentContent({ content, label }: { content: StepContent; label
 }
 
 function getActionError(error: unknown, fallback: string) {
-  if (typeof error === "object" && error !== null && "message" in error) {
-    return String(error.message);
+  if (typeof error === "object" && error !== null) {
+    if ("response" in error) {
+      const response = error.response as { data?: { detail?: unknown } } | undefined;
+      if (typeof response?.data?.detail === "string") return response.data.detail;
+    }
+    if ("message" in error) return String(error.message);
   }
   return fallback;
+}
+
+interface AdaptPreviewStep extends GeneratedRoadmapStep { resources: RoadmapResource[] }
+
+interface AdaptationHistorySnapshot {
+  adaptedAt: string;
+  replacedSteps: RoadmapStep[];
+  createdStepIds: number[];
+}
+
+function adaptationHistoryKey(roadmapId: number) {
+  return `roadmap-adaptation-history:${roadmapId}`;
+}
+
+function readAdaptationHistory(roadmapId: number | null): AdaptationHistorySnapshot | null {
+  if (roadmapId === null) return null;
+  try {
+    const raw = sessionStorage.getItem(adaptationHistoryKey(roadmapId));
+    if (!raw) return null;
+    const value = JSON.parse(raw) as Partial<AdaptationHistorySnapshot>;
+    if (typeof value.adaptedAt !== "string" || !Array.isArray(value.replacedSteps) || !Array.isArray(value.createdStepIds)) return null;
+    return value as AdaptationHistorySnapshot;
+  } catch {
+    return null;
+  }
+}
+
+function saveAdaptationHistory(roadmapId: number, snapshot: AdaptationHistorySnapshot) {
+  try { sessionStorage.setItem(adaptationHistoryKey(roadmapId), JSON.stringify(snapshot)); } catch { /* Storage can be unavailable in private browsing. */ }
+}
+
+function clearAdaptationHistory(roadmapId: number) {
+  try { sessionStorage.removeItem(adaptationHistoryKey(roadmapId)); } catch { /* Storage can be unavailable in private browsing. */ }
+}
+
+function RoadmapAdaptationDialog({ roadmap, onClose, onAdapted }: {
+  roadmap: RoadmapDetail;
+  onClose: () => void;
+  onAdapted: (snapshot: AdaptationHistorySnapshot) => void;
+}) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [instruction, setInstruction] = useState("");
+  const [plan, setPlan] = useState<RoadmapAdaptPlan>();
+  const planRef = useRef<RoadmapAdaptPlan | undefined>(undefined);
+  const [steps, setSteps] = useState<AdaptPreviewStep[]>([]);
+  const [attempt, setAttempt] = useState(1);
+  const [status, setStatus] = useState<"form" | "running" | "complete" | "failed">("form");
+  const [error, setError] = useState<string>();
+  const adaptMutation = useAdaptRoadmap(roadmap.id);
+  const isBusy = adaptMutation.isPending;
+  const canClose = !isBusy;
+  const lockedSteps = plan
+    ? roadmap.steps.filter((step) => plan.locked_step_ids.includes(step.id))
+    : [];
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (dialog && !dialog.open) dialog.showModal();
+    return () => { if (dialog?.open) dialog.close(); };
+  }, []);
+
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const cleanedInstruction = instruction.trim();
+    if (cleanedInstruction && (cleanedInstruction.length < 3 || cleanedInstruction.length > 500)) return;
+    setStatus("running");
+    setError(undefined);
+    setPlan(undefined);
+    planRef.current = undefined;
+    setSteps([]);
+    setAttempt(1);
+    void adaptMutation.mutateAsync({
+      instruction: cleanedInstruction || undefined,
+      onEvent: (event: RoadmapAdaptEvent) => {
+        switch (event.event) {
+          case "plan":
+            planRef.current = event.data;
+            setPlan(event.data);
+            break;
+          case "step":
+            setSteps((current) => [...current, { ...event.data, resources: [] }]);
+            break;
+          case "resources":
+            setSteps((current) => current.map((step) => step.order === event.data.order
+              ? { ...step, resources: event.data.resources }
+              : step));
+            break;
+          case "reset":
+            setSteps([]);
+            setAttempt(event.data.attempt);
+            break;
+          case "done":
+            setStatus("complete");
+            break;
+          case "error":
+            setError(event.data.detail);
+            setStatus("failed");
+            break;
+        }
+      },
+    }).then((adaptedRoadmap) => {
+      const completedPlan = planRef.current;
+      if (completedPlan) {
+        onAdapted({
+          adaptedAt: new Date().toISOString(),
+          replacedSteps: roadmap.steps.filter((step) => completedPlan.replaced_step_ids.includes(step.id)),
+          createdStepIds: adaptedRoadmap.steps
+            .filter((step) => !completedPlan.locked_step_ids.includes(step.id))
+            .map((step) => step.id),
+        });
+      }
+      setStatus("complete");
+    }).catch((caught) => {
+      setError(getActionError(caught, "L’adaptation a échoué. La roadmap n’a pas été modifiée."));
+      setStatus("failed");
+    });
+  };
+
+  const requestClose = () => { if (canClose) onClose(); };
+
+  return (
+    <dialog
+      ref={dialogRef}
+      className={styles.adjustmentDialog}
+      aria-labelledby="roadmap-adaptation-title"
+      aria-busy={isBusy}
+      onCancel={(event) => { event.preventDefault(); requestClose(); }}
+      onClick={(event) => { if (event.target === event.currentTarget) requestClose(); }}
+    >
+      <div className={styles.adjustmentDialogContent}>
+        <header className={styles.adjustmentDialogHeader}>
+          <div>
+            <p>Adaptation de la roadmap</p>
+            <h2 id="roadmap-adaptation-title">{roadmap.title}</h2>
+          </div>
+          {canClose ? (
+            <button className={styles.closeResourceDialog} type="button" onClick={onClose} aria-label="Fermer">
+              <Icon name="close" />
+            </button>
+          ) : null}
+        </header>
+
+        {status === "form" ? (
+          <form className={styles.adjustmentForm} onSubmit={submit}>
+            <p>Les étapes « À faire » seront remplacées selon votre progression. Les étapes commencées ou terminées seront conservées. Une copie des étapes remplacées permet d’annuler cette adaptation.</p>
+            <label htmlFor="roadmap-adaptation-instruction">Consigne (facultative)</label>
+            <textarea
+              id="roadmap-adaptation-instruction"
+              value={instruction}
+              onChange={(event) => setInstruction(event.target.value)}
+              maxLength={500}
+              rows={4}
+              placeholder="Ex. : ajoute plus de pratique et répartis les étapes sur un rythme plus léger"
+            />
+            <span className={styles.adjustmentHelper}>
+              {instruction.trim() ? `${instruction.trim().length}/500 caractères · 3 minimum` : "Sans consigne, la suite est adaptée à votre progression et à votre profil."}
+            </span>
+            <footer className={styles.adjustmentActions}>
+              <Button type="button" variant="outline" onClick={onClose}>Annuler</Button>
+              <Button type="submit" icon="auto_awesome" disabled={instruction.trim().length > 0 && instruction.trim().length < 3}>
+                Adapter la roadmap
+              </Button>
+            </footer>
+          </form>
+        ) : (
+          <div className={styles.adaptationProgress}>
+            <div className={styles.adaptationSummary} role={status === "failed" ? "alert" : "status"}>
+              {status === "running" ? (
+                <>
+                  <span className={styles.streamPulse} aria-hidden="true" />
+                  <div><strong>Adaptation en cours</strong><p>{steps.length} {steps.length === 1 ? "nouvelle étape reçue" : "nouvelles étapes reçues"}{attempt > 1 ? ` · tentative ${attempt}` : ""}</p></div>
+                </>
+              ) : status === "complete" ? (
+                <><Icon name="check_circle" /><div><strong>La roadmap a été adaptée</strong><p>Les étapes commencées et terminées sont conservées.</p></div></>
+              ) : (
+                <><Icon name="error" /><div><strong>L’adaptation n’a pas abouti</strong><p>{error ?? "La roadmap n’a pas été modifiée."}</p></div></>
+              )}
+            </div>
+            {plan ? (
+              <p className={styles.adaptationPlan}>
+                {lockedSteps.length} étape{lockedSteps.length === 1 ? " commencée ou terminée conservée" : "s commencées ou terminées conservées"} · {plan.replaced_step_ids.length} étape{plan.replaced_step_ids.length === 1 ? " remplacée" : "s remplacées"}
+              </p>
+            ) : null}
+            {steps.length ? (
+              <ol className={styles.adaptationSteps}>
+                {steps.map((step) => (
+                  <li key={step.order}>
+                    <strong>{step.order}. {step.title}</strong>
+                    <p>{step.description}</p>
+                    <div className={styles.adaptationStepResources}>
+                      <strong>Ressources ({step.resources.length})</strong>
+                      {step.resources.length ? (
+                        <ul>
+                          {step.resources.map((resource, index) => {
+                            const url = getSafeResourceUrl(resource.url);
+                            return (
+                              <li key={`${step.order}-${index}-${resource.title}`}>
+                                <span>{resource.title}</span>
+                                <small>{getResourceTypeLabel(resource.type)}</small>
+                                {url ? <a href={url.href} target="_blank" rel="noreferrer">Ouvrir la ressource <Icon name="open_in_new" /></a> : null}
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      ) : status === "running" ? (
+                        <span className={styles.adaptationResourceWaiting}>Recherche des ressources…</span>
+                      ) : (
+                        <span className={styles.adaptationResourceWaiting}>Aucune ressource reçue pour cette étape.</span>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            ) : status === "running" ? <p className={styles.adaptationWaiting}>En attente de la première étape adaptée…</p> : null}
+            {canClose ? (
+              <footer className={styles.adjustmentActions}>
+                <Button onClick={onClose}>{status === "complete" ? "Terminer" : "Fermer"}</Button>
+              </footer>
+            ) : null}
+          </div>
+        )}
+      </div>
+    </dialog>
+  );
+}
+
+interface ChangedStepVersion {
+  currentStep: RoadmapStep;
+  previousStep: RoadmapStep;
+}
+
+function getChangedStepVersion(currentStep: RoadmapStep, previousStep: RoadmapStep): ChangedStepVersion | null {
+  const contentChanged = currentStep.title !== previousStep.title
+    || currentStep.description !== previousStep.description
+    || currentStep.estimated_duration_days !== previousStep.estimated_duration_days
+    || JSON.stringify(currentStep.learning_objectives) !== JSON.stringify(previousStep.learning_objectives)
+    || JSON.stringify(currentStep.resources) !== JSON.stringify(previousStep.resources);
+  return contentChanged ? { currentStep, previousStep } : null;
+}
+
+function PreviousStepVersionDialog({ changes, adaptedAt, onClose }: {
+  changes: ChangedStepVersion[];
+  adaptedAt: string;
+  onClose: () => void;
+}) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const formatAdaptedAt = new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(adaptedAt));
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (dialog && !dialog.open) dialog.showModal();
+    return () => { if (dialog?.open) dialog.close(); };
+  }, []);
+
+  return (
+    <dialog
+      ref={dialogRef}
+      className={styles.adjustmentDialog}
+      aria-labelledby="previous-version-title"
+      onCancel={(event) => { event.preventDefault(); onClose(); }}
+      onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}
+    >
+      <div className={styles.adjustmentDialogContent}>
+        <header className={styles.adjustmentDialogHeader}>
+          <div>
+            <p>Version précédente · adaptation du {formatAdaptedAt}</p>
+            <h2 id="previous-version-title">{changes.length === 1 ? "Ancienne version de l’étape" : "Anciennes versions des étapes"}</h2>
+          </div>
+          <button className={styles.closeResourceDialog} type="button" onClick={onClose} aria-label="Fermer">
+            <Icon name="close" />
+          </button>
+        </header>
+        <div className={styles.previousVersionContent}>
+          <p className={styles.previousVersionNote}>{changes.length === 1 ? "Cette étape a changé. Voici son ancienne version :" : `${changes.length} étapes ont changé. Voici uniquement leurs anciennes versions :`}</p>
+          <div className={styles.previousVersionList}>
+            {changes.map(({ currentStep, previousStep }) => (
+              <StepAdjustmentContent
+                key={currentStep.id}
+                content={previousStep}
+                label={changes.length === 1 ? `Avant · étape ${previousStep.order}` : `Avant · ${currentStep.title}`}
+              />
+            ))}
+          </div>
+        </div>
+        <footer className={styles.previousVersionFooter}>
+          <Button onClick={onClose}>Fermer</Button>
+        </footer>
+      </div>
+    </dialog>
+  );
+}
+
+function UndoAdaptationConfirmDialog({ open, isLoading, error, onConfirm, onCancel }: {
+  open: boolean;
+  isLoading: boolean;
+  error?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const dialogId = useId();
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (open && !dialog.open) dialog.showModal();
+    if (!open && dialog.open) dialog.close();
+    return () => { if (dialog.open) dialog.close(); };
+  }, [open]);
+
+  return (
+    <dialog
+      ref={dialogRef}
+      className={styles.undoAdaptationDialog}
+      aria-labelledby={`${dialogId}-title`}
+      aria-describedby={`${dialogId}-description`}
+      aria-busy={isLoading}
+      onCancel={(event) => { event.preventDefault(); if (!isLoading) onCancel(); }}
+      onClick={(event) => { if (event.target === event.currentTarget && !isLoading) onCancel(); }}
+    >
+      <div className={styles.undoAdaptationContent}>
+        <span className={styles.undoAdaptationIcon} aria-hidden="true"><Icon name="undo" /></span>
+        <h2 id={`${dialogId}-title`}>Annuler la dernière adaptation ?</h2>
+        <p id={`${dialogId}-description`}>Les étapes créées par l’adaptation seront supprimées et les anciennes étapes seront restaurées. Leurs favoris ne seront pas restaurés. Les nouvelles étapes doivent être « À faire » pour permettre l’annulation.</p>
+        {error ? <p className={styles.undoAdaptationError} role="alert">{error}</p> : null}
+        <div className={styles.undoAdaptationActions}>
+          <Button type="button" variant="outline" disabled={isLoading} onClick={onCancel}>Garder cette version</Button>
+          <Button type="button" isLoading={isLoading} disabled={isLoading} onClick={onConfirm}>Annuler l’adaptation</Button>
+        </div>
+      </div>
+    </dialog>
+  );
 }
 
 function StepAdjustmentDialog({ roadmapId, step, onClose }: {
@@ -518,6 +859,8 @@ function ResourceAdjustmentDialog({ roadmapId, step, onClose }: {
 
 function StepCard({
   step,
+  previousVersion,
+  onViewPreviousVersion,
   isUpdating,
   onProgressChange,
   onOpenResources,
@@ -526,6 +869,8 @@ function StepCard({
   allowAdjustment,
 }: {
   step: RoadmapStep;
+  previousVersion?: ChangedStepVersion;
+  onViewPreviousVersion: (change: ChangedStepVersion) => void;
   isUpdating: boolean;
   onProgressChange: (stepId: number, status: RoadmapStep["progress"]["status"]) => void;
   onOpenResources: (stepId: number) => void;
@@ -565,6 +910,12 @@ function StepCard({
             ))}
           </select>
         </div>
+        {previousVersion ? (
+          <button className={styles.adaptedStepHistory} type="button" onClick={() => onViewPreviousVersion(previousVersion)}>
+            <Icon name="history" />
+            Modifiée · Voir l’historique
+          </button>
+        ) : null}
         <p className={styles.stepDescription}>{step.description}</p>
         {step.learning_objectives.length > 0 ? (
           <ul className={styles.objectives} aria-label="Objectifs d'apprentissage">
@@ -690,13 +1041,29 @@ export function RoadmapDetailPage() {
   const roadmapId = Number.isSafeInteger(parsedId) && parsedId > 0 ? parsedId : null;
   const { data, isLoading, isError, error, refetch, isFetching } = useRoadmapDetail(roadmapId);
   const progressMutation = useSetStepProgress(roadmapId);
+  const undoAdaptationMutation = useUndoRoadmapAdaptation(roadmapId ?? 0);
   const [resourceViewer, setResourceViewer] = useState<{ stepId: number; index: number } | null>(null);
   const [adjustmentStep, setAdjustmentStep] = useState<RoadmapStep | null>(null);
   const [resourceAdjustmentStep, setResourceAdjustmentStep] = useState<RoadmapStep | null>(null);
+  const [adaptRoadmapOpen, setAdaptRoadmapOpen] = useState(false);
+  const [adaptationHistory, setAdaptationHistory] = useState<AdaptationHistorySnapshot | null>(() => readAdaptationHistory(roadmapId));
+  const [historyChangesToShow, setHistoryChangesToShow] = useState<ChangedStepVersion[] | null>(null);
+  const [undoConfirmOpen, setUndoConfirmOpen] = useState(false);
   const orderedSteps = useMemo(
     () => [...(data?.steps ?? [])].sort((left, right) => left.order - right.order),
     [data?.steps],
   );
+  const changedStepVersions = useMemo<ChangedStepVersion[]>(() => {
+    if (!adaptationHistory || !data) return [];
+    return data.steps
+      .filter((step) => adaptationHistory.createdStepIds.includes(step.id))
+      .flatMap((currentStep) => {
+        const previousStep = adaptationHistory.replacedSteps.find((step) => step.order === currentStep.order);
+        if (!previousStep) return [];
+        const change = getChangedStepVersion(currentStep, previousStep);
+        return change ? [change] : [];
+      });
+  }, [adaptationHistory, data]);
 
   useEffect(() => {
     if (!data || !location.hash) return;
@@ -705,6 +1072,9 @@ export function RoadmapDetailPage() {
       document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   }, [data, location.hash]);
+  useEffect(() => {
+    setAdaptationHistory(readAdaptationHistory(roadmapId));
+  }, [roadmapId]);
   const completedSteps = orderedSteps.filter((step) => step.progress.status === "done");
   const inProgressSteps = orderedSteps.filter((step) => step.progress.status === "in_progress");
   const remainingSteps = orderedSteps
@@ -736,6 +1106,9 @@ export function RoadmapDetailPage() {
   const progressError = typeof progressMutation.error === "object" && progressMutation.error !== null && "message" in progressMutation.error
     ? String(progressMutation.error.message)
     : "La progression n'a pas pu être enregistrée. Votre état précédent a été restauré; réessayez.";
+  const adaptationUndoError = undoAdaptationMutation.isError
+    ? getActionError(undoAdaptationMutation.error, "La dernière adaptation n’a pas pu être annulée.")
+    : undefined;
 
   const updateProgress = (stepId: number, status: RoadmapStep["progress"]["status"]) => {
     progressMutation.mutate({ roadmapId: roadmapId!, stepId, status });
@@ -743,6 +1116,23 @@ export function RoadmapDetailPage() {
   const openStepResources = (stepId: number) => setResourceViewer({ stepId, index: 0 });
   const changeResourceIndex = (index: number) => setResourceViewer((current) => current ? { ...current, index } : current);
   const closeResourceViewer = useCallback(() => setResourceViewer(null), []);
+  const saveLatestAdaptation = (snapshot: AdaptationHistorySnapshot) => {
+    if (roadmapId === null) return;
+    saveAdaptationHistory(roadmapId, snapshot);
+    setAdaptationHistory(snapshot);
+  };
+  const openUndoConfirmation = () => {
+    undoAdaptationMutation.reset();
+    setUndoConfirmOpen(true);
+  };
+  const confirmUndoAdaptation = () => {
+    if (roadmapId === null) return;
+    void undoAdaptationMutation.mutateAsync().then(() => {
+      clearAdaptationHistory(roadmapId);
+      setAdaptationHistory(null);
+      setUndoConfirmOpen(false);
+    }).catch(() => undefined);
+  };
 
   return (
     <AppLayout>
@@ -806,6 +1196,33 @@ export function RoadmapDetailPage() {
               <span>Créée le {formatDate(data.created_at)}</span>
               <span>{data.completed_steps} / {data.total_steps} étapes terminées</span>
             </div>
+            {!data.archived_at ? (
+              <div className={styles.roadmapActions}>
+                {changedStepVersions.length > 0 ? (
+                  <Button variant="outline" icon="history" onClick={() => setHistoryChangesToShow(changedStepVersions)}>
+                    Historique ({changedStepVersions.length})
+                  </Button>
+                ) : null}
+                <Button
+                  variant="outline"
+                  icon="auto_awesome"
+                  disabled={!orderedSteps.some((step) => step.progress.status === "todo")}
+                  onClick={() => setAdaptRoadmapOpen(true)}
+                >
+                  Adapter la suite
+                </Button>
+                <Button
+                  variant="outline"
+                  icon="undo"
+                  isLoading={undoAdaptationMutation.isPending}
+                  disabled={undoAdaptationMutation.isPending}
+                  onClick={openUndoConfirmation}
+                >
+                  Annuler la dernière adaptation
+                </Button>
+                {adaptationUndoError ? <p className={styles.adaptationUndoError} role="alert">{adaptationUndoError}</p> : null}
+              </div>
+            ) : null}
           </section>
 
           {data.archived_at ? (
@@ -831,7 +1248,7 @@ export function RoadmapDetailPage() {
                   </h2>
                   <div className={styles.stepList}>
                     {completedSteps.map((step) => (
-                      <StepCard key={step.id} step={step} isUpdating={progressMutation.isPending || Boolean(data.archived_at)} allowAdjustment={!data.archived_at} onProgressChange={updateProgress} onOpenResources={openStepResources} onAdjustStep={setAdjustmentStep} onAdjustResources={setResourceAdjustmentStep} />
+                      <StepCard key={step.id} step={step} previousVersion={changedStepVersions.find((change) => change.currentStep.id === step.id)} onViewPreviousVersion={(change) => setHistoryChangesToShow([change])} isUpdating={progressMutation.isPending || Boolean(data.archived_at)} allowAdjustment={!data.archived_at} onProgressChange={updateProgress} onOpenResources={openStepResources} onAdjustStep={setAdjustmentStep} onAdjustResources={setResourceAdjustmentStep} />
                     ))}
                   </div>
                 </section>
@@ -842,7 +1259,7 @@ export function RoadmapDetailPage() {
                 {remainingSteps.length > 0 ? (
                   <div className={styles.stepList}>
                     {remainingSteps.map((step) => (
-                      <StepCard key={step.id} step={step} isUpdating={progressMutation.isPending || Boolean(data.archived_at)} allowAdjustment={!data.archived_at} onProgressChange={updateProgress} onOpenResources={openStepResources} onAdjustStep={setAdjustmentStep} onAdjustResources={setResourceAdjustmentStep} />
+                      <StepCard key={step.id} step={step} previousVersion={changedStepVersions.find((change) => change.currentStep.id === step.id)} onViewPreviousVersion={(change) => setHistoryChangesToShow([change])} isUpdating={progressMutation.isPending || Boolean(data.archived_at)} allowAdjustment={!data.archived_at} onProgressChange={updateProgress} onOpenResources={openStepResources} onAdjustStep={setAdjustmentStep} onAdjustResources={setResourceAdjustmentStep} />
                     ))}
                   </div>
                 ) : completedSteps.length > 0 ? (
@@ -914,6 +1331,23 @@ export function RoadmapDetailPage() {
               onClose={() => setResourceAdjustmentStep(null)}
             />
           ) : null}
+          {data && adaptRoadmapOpen ? (
+            <RoadmapAdaptationDialog roadmap={data} onClose={() => setAdaptRoadmapOpen(false)} onAdapted={saveLatestAdaptation} />
+          ) : null}
+          {adaptationHistory && historyChangesToShow?.length ? (
+            <PreviousStepVersionDialog
+              changes={historyChangesToShow}
+              adaptedAt={adaptationHistory.adaptedAt}
+              onClose={() => setHistoryChangesToShow(null)}
+            />
+          ) : null}
+          <UndoAdaptationConfirmDialog
+            open={undoConfirmOpen}
+            isLoading={undoAdaptationMutation.isPending}
+            error={adaptationUndoError}
+            onConfirm={confirmUndoAdaptation}
+            onCancel={() => setUndoConfirmOpen(false)}
+          />
         </>
       ) : null}
     </AppLayout>

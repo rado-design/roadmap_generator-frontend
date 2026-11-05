@@ -308,3 +308,23 @@ Ajouter chaque nouvelle action de reprise tout en bas, avec sa date. La dernièr
 ### 2026-11-03 — Après l'ajustement des marges des modals
 
 - Intégrer l'adaptation en streaming de la suite d'une roadmap lorsque `POST /roadmaps/{id}/adapt/stream` et son contrat SSE seront disponibles; voir `ROADMAP_REGENERATION_BACKEND_REQUIREMENTS.md`.
+
+### 2026-11-05 — Après l'intégration de l'adaptation d'une roadmap
+
+- Reprendre la génération de roadmap après actualisation ou reconnexion en intégrant la tâche persistante, le statut et la reprise SSE lorsqu'ils seront exposés par le backend; voir `ROADMAP_GENERATION_RESUME_BACKEND_REQUIREMENTS.md`.
+
+### 2026-11-05 — Après l'affichage des ressources dans l'aperçu d'adaptation
+
+- Reprendre la génération de roadmap après actualisation ou reconnexion en intégrant la tâche persistante, le statut et la reprise SSE lorsqu'ils seront exposés par le backend; voir `ROADMAP_GENERATION_RESUME_BACKEND_REQUIREMENTS.md`.
+
+### 2026-11-05 — Après l'historique des étapes adaptées
+
+- Remplacer l'instantané `sessionStorage` et l'association temporaire par numéro d'ordre par un endpoint authentifié d'historique incluant le lien explicite ancienne/nouvelle étape; ajouter aussi l'annulation ciblée d'une étape adaptée, tout en gardant l'annulation complète cohérente après une restauration partielle. Voir `ROADMAP_ADAPTATION_HISTORY_BACKEND_REQUIREMENTS.md` dans le dépôt backend.
+
+### 2026-11-05 — Après l'ajustement du modal de ressources mobile
+
+- Intégrer l'endpoint d'historique durable des adaptations et l'annulation ciblée d'une étape quand les contrats backend décrits dans `ROADMAP_ADAPTATION_HISTORY_BACKEND_REQUIREMENTS.md` seront disponibles.
+
+### 2026-11-05 — Après la correction du débordement horizontal du modal mobile
+
+- Intégrer l'historique durable des adaptations et l'annulation ciblée d'une étape quand les contrats backend décrits dans `ROADMAP_ADAPTATION_HISTORY_BACKEND_REQUIREMENTS.md` seront disponibles.

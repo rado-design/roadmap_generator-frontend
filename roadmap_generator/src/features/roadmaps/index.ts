@@ -5,6 +5,8 @@ export { useSetStepProgress } from "./hooks/useSetStepProgress";
 export { useSetRoadmapArchived } from "./hooks/useSetRoadmapArchived";
 export { useProposeStepAdjustment, useDecideStepAdjustment } from "./hooks/useStepAdjustment";
 export { useProposeResourceAdjustment, useDecideResourceAdjustment } from "./hooks/useResourceAdjustment";
+export { useAdaptRoadmap, useUndoRoadmapAdaptation } from "./hooks/useRoadmapAdaptation";
+export type { RoadmapAdaptEvent, RoadmapAdaptPlan } from "./api/adaptRoadmap";
 export { ROADMAP_CATEGORY_GROUPS, ROADMAP_CATEGORY_OPTIONS } from "./categories";
 export type {
   GenerateRoadmapRequest,
