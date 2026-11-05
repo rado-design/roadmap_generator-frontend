@@ -1,12 +1,19 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Link, useLocation, useParams } from "react-router";
 import { AppLayout } from "../../app/layouts";
 import {
   useRoadmapDetail,
+  useProposeStepAdjustment,
+  useDecideStepAdjustment,
+  useProposeResourceAdjustment,
+  useDecideResourceAdjustment,
   useSetStepProgress,
   type RoadmapDetail,
   type RoadmapResource,
   type RoadmapStep,
+  type StepAdjustment,
+  type StepContent,
+  type ResourceAdjustment,
 } from "../../features/roadmaps";
 import { Button } from "../../shared/components/Button";
 import { Icon } from "../../shared/components/Icon";
@@ -202,16 +209,329 @@ function ResourceModal({
   );
 }
 
+function StepAdjustmentContent({ content, label }: { content: StepContent; label: string }) {
+  return (
+    <section className={styles.adjustmentVersion} aria-label={label}>
+      <h3>{label}</h3>
+      <h4>{content.title}</h4>
+      <p>{content.description}</p>
+      <p className={styles.adjustmentDuration}>
+        {content.estimated_duration_days === null
+          ? "Durée non précisée"
+          : `${content.estimated_duration_days} jour${content.estimated_duration_days === 1 ? "" : "s"}`}
+      </p>
+      {content.learning_objectives.length > 0 ? (
+        <div>
+          <strong>Objectifs</strong>
+          <ul>{content.learning_objectives.map((objective, index) => <li key={`${label}-${index}`}>{objective}</li>)}</ul>
+        </div>
+      ) : null}
+      <div>
+        <strong>Ressources ({content.resources.length})</strong>
+        {content.resources.length > 0 ? (
+          <ul>
+            {content.resources.map((resource, index) => {
+              const url = getSafeResourceUrl(resource.url);
+              return <li key={`${label}-resource-${index}`}>{url ? <a href={url.href} target="_blank" rel="noreferrer">{resource.title}</a> : resource.title}</li>;
+            })}
+          </ul>
+        ) : <p className={styles.adjustmentEmpty}>Aucune ressource.</p>}
+      </div>
+    </section>
+  );
+}
+
+function getActionError(error: unknown, fallback: string) {
+  if (typeof error === "object" && error !== null && "message" in error) {
+    return String(error.message);
+  }
+  return fallback;
+}
+
+function StepAdjustmentDialog({ roadmapId, step, onClose }: {
+  roadmapId: number;
+  step: RoadmapStep;
+  onClose: () => void;
+}) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [instruction, setInstruction] = useState("");
+  const proposeMutation = useProposeStepAdjustment(roadmapId);
+  const decideMutation = useDecideStepAdjustment(roadmapId);
+  const proposal: StepAdjustment | undefined = proposeMutation.data;
+  const isBusy = proposeMutation.isPending || decideMutation.isPending;
+  const canClose = !isBusy && !proposal;
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (dialog && !dialog.open) dialog.showModal();
+    return () => { if (dialog?.open) dialog.close(); };
+  }, []);
+
+  const requestClose = () => {
+    if (canClose) onClose();
+  };
+
+  const submitInstruction = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const cleanedInstruction = instruction.trim();
+    if (cleanedInstruction.length < 3 || cleanedInstruction.length > 500) return;
+    void proposeMutation.mutateAsync({ stepId: step.id, instruction: cleanedInstruction }).catch(() => undefined);
+  };
+
+  const decide = (decision: "accept" | "reject") => {
+    if (!proposal) return;
+    void decideMutation.mutateAsync({ stepId: step.id, adjustmentId: proposal.id, decision })
+      .then(onClose)
+      .catch(() => undefined);
+  };
+
+  return (
+    <dialog
+      ref={dialogRef}
+      className={styles.adjustmentDialog}
+      aria-labelledby="step-adjustment-title"
+      aria-busy={isBusy}
+      onCancel={(event) => { event.preventDefault(); requestClose(); }}
+      onClick={(event) => { if (event.target === event.currentTarget) requestClose(); }}
+    >
+      <div className={styles.adjustmentDialogContent}>
+        <header className={styles.adjustmentDialogHeader}>
+          <div>
+            <p>Régénération d’étape</p>
+            <h2 id="step-adjustment-title">{step.title}</h2>
+          </div>
+          {canClose ? (
+            <button className={styles.closeResourceDialog} type="button" onClick={onClose} aria-label="Fermer">
+              <Icon name="close" />
+            </button>
+          ) : null}
+        </header>
+
+        {!proposal ? (
+          <form className={styles.adjustmentForm} onSubmit={submitInstruction}>
+            <p>Expliquez ce que vous souhaitez changer. L’étape actuelle restera en place tant que vous n’aurez pas accepté la proposition.</p>
+            <label htmlFor="step-adjustment-instruction">Votre consigne</label>
+            <textarea
+              id="step-adjustment-instruction"
+              value={instruction}
+              onChange={(event) => setInstruction(event.target.value)}
+              minLength={3}
+              maxLength={500}
+              rows={4}
+              placeholder="Ex. : rends cette étape plus pratique et ajoute un exercice guidé"
+              disabled={isBusy}
+              required
+            />
+            <span className={styles.adjustmentHelper}>{instruction.trim().length}/500 caractères · 3 minimum</span>
+            {proposeMutation.isError ? (
+              <p className={styles.adjustmentError} role="alert">
+                {getActionError(proposeMutation.error, "La proposition n’a pas pu être générée. Réessayez.")}
+              </p>
+            ) : null}
+            <footer className={styles.adjustmentActions}>
+              <Button type="button" variant="outline" disabled={isBusy} onClick={onClose}>Annuler</Button>
+              <Button type="submit" icon="auto_awesome" isLoading={proposeMutation.isPending} disabled={instruction.trim().length < 3}>
+                Générer une proposition
+              </Button>
+            </footer>
+          </form>
+        ) : (
+          <div className={styles.adjustmentProposal}>
+            <p className={styles.adjustmentInstruction}><strong>Votre consigne :</strong> {proposal.instruction}</p>
+            <div className={styles.adjustmentComparison}>
+              <StepAdjustmentContent content={proposal.current} label="Étape actuelle" />
+              <StepAdjustmentContent content={proposal.proposed} label="Proposition" />
+            </div>
+            {decideMutation.isError ? (
+              <p className={styles.adjustmentError} role="alert">
+                {getActionError(decideMutation.error, "Votre choix n’a pas pu être enregistré. Réessayez.")}
+              </p>
+            ) : null}
+            <footer className={styles.adjustmentActions}>
+              <Button type="button" variant="outline" isLoading={decideMutation.isPending && decideMutation.variables?.decision === "reject"} disabled={isBusy} onClick={() => decide("reject")}>
+                Garder l’étape actuelle
+              </Button>
+              <Button type="button" icon="check" isLoading={decideMutation.isPending && decideMutation.variables?.decision === "accept"} disabled={isBusy} onClick={() => decide("accept")}>
+                Appliquer la proposition
+              </Button>
+            </footer>
+          </div>
+        )}
+      </div>
+    </dialog>
+  );
+}
+
+function ResourceAdjustmentContent({ resources, label }: {
+  resources: RoadmapResource[];
+  label: string;
+}) {
+  return (
+    <section className={styles.adjustmentVersion} aria-label={label}>
+      <h3>{label}</h3>
+      <strong>Ressources ({resources.length})</strong>
+      {resources.length > 0 ? (
+        <ul>
+          {resources.map((resource, index) => {
+            const url = getSafeResourceUrl(resource.url);
+            return (
+              <li key={`${label}-${resource.title}-${index}`}>
+                <strong>{resource.title}</strong>
+                <span className={styles.adjustmentResourceType}>{getResourceTypeLabel(resource.type)}</span>
+                {url ? <a href={url.href} target="_blank" rel="noreferrer">Ouvrir la ressource</a> : null}
+              </li>
+            );
+          })}
+        </ul>
+      ) : <p className={styles.adjustmentEmpty}>Aucune ressource.</p>}
+    </section>
+  );
+}
+
+function ResourceAdjustmentDialog({ roadmapId, step, onClose }: {
+  roadmapId: number;
+  step: RoadmapStep;
+  onClose: () => void;
+}) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [instruction, setInstruction] = useState("");
+  const proposeMutation = useProposeResourceAdjustment(roadmapId);
+  const decideMutation = useDecideResourceAdjustment(roadmapId);
+  const proposal: ResourceAdjustment | undefined = proposeMutation.data;
+  const isBusy = proposeMutation.isPending || decideMutation.isPending;
+  const canClose = !isBusy && !proposal;
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (dialog && !dialog.open) dialog.showModal();
+    return () => { if (dialog?.open) dialog.close(); };
+  }, []);
+
+  const requestClose = () => {
+    if (canClose) onClose();
+  };
+
+  const submitInstruction = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const cleanedInstruction = instruction.trim();
+    if (cleanedInstruction.length > 0 && cleanedInstruction.length < 3) return;
+    if (cleanedInstruction.length > 500) return;
+    void proposeMutation.mutateAsync({
+      stepId: step.id,
+      instruction: cleanedInstruction || undefined,
+    }).catch(() => undefined);
+  };
+
+  const decide = (decision: "accept" | "reject") => {
+    if (!proposal) return;
+    void decideMutation.mutateAsync({ stepId: step.id, adjustmentId: proposal.id, decision })
+      .then(onClose)
+      .catch(() => undefined);
+  };
+
+  return (
+    <dialog
+      ref={dialogRef}
+      className={styles.adjustmentDialog}
+      aria-labelledby="resource-adjustment-title"
+      aria-busy={isBusy}
+      onCancel={(event) => { event.preventDefault(); requestClose(); }}
+      onClick={(event) => { if (event.target === event.currentTarget) requestClose(); }}
+    >
+      <div className={styles.adjustmentDialogContent}>
+        <header className={styles.adjustmentDialogHeader}>
+          <div>
+            <p>Régénération des ressources</p>
+            <h2 id="resource-adjustment-title">{step.title}</h2>
+          </div>
+          {canClose ? (
+            <button className={styles.closeResourceDialog} type="button" onClick={onClose} aria-label="Fermer">
+              <Icon name="close" />
+            </button>
+          ) : null}
+        </header>
+
+        {!proposal ? (
+          <form className={styles.adjustmentForm} onSubmit={submitInstruction}>
+            <p>Actualisez les ressources de cette étape, ou précisez le type de contenu recherché. Les ressources actuelles resteront en place tant que vous n’aurez pas accepté la proposition.</p>
+            <label htmlFor="resource-adjustment-instruction">Consigne (facultative)</label>
+            <textarea
+              id="resource-adjustment-instruction"
+              value={instruction}
+              onChange={(event) => setInstruction(event.target.value)}
+              minLength={instruction.trim().length > 0 ? 3 : undefined}
+              maxLength={500}
+              rows={4}
+              placeholder="Ex. : privilégie des vidéos courtes pour débutants"
+              disabled={isBusy}
+            />
+            <span className={styles.adjustmentHelper}>
+              {instruction.trim().length === 0
+                ? "Sans consigne, les ressources sont actualisées selon le profil d’apprenant."
+                : `${instruction.trim().length}/500 caractères · 3 minimum`}
+            </span>
+            {proposeMutation.isError ? (
+              <p className={styles.adjustmentError} role="alert">
+                {getActionError(proposeMutation.error, "Les ressources n’ont pas pu être générées. Réessayez.")}
+              </p>
+            ) : null}
+            <footer className={styles.adjustmentActions}>
+              <Button type="button" variant="outline" disabled={isBusy} onClick={onClose}>Annuler</Button>
+              <Button
+                type="submit"
+                icon="auto_awesome"
+                isLoading={proposeMutation.isPending}
+                disabled={isBusy || (instruction.trim().length > 0 && instruction.trim().length < 3)}
+              >
+                {instruction.trim() ? "Générer une proposition" : "Actualiser les ressources"}
+              </Button>
+            </footer>
+          </form>
+        ) : (
+          <div className={styles.adjustmentProposal}>
+            <p className={styles.adjustmentInstruction}>
+              <strong>Consigne :</strong> {proposal.instruction || "Actualisation automatique selon le profil et le sujet de l’étape."}
+            </p>
+            <div className={styles.adjustmentComparison}>
+              <ResourceAdjustmentContent resources={proposal.current} label="Ressources actuelles" />
+              <ResourceAdjustmentContent resources={proposal.proposed} label="Proposition" />
+            </div>
+            {decideMutation.isError ? (
+              <p className={styles.adjustmentError} role="alert">
+                {getActionError(decideMutation.error, "Votre choix n’a pas pu être enregistré. Réessayez.")}
+              </p>
+            ) : null}
+            <footer className={styles.adjustmentActions}>
+              <Button type="button" variant="outline" isLoading={decideMutation.isPending && decideMutation.variables?.decision === "reject"} disabled={isBusy} onClick={() => decide("reject")}>
+                Garder les ressources actuelles
+              </Button>
+              <Button type="button" icon="check" isLoading={decideMutation.isPending && decideMutation.variables?.decision === "accept"} disabled={isBusy} onClick={() => decide("accept")}>
+                Remplacer les ressources
+              </Button>
+            </footer>
+          </div>
+        )}
+      </div>
+    </dialog>
+  );
+}
+
 function StepCard({
   step,
   isUpdating,
   onProgressChange,
   onOpenResources,
+  onAdjustStep,
+  onAdjustResources,
+  allowAdjustment,
 }: {
   step: RoadmapStep;
   isUpdating: boolean;
   onProgressChange: (stepId: number, status: RoadmapStep["progress"]["status"]) => void;
   onOpenResources: (stepId: number) => void;
+  onAdjustStep: (step: RoadmapStep) => void;
+  onAdjustResources: (step: RoadmapStep) => void;
+  allowAdjustment: boolean;
 }) {
   const isDone = step.progress.status === "done";
   const isActive = step.progress.status === "in_progress";
@@ -253,20 +573,47 @@ function StepCard({
             ))}
           </ul>
         ) : null}
-        {step.resources.length > 0 ? (
-          <Button
-            className={styles.stepResourcesButton}
-            variant="outline"
-            icon="collections_bookmark"
-            type="button"
-            onClick={() => onOpenResources(step.id)}
-            aria-label={`Voir les ${step.resources.length} ressources de l'étape ${step.title}`}
-          >
-            Ressources ({step.resources.length})
-          </Button>
-        ) : (
-          <p className={styles.noStepResources}>Aucune ressource liée à cette étape.</p>
-        )}
+        <div className={styles.stepActions}>
+          {step.resources.length > 0 ? (
+            <Button
+              className={styles.stepResourcesButton}
+              variant="outline"
+              icon="collections_bookmark"
+              type="button"
+              onClick={() => onOpenResources(step.id)}
+              aria-label={`Voir les ${step.resources.length} ressources de l'étape ${step.title}`}
+            >
+              Ressources ({step.resources.length})
+            </Button>
+          ) : <p className={styles.noStepResources}>Aucune ressource liée à cette étape.</p>}
+          {allowAdjustment && step.progress.status === "todo" ? (
+            <Button
+              className={styles.stepResourcesButton}
+              variant="outline"
+              icon="auto_awesome"
+              type="button"
+              disabled={isUpdating}
+              onClick={() => onAdjustStep(step)}
+            >
+              Régénérer l’étape
+            </Button>
+          ) : null}
+          {allowAdjustment ? (
+            <Button
+              className={styles.stepResourcesButton}
+              variant="outline"
+              icon="refresh"
+              type="button"
+              disabled={isUpdating}
+              onClick={() => onAdjustResources(step)}
+            >
+              Régénérer les ressources
+            </Button>
+          ) : null}
+          {allowAdjustment && step.progress.status !== "todo" ? (
+            <p className={styles.noStepResources}>Remettez l’étape « À faire » pour régénérer son contenu.</p>
+          ) : null}
+        </div>
       </div>
     </article>
   );
@@ -344,6 +691,8 @@ export function RoadmapDetailPage() {
   const { data, isLoading, isError, error, refetch, isFetching } = useRoadmapDetail(roadmapId);
   const progressMutation = useSetStepProgress(roadmapId);
   const [resourceViewer, setResourceViewer] = useState<{ stepId: number; index: number } | null>(null);
+  const [adjustmentStep, setAdjustmentStep] = useState<RoadmapStep | null>(null);
+  const [resourceAdjustmentStep, setResourceAdjustmentStep] = useState<RoadmapStep | null>(null);
   const orderedSteps = useMemo(
     () => [...(data?.steps ?? [])].sort((left, right) => left.order - right.order),
     [data?.steps],
@@ -482,7 +831,7 @@ export function RoadmapDetailPage() {
                   </h2>
                   <div className={styles.stepList}>
                     {completedSteps.map((step) => (
-                      <StepCard key={step.id} step={step} isUpdating={progressMutation.isPending || Boolean(data.archived_at)} onProgressChange={updateProgress} onOpenResources={openStepResources} />
+                      <StepCard key={step.id} step={step} isUpdating={progressMutation.isPending || Boolean(data.archived_at)} allowAdjustment={!data.archived_at} onProgressChange={updateProgress} onOpenResources={openStepResources} onAdjustStep={setAdjustmentStep} onAdjustResources={setResourceAdjustmentStep} />
                     ))}
                   </div>
                 </section>
@@ -493,7 +842,7 @@ export function RoadmapDetailPage() {
                 {remainingSteps.length > 0 ? (
                   <div className={styles.stepList}>
                     {remainingSteps.map((step) => (
-                      <StepCard key={step.id} step={step} isUpdating={progressMutation.isPending || Boolean(data.archived_at)} onProgressChange={updateProgress} onOpenResources={openStepResources} />
+                      <StepCard key={step.id} step={step} isUpdating={progressMutation.isPending || Boolean(data.archived_at)} allowAdjustment={!data.archived_at} onProgressChange={updateProgress} onOpenResources={openStepResources} onAdjustStep={setAdjustmentStep} onAdjustResources={setResourceAdjustmentStep} />
                     ))}
                   </div>
                 ) : completedSteps.length > 0 ? (
@@ -547,6 +896,22 @@ export function RoadmapDetailPage() {
               resourceIndex={resourceViewer.index}
               onResourceIndexChange={changeResourceIndex}
               onClose={closeResourceViewer}
+            />
+          ) : null}
+          {roadmapId !== null && adjustmentStep ? (
+            <StepAdjustmentDialog
+              key={adjustmentStep.id}
+              roadmapId={roadmapId}
+              step={adjustmentStep}
+              onClose={() => setAdjustmentStep(null)}
+            />
+          ) : null}
+          {roadmapId !== null && resourceAdjustmentStep ? (
+            <ResourceAdjustmentDialog
+              key={resourceAdjustmentStep.id}
+              roadmapId={roadmapId}
+              step={resourceAdjustmentStep}
+              onClose={() => setResourceAdjustmentStep(null)}
             />
           ) : null}
         </>

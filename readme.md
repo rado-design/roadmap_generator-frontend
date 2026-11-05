@@ -35,10 +35,14 @@ Application web de RoadmapAI : elle permet de créer un compte, de générer des
 
 - Création à partir d’un objectif, d’une catégorie, du niveau, du temps disponible, d’une échéance et d’un contexte facultatif.
 - Génération progressive via Server-Sent Events : le formulaire laisse place à l’avancement et affiche le titre, les étapes et leurs ressources au fur et à mesure de leur réception.
+- La liste Roadmaps montre une carte temporaire pour la génération active; elle permet de revenir au flux et disparaît quand la roadmap est enregistrée.
+- « Créer une roadmap » ouvre un nouveau formulaire après une génération terminée, sans réafficher son ancien résultat.
 - Liste avec recherche, filtres par catégorie et état, tri, et chargement progressif des résultats.
 - Vues séparées pour les roadmaps actives et archivées. L’état de la vue est conservé dans l’URL avec `?archived=true`.
 - Chaque carte permet d’archiver ou de restaurer une roadmap. Une roadmap archivée reste consultable, mais sa progression est en lecture seule jusqu’à sa restauration.
 - Le détail montre les étapes, la progression, les objectifs d’apprentissage et les ressources; les ressources d’une étape s’ouvrent dans un aperçu navigable.
+- Une étape « À faire » peut être régénérée avec une consigne, puis comparée à la version actuelle avant acceptation ou refus. Les étapes commencées ou terminées doivent d’abord être remises à « À faire ».
+- Les ressources de chaque étape peuvent être actualisées avec une consigne facultative. Une proposition est comparée aux ressources actuelles avant d’être acceptée ou refusée; cela fonctionne aussi sur les étapes commencées ou terminées.
 
 ### Ressources
 
@@ -132,10 +136,12 @@ L’URL racine de l’API est configurée avec `VITE_API_BASE_URL`. Le client Ax
 | Authentification | `POST /api/v1/auth/register`, `/verify-otp`, `/resend-otp`, `/login`, `/refresh`, `/logout` |
 | Compte et préférences | `GET/PATCH /api/v1/users/me`, `GET/PUT /api/v1/users/me/learner-profile`, `PUT /api/v1/users/me/password` |
 | Tableau de bord | `GET /api/v1/dashboard` |
-| Roadmaps | `GET /api/v1/roadmaps`, `GET /api/v1/roadmaps/{id}`, `POST /api/v1/roadmaps/generate/stream`, `POST /api/v1/roadmaps/{id}/archive`, `POST /api/v1/roadmaps/{id}/unarchive`, `PUT /api/v1/roadmaps/{id}/steps/{step_id}/progress` |
+| Roadmaps | `GET /api/v1/roadmaps`, `GET /api/v1/roadmaps/{id}`, `POST /api/v1/roadmaps/generate/stream`, `POST /api/v1/roadmaps/{id}/archive`, `POST /api/v1/roadmaps/{id}/unarchive`, `PUT /api/v1/roadmaps/{id}/steps/{step_id}/progress`, `POST /api/v1/roadmaps/{id}/steps/{step_id}/adjustments` et routes `accept` / `reject` associées |
 | Ressources | `GET /api/v1/resources`, `PUT/DELETE /api/v1/resources/{id}/favorite` |
 
 Le filtre `archived=true` de `GET /api/v1/roadmaps` renvoie les roadmaps archivées; sans ce paramètre, seules les roadmaps actives sont listées. L’archivage est une opération sur la roadmap : il la rend non modifiable et masque ses ressources de la liste générale. Le frontend invalide les caches des roadmaps, du tableau de bord et des ressources après archivage ou restauration.
+
+L’ajustement d’une étape crée d’abord une proposition persistée côté backend; l’étape n’est modifiée qu’après acceptation. L’API de régénération de toute la suite de la roadmap (`POST /api/v1/roadmaps/{id}/adapt/stream`) n’est pas encore exposée dans le routeur backend du workspace; le frontend ne l’appelle donc pas.
 
 Le contrat détaillé et les règles métier vivent dans le dépôt backend. Pour les démarrer ou vérifier leurs prérequis, consulter le [README backend](../roadmap_generator-backend/README.md).
 
@@ -198,3 +204,4 @@ Le `package.json` ne définit pas actuellement de commande `test`.
 - Le formulaire « mot de passe oublié » n’envoie pas encore de demande au backend.
 - Les ressources sont archivées avec leur roadmap; il n’existe pas d’action d’archivage indépendante par ressource dans le contrat actuellement consommé par le frontend.
 - L’export des roadmaps reste désactivé.
+- Une génération reste active si l’utilisateur navigue entre les pages dans le même onglet; une actualisation, une fermeture d’onglet ou une perte de connexion l’interrompt encore. La reprise après reconnexion attend une tâche persistante côté backend (`ROADMAP_GENERATION_RESUME_BACKEND_REQUIREMENTS.md` dans le dépôt backend).

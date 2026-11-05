@@ -25,9 +25,40 @@ Ce fichier décrit ce qui est réellement implémenté côté frontend (composan
 
 ## Règle de mise à jour
 
-Une fonctionnalité ne passe ici à « terminée » qu'après vérification de son parcours frontend et de son contrat backend. Ajouter chaque nouvelle réalisation tout en bas de l'historique avec sa date; ne pas remplacer les entrées précédentes par une date de mise à jour globale. Mettre aussi `next_steps.md` à jour dans le même changement. Ne pas ajouter ici les domaines qui n'ont pas encore été implémentés côté frontend.
+Une fonctionnalité ne passe ici à « terminée » qu'après vérification de son parcours frontend et de son contrat backend. Ajouter chaque nouvelle réalisation tout en haut de l'historique avec sa date; ne pas remplacer les entrées précédentes par une date de mise à jour globale. Mettre aussi `next_steps.md` à jour dans le même changement. Ne pas ajouter ici les domaines qui n'ont pas encore été implémentés côté frontend.
 
 ## Historique des réalisations
+
+### 2026-11-03 — Espacement des actions dans les modals de régénération
+
+- La rangée de décision des modals de régénération garde maintenant une marge intérieure horizontale et basse cohérente avec les panneaux et l'en-tête, sur grand écran comme sur mobile.
+- Vérification: `git diff --check`.
+
+### 2026-11-03 — Finition visuelle commune des modals de régénération
+
+- Les modals de régénération des étapes et de leurs ressources reprennent maintenant le même fond, la bordure douce, les coins arrondis, l'espacement intérieur et le backdrop que le modal d'aperçu des ressources.
+- Vérification: `git diff --check`.
+
+### 2026-11-03 — Régénération des ressources d'une étape
+
+- Chaque étape d'une roadmap non archivée permet de demander un renouvellement des ressources, avec consigne facultative ou actualisation selon le profil d'apprenant.
+- La proposition compare les ressources actuelles et proposées; l'utilisateur peut les conserver ou les remplacer. L'API renvoie l'étape mise à jour et les caches du détail, des roadmaps et des ressources sont actualisés.
+- La fonctionnalité est disponible quel que soit le statut de progression de l'étape, conformément au contrat backend.
+- Vérification: contrôle TypeScript, build de production et `git diff --check`.
+
+### 2026-11-03 — Carte de génération en cours dans Roadmaps
+
+- La liste des roadmaps affiche la génération active comme une carte temporaire, avec le statut « Génération en cours » et le nombre d'étapes reçues.
+- La carte ouvre `/roadmaps/generate` pour retrouver le flux SSE et respecte la recherche, le filtre d'état et le filtre de catégorie. Elle disparaît après la persistance de la roadmap, qui est alors chargée depuis l'API.
+- Les actions « Créer une roadmap » et « Nouvelle roadmap » réinitialisent l'affichage d'une génération terminée avant d'ouvrir un nouveau formulaire; un flux toujours actif reste conservé.
+- Vérification: contrôle TypeScript, build de production, détection Impeccable et `git diff --check`.
+
+### 2026-11-03 — Continuer une génération après navigation interne
+
+- Le flux de génération et ses étapes reçues sont conservés dans un store partagé; quitter la page Générer pour consulter Roadmaps ne ferme donc plus la connexion SSE.
+- En revenant sur Générer dans le même onglet, l'utilisateur retrouve l'avancement ou peut consulter la roadmap si la génération est déjà terminée; les paramètres soumis restent disponibles après une erreur.
+- La reprise après actualisation ou fermeture du navigateur nécessite encore une génération en tâche de fond et un endpoint de statut/reprise côté backend; ce besoin est décrit dans `ROADMAP_GENERATION_RESUME_BACKEND_REQUIREMENTS.md`.
+- Vérification: contrôle TypeScript, build de production et `git diff --check`.
 
 ### 2026-10-20 — Base de layouts partagés
 
@@ -264,3 +295,9 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 
 - Le README racine décrit maintenant les fonctionnalités présentes, l’architecture, les routes, les contrats API, la configuration locale, les commandes, les consignes de maquette et les limites connues; le README du package renvoie vers cette référence.
 - Vérification: `git diff --check`.
+
+### 2026-11-03 — Régénération avec proposition pour une étape
+
+- Le détail permet de demander un ajustement d’une étape « À faire », de comparer les contenus actuels et proposés, puis d’accepter ou de refuser. La mise à jour et les caches associés sont synchronisés avec le backend.
+- La régénération de la suite d’une roadmap n’est pas enregistrée comme terminée : la route `POST /roadmaps/{id}/adapt/stream` n’est pas présente dans le routeur backend courant; besoin décrit dans `ROADMAP_REGENERATION_BACKEND_REQUIREMENTS.md`.
+- Vérification: contrôle TypeScript avec `--ignoreDeprecations 6.0`, détection Impeccable et `git diff --check`.

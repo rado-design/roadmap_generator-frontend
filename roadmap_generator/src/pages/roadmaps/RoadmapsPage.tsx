@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { AppLayout, PageHeader } from "../../app/layouts";
 import { useRoadmaps, useSetRoadmapArchived, type RoadmapCategoryGroup, type RoadmapSort, type RoadmapStatus, type RoadmapSummary } from "../../features/roadmaps";
+import { useRoadmapGenerationStore } from "../../features/roadmaps/hooks/useRoadmapGenerationStore";
 import { Button } from "../../shared/components/Button";
 import { Icon } from "../../shared/components/Icon";
 import styles from "./RoadmapsPage.module.scss";
@@ -24,6 +25,20 @@ const statusLabels: Record<RoadmapStatus, string> = {
   ready: "Prête",
   failed: "Échec de génération",
 };
+
+function getGenerationCategoryGroup(category: string | undefined): RoadmapCategoryGroup {
+  switch (category) {
+    case "programming":
+    case "mobile_dev":
+    case "ux_ui_design":
+      return "tech";
+    case "marketing_sales":
+    case "project_management":
+      return "business";
+    default:
+      return "other";
+  }
+}
 
 function getProgress(roadmap: RoadmapSummary) {
   if (roadmap.total_steps === 0) return 0;
@@ -88,6 +103,31 @@ function RoadmapCard({ roadmap, from, archived, pending, onArchive }: {
   );
 }
 
+function GenerationCard({ title, goal, stepsReceived, from }: {
+  title: string;
+  goal: string;
+  stepsReceived: number;
+  from: { pathname: string; search: string; hash: string };
+}) {
+  return (
+    <Link
+      className={styles.card}
+      to="/roadmaps/generate"
+      state={{ from }}
+      aria-label={`Suivre la génération de ${title}`}
+    >
+      <span className={`${styles.status} ${styles.generating}`}>{statusLabels.generating}</span>
+      <h2 className={styles.cardTitle}>{title}</h2>
+      <p className={styles.goal}>{goal}</p>
+      <div className={styles.progressMeta}>
+        <span>Étapes reçues</span>
+        <strong>{stepsReceived}</strong>
+      </div>
+      <div className={styles.cardMeta}>Sélectionnez pour suivre la génération</div>
+    </Link>
+  );
+}
+
 function RoadmapSkeleton() {
   return <div className={styles.skeleton} aria-hidden="true" />;
 }
@@ -95,6 +135,7 @@ function RoadmapSkeleton() {
 export function RoadmapsPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const generation = useRoadmapGenerationStore();
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | RoadmapStatus>("all");
@@ -127,6 +168,18 @@ export function RoadmapsPage() {
   });
   const items = data?.pages.flatMap((page) => page.items) ?? EMPTY_ROADMAPS;
   const total = data?.pages[0]?.total ?? 0;
+  const generationActive = generation.status === "connecting" || generation.status === "streaming";
+  const generationTitle = generation.title ?? "Nouvelle roadmap en préparation";
+  const generationGoal = generation.request?.goal ?? "";
+  const generationCategory = getGenerationCategoryGroup(generation.request?.category);
+  const appliedSearchNormalized = appliedSearch.trim().toLocaleLowerCase("fr-FR");
+  const generationMatchesFilters = generationActive
+    && !showArchived
+    && (statusFilter === "all" || statusFilter === "generating")
+    && (categoryFilter === "all" || categoryFilter === generationCategory)
+    && (!appliedSearchNormalized || `${generationTitle} ${generationGoal}`.toLocaleLowerCase("fr-FR").includes(appliedSearchNormalized));
+  const displayedTotal = total + Number(generationMatchesFilters);
+  const displayedCount = items.length + Number(generationMatchesFilters);
   const problemDetail = typeof error === "object" && error !== null && "response" in error
     ? (error as { response?: { data?: { detail?: unknown } } }).response?.data?.detail
     : undefined;
@@ -140,6 +193,13 @@ export function RoadmapsPage() {
     else params.delete("archived");
     const query = params.toString();
     navigate(`${location.pathname}${query ? `?${query}` : ""}`, { replace: true });
+  };
+
+  const openNewGeneration = () => {
+    generation.startNew();
+    navigate("/roadmaps/generate", {
+      state: { from: { pathname: location.pathname, search: location.search, hash: location.hash } },
+    });
   };
 
   useEffect(() => {
@@ -163,7 +223,7 @@ export function RoadmapsPage() {
             <Button variant="outline" disabled title="L'export sera ajouté dans une prochaine étape.">
               Exporter
             </Button>
-            <Button icon="add" onClick={() => navigate("/roadmaps/generate")}>
+          <Button icon="add" onClick={openNewGeneration}>
               Créer une roadmap
             </Button>
           </div>
@@ -220,28 +280,28 @@ export function RoadmapsPage() {
           </select>
         </div>
         <p className={styles.filterNote}>
-          La recherche, les filtres et le tri s'appliquent à l'ensemble de vos roadmaps.
+          La génération en cours reste affichée en tête si elle correspond aux filtres sélectionnés.
         </p>
       </section>
 
-      {isLoading ? (
+      {isLoading && !generationMatchesFilters ? (
         <div className={styles.grid} aria-label="Chargement des roadmaps" aria-busy="true">
           {Array.from({ length: 6 }, (_, index) => <RoadmapSkeleton key={index} />)}
         </div>
-      ) : isError && items.length === 0 ? (
+      ) : isError && items.length === 0 && !generationMatchesFilters ? (
         <section className={styles.emptyState} role="alert">
           <Icon name="cloud_off" />
           <p>{errorMessage}</p>
           <Button variant="outline" onClick={() => void refetch()} isLoading={isFetching}>Réessayer</Button>
         </section>
-      ) : total === 0 && !appliedSearch.trim() && statusFilter === "all" && categoryFilter === "all" ? (
+      ) : total === 0 && !appliedSearch.trim() && statusFilter === "all" && categoryFilter === "all" && !generationMatchesFilters ? (
         <section className={styles.emptyState}>
           <Icon name="route" />
           <h2>{showArchived ? "Aucune roadmap archivée" : "Aucune roadmap pour le moment"}</h2>
           <p>{showArchived ? "Les roadmaps que vous archivez apparaîtront ici." : "Les roadmaps que vous créerez apparaîtront ici."}</p>
-          {!showArchived ? <Button icon="add" onClick={() => navigate("/roadmaps/generate")}>Nouvelle roadmap</Button> : null}
+          {!showArchived ? <Button icon="add" onClick={openNewGeneration}>Nouvelle roadmap</Button> : null}
         </section>
-      ) : total === 0 ? (
+      ) : total === 0 && !generationMatchesFilters ? (
         <section className={styles.emptyState}>
           <Icon name="search_off" />
           <h2>Aucun résultat</h2>
@@ -254,6 +314,14 @@ export function RoadmapsPage() {
         <>
           {archiveMutation.isError ? <p className={styles.archiveError} role="alert">Impossible de modifier l’archivage de cette roadmap. Réessayez.</p> : null}
           <div className={styles.grid}>
+            {generationMatchesFilters ? (
+              <GenerationCard
+                title={generationTitle}
+                goal={generationGoal}
+                stepsReceived={generation.steps.length}
+                from={{ pathname: location.pathname, search: location.search, hash: location.hash }}
+              />
+            ) : null}
             {items.map((roadmap) => (
               <RoadmapCard
                 key={roadmap.id}
@@ -268,6 +336,7 @@ export function RoadmapsPage() {
               className={styles.createCard}
               to="/roadmaps/generate"
               state={{ from: { pathname: location.pathname, search: location.search, hash: location.hash } }}
+              onClick={() => generation.startNew()}
               aria-label="Créer une nouvelle roadmap"
             >
               <span className={styles.createIcon}><Icon name="add" /></span>
@@ -277,7 +346,7 @@ export function RoadmapsPage() {
           </div>
           <div className={styles.listFooter}>
             <p>
-              {items.length} résultat{items.length === 1 ? "" : "s"} affiché{items.length === 1 ? "" : "s"} sur {total}
+              {displayedCount} résultat{displayedCount === 1 ? "" : "s"} affiché{displayedCount === 1 ? "" : "s"} sur {displayedTotal}
             </p>
           </div>
           {hasNextPage || isFetchingNextPage || isFetchNextPageError ? (

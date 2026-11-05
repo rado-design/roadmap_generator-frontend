@@ -1,18 +1,15 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { AppLayout } from "../../app/layouts";
 import { getLearnerProfile } from "../../features/users";
 import {
   ROADMAP_CATEGORY_OPTIONS,
-  useGenerateRoadmap,
-  type GeneratedRoadmapStep,
   type GenerateRoadmapRequest,
   type LearnerLevel,
   type RoadmapCategory,
-  type RoadmapGenerationEvent,
-  type RoadmapResource,
 } from "../../features/roadmaps";
+import { useRoadmapGenerationStore } from "../../features/roadmaps/hooks/useRoadmapGenerationStore";
 import { Button } from "../../shared/components/Button";
 import { Icon } from "../../shared/components/Icon";
 import styles from "./GenerateRoadmapPage.module.scss";
@@ -32,51 +29,41 @@ const deadlines = [
   { value: "none", label: "Pas de limite" },
 ];
 
-interface PreviewStep extends GeneratedRoadmapStep {
-  resources: RoadmapResource[];
-}
-
-function getErrorMessage(error: unknown) {
-  if (typeof error === "object" && error !== null && "message" in error) {
-    return String(error.message);
-  }
-  return "La génération a échoué. Vérifiez votre connexion puis réessayez.";
-}
-
 export function GenerateRoadmapPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const navigationFrom = (location.state as { from?: { pathname?: string; search?: string; hash?: string } } | null)?.from;
+  const returnFrom = navigationFrom?.pathname
+    ? { pathname: navigationFrom.pathname, search: navigationFrom.search ?? "", hash: navigationFrom.hash ?? "" }
+    : { pathname: "/roadmaps/generate" };
   const learnerProfileQuery = useQuery({
     queryKey: ["users", "me", "learner-profile"],
     queryFn: getLearnerProfile,
   });
-  const { mutateAsync, isPending, error, reset } = useGenerateRoadmap();
-  const controllerRef = useRef<AbortController | null>(null);
-  const hasStartedStreamRef = useRef(false);
-  const [goal, setGoal] = useState("");
-  const [category, setCategory] = useState<RoadmapCategory>("programming");
-  const [weeklyHours, setWeeklyHours] = useState("5");
-  const [deadlineWeeks, setDeadlineWeeks] = useState("12");
-  const [level, setLevel] = useState<LearnerLevel>("beginner");
-  const [background, setBackground] = useState("");
+  const generation = useRoadmapGenerationStore();
+  const isPending = generation.status === "connecting" || generation.status === "streaming";
+  const generationStarted = generation.started || generation.status === "connecting" || generation.status === "complete";
+  const streamError = generation.status === "failed" ? generation.error : undefined;
+  const streamTitle = generation.title;
+  const streamSteps = generation.steps;
+  const streamAttempt = generation.attempt;
+  const mountedRef = useRef(false);
+  const [goal, setGoal] = useState(() => generation.request?.goal ?? "");
+  const [category, setCategory] = useState<RoadmapCategory>(() => generation.request?.category ?? "programming");
+  const [weeklyHours, setWeeklyHours] = useState(() => String(generation.request?.weekly_hours ?? 5));
+  const [deadlineWeeks, setDeadlineWeeks] = useState(() => generation.request?.deadline_weeks == null ? "none" : String(generation.request.deadline_weeks));
+  const [level, setLevel] = useState<LearnerLevel>(() => generation.request?.level ?? "beginner");
+  const [background, setBackground] = useState(() => generation.request?.background ?? "");
   const [validationError, setValidationError] = useState<string>();
-  const [generationStarted, setGenerationStarted] = useState(false);
-  const [streamTitle, setStreamTitle] = useState<string>();
-  const [streamSteps, setStreamSteps] = useState<PreviewStep[]>([]);
-  const [streamAttempt, setStreamAttempt] = useState(1);
-  const [streamError, setStreamError] = useState<string>();
 
-  useEffect(() => () => controllerRef.current?.abort(), []);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setValidationError(undefined);
-    setStreamError(undefined);
-    setGenerationStarted(false);
-    hasStartedStreamRef.current = false;
-    setStreamTitle(undefined);
-    setStreamSteps([]);
-    setStreamAttempt(1);
-    reset();
 
     const hours = Number(weeklyHours);
     if (!Number.isInteger(hours) || hours < 1 || hours > 80) {
@@ -93,77 +80,23 @@ export function GenerateRoadmapPage() {
       background: background.trim() || null,
     };
 
-    const controller = new AbortController();
-    controllerRef.current = controller;
-
-    try {
-      const roadmap = await mutateAsync({
-        payload,
-        signal: controller.signal,
-        onEvent: (event: RoadmapGenerationEvent) => {
-          switch (event.event) {
-            case "meta":
-              hasStartedStreamRef.current = true;
-              setGenerationStarted(true);
-              setStreamTitle(event.data.title);
-              break;
-            case "step":
-              hasStartedStreamRef.current = true;
-              setGenerationStarted(true);
-              setStreamSteps((steps) => [
-                ...steps,
-                { ...event.data, resources: [] },
-              ]);
-              break;
-            case "resources":
-              setStreamSteps((steps) => steps.map((step) => (
-                step.order === event.data.order
-                  ? { ...step, resources: event.data.resources }
-                  : step
-              )));
-              break;
-            case "reset":
-              setGenerationStarted(hasStartedStreamRef.current);
-              setStreamTitle(undefined);
-              setStreamSteps([]);
-              setStreamAttempt(event.data.attempt);
-              break;
-            case "error":
-              setStreamError(event.data.detail);
-              break;
-            case "done":
-              break;
-          }
-        },
-      });
+    const roadmap = await generation.start(payload);
+    if (roadmap && mountedRef.current) {
       navigate(`/roadmaps/${roadmap.id}`, {
-        state: { from: { pathname: "/roadmaps/generate" } },
+        state: { from: returnFrom },
       });
-    } catch (caughtError) {
-      if (!controller.signal.aborted && hasStartedStreamRef.current) {
-        setStreamError(getErrorMessage(caughtError));
-      }
-    } finally {
-      if (controllerRef.current === controller) controllerRef.current = null;
     }
   };
 
-  const apiError = getErrorMessage(error);
-
   const returnToForm = () => {
-    setGenerationStarted(false);
-    hasStartedStreamRef.current = false;
-    setStreamError(undefined);
-    setStreamTitle(undefined);
-    setStreamSteps([]);
-    reset();
+    generation.returnToForm();
   };
 
   return (
     <AppLayout>
       <div className={styles.surface}>
         <div className={styles.page}>
-          <Link className={styles.backLink} to="/roadmaps">
+          <Link className={styles.backLink} to={navigationFrom?.pathname ? returnFrom : "/roadmaps"}>
             <Icon name="arrow_back" />
             Retour aux roadmaps
           </Link>
@@ -179,12 +112,18 @@ export function GenerateRoadmapPage() {
               <span className={styles.generationIndicator} aria-hidden="true" />
               <div>
                 <h2 id="generation-progress-title">
-                  {streamError ? "La génération a rencontré un problème" : streamTitle ?? "Votre roadmap se construit"}
+                  {streamError
+                    ? "La génération a rencontré un problème"
+                    : generation.status === "complete"
+                      ? "Roadmap générée"
+                      : streamTitle ?? "Votre roadmap se construit"}
                 </h2>
                 <p>
                   {streamError
                     ? "La génération n'a pas abouti. Vos paramètres sont conservés."
-                    : `Les étapes apparaissent au fil de la génération${streamAttempt > 1 ? ` · nouvelle tentative ${streamAttempt}` : ""}.`}
+                    : generation.status === "complete"
+                      ? "Votre roadmap est prête. Vous pouvez la consulter maintenant."
+                      : `Les étapes apparaissent au fil de la génération${streamAttempt > 1 ? ` · nouvelle tentative ${streamAttempt}` : ""}.`}
                 </p>
               </div>
             </div>
@@ -193,6 +132,11 @@ export function GenerateRoadmapPage() {
               <div className={styles.error} role="alert">
                 <Icon name="error" />
                 <span>{streamError}</span>
+              </div>
+            ) : generation.status === "complete" ? (
+              <div className={styles.streamStatus} role="status">
+                <Icon name="check_circle" />
+                <span>La génération est terminée.</span>
               </div>
             ) : (
               <div className={styles.streamStatus} role="status">
@@ -239,6 +183,13 @@ export function GenerateRoadmapPage() {
             {streamError ? (
               <div className={styles.progressActions}>
                 <Button variant="outline" onClick={returnToForm}>Modifier les paramètres</Button>
+              </div>
+            ) : null}
+            {generation.status === "complete" && generation.result ? (
+              <div className={styles.progressActions}>
+                <Button onClick={() => navigate(`/roadmaps/${generation.result?.id}`, { state: { from: returnFrom } })} icon="arrow_forward">
+                  Consulter la roadmap
+                </Button>
               </div>
             ) : null}
           </section>
@@ -350,10 +301,10 @@ export function GenerateRoadmapPage() {
               <p className={styles.helper}>500 caractères maximum.</p>
             </div>
 
-            {validationError || error ? (
+            {validationError || generation.error ? (
               <div className={styles.error} role="alert">
                 <Icon name="error" />
-                <span>{validationError ?? apiError}</span>
+                <span>{validationError ?? generation.error}</span>
               </div>
             ) : null}
 

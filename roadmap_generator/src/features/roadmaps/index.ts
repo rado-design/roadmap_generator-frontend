@@ -3,6 +3,8 @@ export { useRoadmapDetail } from "./hooks/useRoadmapDetail";
 export { useGenerateRoadmap } from "./hooks/useGenerateRoadmap";
 export { useSetStepProgress } from "./hooks/useSetStepProgress";
 export { useSetRoadmapArchived } from "./hooks/useSetRoadmapArchived";
+export { useProposeStepAdjustment, useDecideStepAdjustment } from "./hooks/useStepAdjustment";
+export { useProposeResourceAdjustment, useDecideResourceAdjustment } from "./hooks/useResourceAdjustment";
 export { ROADMAP_CATEGORY_GROUPS, ROADMAP_CATEGORY_OPTIONS } from "./categories";
 export type {
   GenerateRoadmapRequest,
@@ -25,3 +27,5 @@ export type {
   RoadmapStep,
   StepProgressStatus,
 } from "./api/getRoadmapDetail";
+export type { StepAdjustment, StepContent } from "./api/stepAdjustments";
+export type { ResourceAdjustment } from "./api/resourceAdjustments";
