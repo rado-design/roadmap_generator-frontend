@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppLayout, PageHeader } from "../../app/layouts";
 import { listRoadmaps } from "../../features/roadmaps/api/listRoadmaps";
-import { ROADMAP_CATEGORY_GROUPS, ROADMAP_CATEGORY_OPTIONS, type RoadmapCategory } from "../../features/roadmaps";
+import { useCategoryCatalog, type RoadmapCategory } from "../../features/roadmaps";
 import { RESOURCES_PAGE_SIZE, useResources, useSetResourceFavorite, type ResourceItem, type ResourceSort, type StepProgressStatus } from "../../features/resources";
 import { Button, Icon } from "../../shared/components";
 import styles from "./ResourcesPage.module.scss";
@@ -182,6 +182,7 @@ export function ResourcesPage() {
   const [previewResource, setPreviewResource] = useState<ResourceItem | null>(null);
   const [favoriteError, setFavoriteError] = useState("");
   const favoriteMutation = useSetResourceFavorite();
+  const categoryCatalog = useCategoryCatalog();
 
   useEffect(() => {
     const timeout = window.setTimeout(() => setAppliedSearch(search.slice(0, 100).trim()), 250);
@@ -192,7 +193,7 @@ export function ResourcesPage() {
     limit: RESOURCES_PAGE_SIZE,
     search: appliedSearch || undefined,
     roadmap_id: roadmapId === "all" ? undefined : Number(roadmapId),
-    category: category === "all" ? undefined : ROADMAP_CATEGORY_GROUPS[category],
+    category_value: category === "all" ? undefined : category,
     type: type === "all" ? undefined : type,
     step_status: stepStatus === "all" ? undefined : stepStatus,
     favorite: favoriteOnly ? true : undefined,
@@ -287,8 +288,9 @@ export function ResourcesPage() {
           <label htmlFor="resource-category">Catégorie</label>
           <select id="resource-category" value={category} onChange={(event) => setCategory(event.target.value as "all" | RoadmapCategory)}>
             <option value="all">Toutes les catégories</option>
-            {ROADMAP_CATEGORY_OPTIONS.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
+            {categoryCatalog.data?.items.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
           </select>
+          {categoryCatalog.isError ? <span className={styles.filterHint} role="alert">Catégories indisponibles</span> : null}
         </div>
         <div className={styles.filterField}>
           <label htmlFor="resource-sort">Trier par</label>

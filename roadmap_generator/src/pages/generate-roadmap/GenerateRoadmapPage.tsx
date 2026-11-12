@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router";
 import { AppLayout } from "../../app/layouts";
 import { getLearnerProfile } from "../../features/users";
 import {
-  ROADMAP_CATEGORY_OPTIONS,
+  useCategoryCatalog,
   type GenerateRoadmapRequest,
   type LearnerLevel,
   type RoadmapCategory,
@@ -28,6 +28,15 @@ const deadlines = [
   { value: "52", label: "1 an" },
   { value: "none", label: "Pas de limite" },
 ];
+
+const formSteps = [
+  { id: "goal", title: "Votre objectif" },
+  { id: "category", title: "Domaine d’apprentissage" },
+  { id: "weekly-hours", title: "Temps disponible" },
+  { id: "deadline", title: "Durée prévue" },
+  { id: "level", title: "Votre niveau" },
+  { id: "background", title: "Contexte complémentaire" },
+] as const;
 
 function CancelGenerationConfirmDialog({ open, isLoading, error, onConfirm, onCancel }: {
   open: boolean;
@@ -92,14 +101,28 @@ export function GenerateRoadmapPage() {
   const mountedRef = useRef(false);
   const [goal, setGoal] = useState(() => generation.request?.goal ?? "");
   const [category, setCategory] = useState<RoadmapCategory>(() => generation.request?.category ?? "programming");
+  const categoryCatalog = useCategoryCatalog();
+  const wizardHeadingRef = useRef<HTMLHeadingElement>(null);
   const [weeklyHours, setWeeklyHours] = useState(() => String(generation.request?.weekly_hours ?? 5));
   const [deadlineWeeks, setDeadlineWeeks] = useState(() => generation.request?.deadline_weeks == null ? "none" : String(generation.request.deadline_weeks));
   const [level, setLevel] = useState<LearnerLevel>(() => generation.request?.level ?? "beginner");
   const [background, setBackground] = useState(() => generation.request?.background ?? "");
+  const [activeFormStep, setActiveFormStep] = useState(0);
   const [validationError, setValidationError] = useState<string>();
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelError, setCancelError] = useState<string>();
+
+  useEffect(() => {
+    const options = categoryCatalog.data?.items;
+    if (options?.length && !options.some((option) => option.value === category)) {
+      setCategory(options[0].value);
+    }
+  }, [category, categoryCatalog.data?.items]);
+
+  useEffect(() => {
+    if (activeFormStep > 0) wizardHeadingRef.current?.focus();
+  }, [activeFormStep]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -110,12 +133,17 @@ export function GenerateRoadmapPage() {
     if (!isPending && !isCancelling) setCancelConfirmOpen(false);
   }, [isPending, isCancelling]);
 
-  const submit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const startGeneration = async () => {
     setValidationError(undefined);
 
+    if (goal.trim().length < 10 || goal.trim().length > 500) {
+      setActiveFormStep(0);
+      setValidationError("Décrivez un objectif concret en 10 à 500 caractères.");
+      return;
+    }
     const hours = Number(weeklyHours);
     if (!Number.isInteger(hours) || hours < 1 || hours > 80) {
+      setActiveFormStep(2);
       setValidationError("Indiquez un nombre d'heures compris entre 1 et 80.");
       return;
     }
@@ -135,6 +163,35 @@ export function GenerateRoadmapPage() {
         state: { from: returnFrom },
       });
     }
+  };
+
+  const advanceForm = () => {
+    setValidationError(undefined);
+    if (activeFormStep === 0 && (goal.trim().length < 10 || goal.trim().length > 500)) {
+      setValidationError("Décrivez un objectif concret en 10 à 500 caractères.");
+      return;
+    }
+    if (activeFormStep === 1 && (!categoryCatalog.data?.items.some((item) => item.value === category))) {
+      setValidationError("Choisissez une catégorie pour continuer.");
+      return;
+    }
+    if (activeFormStep === 2) {
+      const hours = Number(weeklyHours);
+      if (!Number.isInteger(hours) || hours < 1 || hours > 80) {
+        setValidationError("Indiquez un nombre d'heures compris entre 1 et 80.");
+        return;
+      }
+    }
+    setActiveFormStep((current) => Math.min(current + 1, formSteps.length - 1));
+  };
+
+  const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (activeFormStep < formSteps.length - 1) {
+      advanceForm();
+      return;
+    }
+    void startGeneration();
   };
 
   const returnToForm = () => {
@@ -277,110 +334,95 @@ export function GenerateRoadmapPage() {
           </section>
         ) : (
         <div className={styles.columns}>
-          <form className={styles.form} onSubmit={(event) => void submit(event)}>
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="roadmap-goal">Quel est votre objectif ou sujet ?</label>
-              <input
-                id="roadmap-goal"
-                className={styles.input}
-                value={goal}
-                onChange={(event) => setGoal(event.target.value)}
-                placeholder="Ex. : Lancer un produit SaaS en 3 mois"
-                minLength={10}
-                maxLength={500}
-                required
-                disabled={isPending}
-              />
-              <p className={styles.helper}>Décrivez un objectif concret en 10 à 500 caractères.</p>
+          <form className={styles.form} onSubmit={handleFormSubmit}>
+            <div className={styles.wizardProgress} aria-label={`Étape ${activeFormStep + 1} sur ${formSteps.length}`}>
+              <div className={styles.wizardProgressLabel}>
+                <span>Étape {activeFormStep + 1} sur {formSteps.length}</span>
+                <strong>{formSteps[activeFormStep].title}</strong>
+              </div>
+              <progress className={styles.wizardProgressTrack} aria-label="Progression du formulaire" max={formSteps.length} value={activeFormStep + 1} />
             </div>
 
-            <fieldset className={styles.fieldset}>
-              <legend className={styles.label}>Catégorie de la roadmap</legend>
-              <div className={styles.choices}>
-                {ROADMAP_CATEGORY_OPTIONS.map((item) => (
-                  <label className={`${styles.choice} ${category === item.value ? styles.selected : ""}`} key={item.value}>
-                    <input
-                      type="radio"
-                      name="roadmap-category"
-                      value={item.value}
-                      checked={category === item.value}
-                      onChange={() => setCategory(item.value)}
-                      disabled={isPending}
-                    />
-                    {item.label}
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-
-            <div className={styles.scheduleFields}>
-              <div className={styles.field}>
-                <label className={styles.label} htmlFor="weekly-hours">Temps disponible par semaine</label>
-                <div className={styles.hoursControl}>
-                  <input
-                    id="weekly-hours"
-                    className={styles.input}
-                    type="number"
-                    min={1}
-                    max={80}
-                    step={1}
-                    value={weeklyHours}
-                    onChange={(event) => setWeeklyHours(event.target.value)}
-                    disabled={isPending}
-                    required
-                  />
-                  <span>heures</span>
+            <div className={styles.wizardStep} key={formSteps[activeFormStep].id}>
+              <h2 className={styles.wizardStepTitle} ref={wizardHeadingRef} tabIndex={-1}>{formSteps[activeFormStep].title}</h2>
+              {activeFormStep === 0 ? (
+                <div className={styles.field}>
+                  <label className={styles.label} htmlFor="roadmap-goal">Quel est votre objectif ou sujet ?</label>
+                  <input id="roadmap-goal" className={styles.input} value={goal} onChange={(event) => setGoal(event.target.value)} placeholder="Ex. : Lancer un produit SaaS en 3 mois" minLength={10} maxLength={500} autoFocus />
+                  <p className={styles.helper}>Décrivez un objectif concret en 10 à 500 caractères.</p>
                 </div>
-                <p className={styles.helper}>Un rythme réaliste vaut mieux qu'un rythme idéal.</p>
-              </div>
-              <div className={styles.field}>
-                <label className={styles.label} htmlFor="deadline">Durée prévue pour atteindre l'objectif</label>
-                <select
-                  id="deadline"
-                  className={styles.input}
-                  value={deadlineWeeks}
-                  onChange={(event) => setDeadlineWeeks(event.target.value)}
-                  disabled={isPending}
-                >
-                  {deadlines.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-                </select>
-                <p className={styles.helper}>L'IA ajuste le nombre et la taille des étapes.</p>
-              </div>
-            </div>
+              ) : null}
 
-            <fieldset className={styles.fieldset}>
-              <legend className={styles.label}>Votre niveau actuel sur ce sujet</legend>
-              <div className={styles.choices}>
-                {levels.map((item) => (
-                  <label className={`${styles.choice} ${level === item.value ? styles.selected : ""}`} key={item.value}>
-                    <input
-                      type="radio"
-                      name="learner-level"
-                      value={item.value}
-                      checked={level === item.value}
-                      onChange={() => setLevel(item.value)}
-                      disabled={isPending}
-                    />
-                    {item.label}
-                  </label>
-                ))}
-              </div>
-              <p className={styles.helper}>Vous pourrez ajuster votre parcours au fil de votre progression.</p>
-            </fieldset>
+              {activeFormStep === 1 ? (
+                <fieldset className={styles.fieldset}>
+                  <legend className={styles.label}>Dans quel domaine souhaitez-vous progresser ?</legend>
+                  {categoryCatalog.isLoading ? <p className={styles.helper}>Chargement des catégories…</p> : null}
+                  {categoryCatalog.isError ? <p className={styles.helper} role="alert">Impossible de charger les catégories. Réessayez avant de continuer.</p> : null}
+                  <div className={styles.categoryGroups}>
+                    {categoryCatalog.data?.groups.map((group) => {
+                      const groupItems = categoryCatalog.data.items.filter((item) => item.group === group.value);
+                      if (!groupItems.length) return null;
+                      return (
+                        <details className={styles.categoryGroup} key={group.value} name="roadmap-category-groups" open={groupItems.some((item) => item.value === category)}>
+                          <summary>{group.label}<span>{groupItems.length}</span></summary>
+                          <div className={styles.choices} role="radiogroup" aria-label={group.label}>
+                            {groupItems.map((item) => (
+                              <label className={`${styles.choice} ${category === item.value ? styles.selected : ""}`} key={item.value}>
+                                <input type="radio" name="roadmap-category" value={item.value} checked={category === item.value} onChange={() => setCategory(item.value)} />
+                                {item.label}
+                              </label>
+                            ))}
+                          </div>
+                        </details>
+                      );
+                    })}
+                  </div>
+                </fieldset>
+              ) : null}
 
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="background">Contexte additionnel (optionnel)</label>
-              <textarea
-                id="background"
-                className={`${styles.input} ${styles.textarea}`}
-                rows={4}
-                maxLength={500}
-                value={background}
-                onChange={(event) => setBackground(event.target.value)}
-                placeholder="Précisez votre expérience ou vos contraintes particulières…"
-                disabled={isPending}
-              />
-              <p className={styles.helper}>500 caractères maximum.</p>
+              {activeFormStep === 2 ? (
+                <div className={styles.field}>
+                  <label className={styles.label} htmlFor="weekly-hours">Combien d'heures pouvez-vous consacrer par semaine ?</label>
+                  <div className={styles.hoursControl}>
+                    <input id="weekly-hours" className={styles.input} type="number" min={1} max={80} step={1} value={weeklyHours} onChange={(event) => setWeeklyHours(event.target.value)} required autoFocus />
+                    <span>heures</span>
+                  </div>
+                  <p className={styles.helper}>Un rythme réaliste vaut mieux qu'un rythme idéal. De 1 à 80 heures.</p>
+                </div>
+              ) : null}
+
+              {activeFormStep === 3 ? (
+                <div className={styles.field}>
+                  <label className={styles.label} htmlFor="deadline">Quand souhaitez-vous atteindre cet objectif ?</label>
+                  <select id="deadline" className={styles.input} value={deadlineWeeks} onChange={(event) => setDeadlineWeeks(event.target.value)} autoFocus>
+                    {deadlines.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+                  </select>
+                  <p className={styles.helper}>L'IA ajuste le nombre et la taille des étapes selon votre échéance.</p>
+                </div>
+              ) : null}
+
+              {activeFormStep === 4 ? (
+                <fieldset className={styles.fieldset}>
+                  <legend className={styles.label}>Quel est votre niveau actuel sur ce sujet ?</legend>
+                  <div className={styles.choices}>
+                    {levels.map((item) => (
+                      <label className={`${styles.choice} ${level === item.value ? styles.selected : ""}`} key={item.value}>
+                        <input type="radio" name="learner-level" value={item.value} checked={level === item.value} onChange={() => setLevel(item.value)} />
+                        {item.label}
+                      </label>
+                    ))}
+                  </div>
+                  <p className={styles.helper}>Vous pourrez ajuster votre parcours au fil de votre progression.</p>
+                </fieldset>
+              ) : null}
+
+              {activeFormStep === 5 ? (
+                <div className={styles.field}>
+                  <label className={styles.label} htmlFor="background">Avez-vous un contexte à préciser ? <span>(facultatif)</span></label>
+                  <textarea id="background" className={`${styles.input} ${styles.textarea}`} rows={4} maxLength={500} value={background} onChange={(event) => setBackground(event.target.value)} placeholder="Précisez votre expérience ou vos contraintes particulières…" autoFocus />
+                  <p className={styles.helper}>Ces précisions aident à personnaliser le parcours. 500 caractères maximum.</p>
+                </div>
+              ) : null}
             </div>
 
             {validationError || generation.error ? (
@@ -391,9 +433,14 @@ export function GenerateRoadmapPage() {
             ) : null}
 
             <div className={styles.formActions}>
-              <Button type="submit" isLoading={isPending} disabled={isPending} icon="arrow_forward">
-                {isPending ? "Génération en cours…" : "Générer la roadmap"}
-              </Button>
+              <div className={styles.wizardActions}>
+                {activeFormStep > 0 ? <Button type="button" variant="outline" icon="arrow_back" onClick={() => { setValidationError(undefined); setActiveFormStep((current) => Math.max(current - 1, 0)); }}>Précédent</Button> : <span />}
+                {activeFormStep < formSteps.length - 1 ? (
+                  <Button type="button" icon="arrow_forward" disabled={activeFormStep === 1 && (categoryCatalog.isLoading || categoryCatalog.isError || !categoryCatalog.data?.items.length)} onClick={advanceForm}>Continuer</Button>
+                ) : (
+                  <Button type="submit" isLoading={isPending} disabled={isPending || categoryCatalog.isError} icon="auto_awesome">Générer la roadmap</Button>
+                )}
+              </div>
               {isPending ? <p role="status">Connexion au flux de génération… Les étapes apparaîtront dès la première réponse valide.</p> : null}
             </div>
           </form>
@@ -450,7 +497,7 @@ export function GenerateRoadmapPage() {
                 type="button"
                 onClick={() => {
                   setGoal("Apprendre le développement mobile avec Flutter en 6 mois");
-                  setCategory("programming");
+                  setCategory(categoryCatalog.data?.items[0]?.value ?? "programming");
                 }}
                 disabled={isPending}
               >

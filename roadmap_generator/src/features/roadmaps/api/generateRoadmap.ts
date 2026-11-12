@@ -2,13 +2,8 @@ import type { AxiosProgressEvent } from "axios";
 import { apiClient } from "../../../shared/lib/axios";
 import type { RoadmapDetail, RoadmapResource } from "./getRoadmapDetail";
 
-export type RoadmapCategory =
-  | "programming"
-  | "mobile_dev"
-  | "marketing_sales"
-  | "project_management"
-  | "ux_ui_design"
-  | "other";
+/** Valeur stable fournie par GET /api/v1/categories. */
+export type RoadmapCategory = string;
 export type LearnerLevel = "none" | "beginner" | "intermediate" | "advanced";
 
 export interface GenerateRoadmapRequest {

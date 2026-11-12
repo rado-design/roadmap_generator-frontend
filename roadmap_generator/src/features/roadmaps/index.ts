@@ -1,5 +1,8 @@
 export { ROADMAPS_PAGE_SIZE, useRoadmaps } from "./hooks/useRoadmaps";
 export { useRoadmapDetail } from "./hooks/useRoadmapDetail";
+export { useCategoryCatalog } from "./hooks/useCategoryCatalog";
+export { useRoadmapRevisions } from "./hooks/useRoadmapRevisions";
+export type { RoadmapRevision, ReplacedStep, RevisionStepLink } from "./api/listRoadmapRevisions";
 export { useGenerateRoadmap } from "./hooks/useGenerateRoadmap";
 export { useSetStepProgress } from "./hooks/useSetStepProgress";
 export { useSetRoadmapArchived } from "./hooks/useSetRoadmapArchived";
@@ -7,7 +10,6 @@ export { useProposeStepAdjustment, useDecideStepAdjustment } from "./hooks/useSt
 export { useProposeResourceAdjustment, useDecideResourceAdjustment } from "./hooks/useResourceAdjustment";
 export { useAdaptRoadmap, useUndoRoadmapAdaptation } from "./hooks/useRoadmapAdaptation";
 export type { RoadmapAdaptEvent, RoadmapAdaptPlan } from "./api/adaptRoadmap";
-export { ROADMAP_CATEGORY_GROUPS, ROADMAP_CATEGORY_OPTIONS } from "./categories";
 export type {
   GenerateRoadmapRequest,
   GeneratedRoadmapStep,

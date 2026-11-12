@@ -3,6 +3,7 @@ import { Link, useLocation, useParams } from "react-router";
 import { AppLayout } from "../../app/layouts";
 import {
   useRoadmapDetail,
+  useRoadmapRevisions,
   useProposeStepAdjustment,
   useDecideStepAdjustment,
   useProposeResourceAdjustment,
@@ -19,6 +20,7 @@ import {
   type RoadmapAdaptEvent,
   type RoadmapAdaptPlan,
   type GeneratedRoadmapStep,
+  type RoadmapRevision,
 } from "../../features/roadmaps";
 import { Button } from "../../shared/components/Button";
 import { Icon } from "../../shared/components/Icon";
@@ -259,46 +261,14 @@ function getActionError(error: unknown, fallback: string) {
 
 interface AdaptPreviewStep extends GeneratedRoadmapStep { resources: RoadmapResource[] }
 
-interface AdaptationHistorySnapshot {
-  adaptedAt: string;
-  replacedSteps: RoadmapStep[];
-  createdStepIds: number[];
-}
-
-function adaptationHistoryKey(roadmapId: number) {
-  return `roadmap-adaptation-history:${roadmapId}`;
-}
-
-function readAdaptationHistory(roadmapId: number | null): AdaptationHistorySnapshot | null {
-  if (roadmapId === null) return null;
-  try {
-    const raw = sessionStorage.getItem(adaptationHistoryKey(roadmapId));
-    if (!raw) return null;
-    const value = JSON.parse(raw) as Partial<AdaptationHistorySnapshot>;
-    if (typeof value.adaptedAt !== "string" || !Array.isArray(value.replacedSteps) || !Array.isArray(value.createdStepIds)) return null;
-    return value as AdaptationHistorySnapshot;
-  } catch {
-    return null;
-  }
-}
-
-function saveAdaptationHistory(roadmapId: number, snapshot: AdaptationHistorySnapshot) {
-  try { sessionStorage.setItem(adaptationHistoryKey(roadmapId), JSON.stringify(snapshot)); } catch { /* Storage can be unavailable in private browsing. */ }
-}
-
-function clearAdaptationHistory(roadmapId: number) {
-  try { sessionStorage.removeItem(adaptationHistoryKey(roadmapId)); } catch { /* Storage can be unavailable in private browsing. */ }
-}
-
 function RoadmapAdaptationDialog({ roadmap, onClose, onAdapted }: {
   roadmap: RoadmapDetail;
   onClose: () => void;
-  onAdapted: (snapshot: AdaptationHistorySnapshot) => void;
+  onAdapted: () => void;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [instruction, setInstruction] = useState("");
   const [plan, setPlan] = useState<RoadmapAdaptPlan>();
-  const planRef = useRef<RoadmapAdaptPlan | undefined>(undefined);
   const [steps, setSteps] = useState<AdaptPreviewStep[]>([]);
   const [attempt, setAttempt] = useState(1);
   const [status, setStatus] = useState<"form" | "running" | "complete" | "failed">("form");
@@ -323,7 +293,6 @@ function RoadmapAdaptationDialog({ roadmap, onClose, onAdapted }: {
     setStatus("running");
     setError(undefined);
     setPlan(undefined);
-    planRef.current = undefined;
     setSteps([]);
     setAttempt(1);
     void adaptMutation.mutateAsync({
@@ -331,7 +300,6 @@ function RoadmapAdaptationDialog({ roadmap, onClose, onAdapted }: {
       onEvent: (event: RoadmapAdaptEvent) => {
         switch (event.event) {
           case "plan":
-            planRef.current = event.data;
             setPlan(event.data);
             break;
           case "step":
@@ -355,17 +323,8 @@ function RoadmapAdaptationDialog({ roadmap, onClose, onAdapted }: {
             break;
         }
       },
-    }).then((adaptedRoadmap) => {
-      const completedPlan = planRef.current;
-      if (completedPlan) {
-        onAdapted({
-          adaptedAt: new Date().toISOString(),
-          replacedSteps: roadmap.steps.filter((step) => completedPlan.replaced_step_ids.includes(step.id)),
-          createdStepIds: adaptedRoadmap.steps
-            .filter((step) => !completedPlan.locked_step_ids.includes(step.id))
-            .map((step) => step.id),
-        });
-      }
+    }).then(() => {
+      onAdapted();
       setStatus("complete");
     }).catch((caught) => {
       setError(getActionError(caught, "L’adaptation a échoué. La roadmap n’a pas été modifiée."));
@@ -484,15 +443,54 @@ function RoadmapAdaptationDialog({ roadmap, onClose, onAdapted }: {
 interface ChangedStepVersion {
   currentStep: RoadmapStep;
   previousStep: RoadmapStep;
+  adaptedAt: string;
 }
 
-function getChangedStepVersion(currentStep: RoadmapStep, previousStep: RoadmapStep): ChangedStepVersion | null {
+function getActiveRevisionHistory(steps: RoadmapStep[], revisions: RoadmapRevision[]) {
+  const changes: ChangedStepVersion[] = [];
+  const newStepIds: number[] = [];
+  const currentIds = new Set(steps.map((step) => step.id));
+
+  for (const revision of revisions) {
+    for (const createdStepId of revision.created_step_ids) {
+      if (!currentIds.has(createdStepId)) continue;
+      const currentStep = steps.find((step) => step.id === createdStepId);
+      if (!currentStep) continue;
+
+      const link = revision.step_links?.find((item) => item.created_step_id === createdStepId);
+      // Les anciennes révisions n'ont pas de correspondance explicite. Le repli par ordre ne s'applique qu'à celles-ci.
+      const previous = link
+        ? (link.replaced_step_id === null ? undefined : revision.replaced_steps.find((item) => item.id === link.replaced_step_id))
+        : revision.step_links === null
+          ? revision.replaced_steps.find((item) => item.order === currentStep.order)
+          : undefined;
+
+      if (!previous) {
+        if (link?.replaced_step_id === null) newStepIds.push(createdStepId);
+        continue;
+      }
+
+      const previousStep: RoadmapStep = {
+        ...currentStep,
+        ...previous,
+        id: previous.id ?? currentStep.id,
+        progress: currentStep.progress,
+      };
+      const change = getChangedStepVersion(currentStep, previousStep, revision.created_at);
+      if (change) changes.push(change);
+    }
+  }
+
+  return { changes, newStepIds };
+}
+
+function getChangedStepVersion(currentStep: RoadmapStep, previousStep: RoadmapStep, adaptedAt: string): ChangedStepVersion | null {
   const contentChanged = currentStep.title !== previousStep.title
     || currentStep.description !== previousStep.description
     || currentStep.estimated_duration_days !== previousStep.estimated_duration_days
     || JSON.stringify(currentStep.learning_objectives) !== JSON.stringify(previousStep.learning_objectives)
     || JSON.stringify(currentStep.resources) !== JSON.stringify(previousStep.resources);
-  return contentChanged ? { currentStep, previousStep } : null;
+  return contentChanged ? { currentStep, previousStep, adaptedAt } : null;
 }
 
 function PreviousStepVersionDialog({ changes, adaptedAt, onClose }: {
@@ -860,6 +858,7 @@ function ResourceAdjustmentDialog({ roadmapId, step, onClose }: {
 function StepCard({
   step,
   previousVersion,
+  isNewFromAdaptation,
   onViewPreviousVersion,
   isUpdating,
   onProgressChange,
@@ -870,6 +869,7 @@ function StepCard({
 }: {
   step: RoadmapStep;
   previousVersion?: ChangedStepVersion;
+  isNewFromAdaptation: boolean;
   onViewPreviousVersion: (change: ChangedStepVersion) => void;
   isUpdating: boolean;
   onProgressChange: (stepId: number, status: RoadmapStep["progress"]["status"]) => void;
@@ -916,6 +916,7 @@ function StepCard({
             Modifiée · Voir l’historique
           </button>
         ) : null}
+        {isNewFromAdaptation ? <span className={styles.adaptedStepHistory}>Nouvelle étape · ajoutée lors d’une adaptation</span> : null}
         <p className={styles.stepDescription}>{step.description}</p>
         {step.learning_objectives.length > 0 ? (
           <ul className={styles.objectives} aria-label="Objectifs d'apprentissage">
@@ -1040,30 +1041,25 @@ export function RoadmapDetailPage() {
   const parsedId = Number(routeId);
   const roadmapId = Number.isSafeInteger(parsedId) && parsedId > 0 ? parsedId : null;
   const { data, isLoading, isError, error, refetch, isFetching } = useRoadmapDetail(roadmapId);
+  const revisionsQuery = useRoadmapRevisions(roadmapId);
   const progressMutation = useSetStepProgress(roadmapId);
   const undoAdaptationMutation = useUndoRoadmapAdaptation(roadmapId ?? 0);
   const [resourceViewer, setResourceViewer] = useState<{ stepId: number; index: number } | null>(null);
   const [adjustmentStep, setAdjustmentStep] = useState<RoadmapStep | null>(null);
   const [resourceAdjustmentStep, setResourceAdjustmentStep] = useState<RoadmapStep | null>(null);
   const [adaptRoadmapOpen, setAdaptRoadmapOpen] = useState(false);
-  const [adaptationHistory, setAdaptationHistory] = useState<AdaptationHistorySnapshot | null>(() => readAdaptationHistory(roadmapId));
   const [historyChangesToShow, setHistoryChangesToShow] = useState<ChangedStepVersion[] | null>(null);
   const [undoConfirmOpen, setUndoConfirmOpen] = useState(false);
   const orderedSteps = useMemo(
     () => [...(data?.steps ?? [])].sort((left, right) => left.order - right.order),
     [data?.steps],
   );
-  const changedStepVersions = useMemo<ChangedStepVersion[]>(() => {
-    if (!adaptationHistory || !data) return [];
-    return data.steps
-      .filter((step) => adaptationHistory.createdStepIds.includes(step.id))
-      .flatMap((currentStep) => {
-        const previousStep = adaptationHistory.replacedSteps.find((step) => step.order === currentStep.order);
-        if (!previousStep) return [];
-        const change = getChangedStepVersion(currentStep, previousStep);
-        return change ? [change] : [];
-      });
-  }, [adaptationHistory, data]);
+  const revisionHistory = useMemo(
+    () => getActiveRevisionHistory(data?.steps ?? [], revisionsQuery.data?.items ?? []),
+    [data?.steps, revisionsQuery.data?.items],
+  );
+  const changedStepVersions = revisionHistory.changes;
+  const adaptedNewStepIds = revisionHistory.newStepIds;
 
   useEffect(() => {
     if (!data || !location.hash) return;
@@ -1072,9 +1068,6 @@ export function RoadmapDetailPage() {
       document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   }, [data, location.hash]);
-  useEffect(() => {
-    setAdaptationHistory(readAdaptationHistory(roadmapId));
-  }, [roadmapId]);
   const completedSteps = orderedSteps.filter((step) => step.progress.status === "done");
   const inProgressSteps = orderedSteps.filter((step) => step.progress.status === "in_progress");
   const remainingSteps = orderedSteps
@@ -1116,11 +1109,7 @@ export function RoadmapDetailPage() {
   const openStepResources = (stepId: number) => setResourceViewer({ stepId, index: 0 });
   const changeResourceIndex = (index: number) => setResourceViewer((current) => current ? { ...current, index } : current);
   const closeResourceViewer = useCallback(() => setResourceViewer(null), []);
-  const saveLatestAdaptation = (snapshot: AdaptationHistorySnapshot) => {
-    if (roadmapId === null) return;
-    saveAdaptationHistory(roadmapId, snapshot);
-    setAdaptationHistory(snapshot);
-  };
+  const refreshAdaptationHistory = () => void revisionsQuery.refetch();
   const openUndoConfirmation = () => {
     undoAdaptationMutation.reset();
     setUndoConfirmOpen(true);
@@ -1128,8 +1117,6 @@ export function RoadmapDetailPage() {
   const confirmUndoAdaptation = () => {
     if (roadmapId === null) return;
     void undoAdaptationMutation.mutateAsync().then(() => {
-      clearAdaptationHistory(roadmapId);
-      setAdaptationHistory(null);
       setUndoConfirmOpen(false);
     }).catch(() => undefined);
   };
@@ -1248,7 +1235,7 @@ export function RoadmapDetailPage() {
                   </h2>
                   <div className={styles.stepList}>
                     {completedSteps.map((step) => (
-                      <StepCard key={step.id} step={step} previousVersion={changedStepVersions.find((change) => change.currentStep.id === step.id)} onViewPreviousVersion={(change) => setHistoryChangesToShow([change])} isUpdating={progressMutation.isPending || Boolean(data.archived_at)} allowAdjustment={!data.archived_at} onProgressChange={updateProgress} onOpenResources={openStepResources} onAdjustStep={setAdjustmentStep} onAdjustResources={setResourceAdjustmentStep} />
+                      <StepCard key={step.id} step={step} previousVersion={changedStepVersions.find((change) => change.currentStep.id === step.id)} isNewFromAdaptation={adaptedNewStepIds.includes(step.id)} onViewPreviousVersion={(change) => setHistoryChangesToShow([change])} isUpdating={progressMutation.isPending || Boolean(data.archived_at)} allowAdjustment={!data.archived_at} onProgressChange={updateProgress} onOpenResources={openStepResources} onAdjustStep={setAdjustmentStep} onAdjustResources={setResourceAdjustmentStep} />
                     ))}
                   </div>
                 </section>
@@ -1259,7 +1246,7 @@ export function RoadmapDetailPage() {
                 {remainingSteps.length > 0 ? (
                   <div className={styles.stepList}>
                     {remainingSteps.map((step) => (
-                      <StepCard key={step.id} step={step} previousVersion={changedStepVersions.find((change) => change.currentStep.id === step.id)} onViewPreviousVersion={(change) => setHistoryChangesToShow([change])} isUpdating={progressMutation.isPending || Boolean(data.archived_at)} allowAdjustment={!data.archived_at} onProgressChange={updateProgress} onOpenResources={openStepResources} onAdjustStep={setAdjustmentStep} onAdjustResources={setResourceAdjustmentStep} />
+                      <StepCard key={step.id} step={step} previousVersion={changedStepVersions.find((change) => change.currentStep.id === step.id)} isNewFromAdaptation={adaptedNewStepIds.includes(step.id)} onViewPreviousVersion={(change) => setHistoryChangesToShow([change])} isUpdating={progressMutation.isPending || Boolean(data.archived_at)} allowAdjustment={!data.archived_at} onProgressChange={updateProgress} onOpenResources={openStepResources} onAdjustStep={setAdjustmentStep} onAdjustResources={setResourceAdjustmentStep} />
                     ))}
                   </div>
                 ) : completedSteps.length > 0 ? (
@@ -1332,12 +1319,12 @@ export function RoadmapDetailPage() {
             />
           ) : null}
           {data && adaptRoadmapOpen ? (
-            <RoadmapAdaptationDialog roadmap={data} onClose={() => setAdaptRoadmapOpen(false)} onAdapted={saveLatestAdaptation} />
+            <RoadmapAdaptationDialog roadmap={data} onClose={() => setAdaptRoadmapOpen(false)} onAdapted={refreshAdaptationHistory} />
           ) : null}
-          {adaptationHistory && historyChangesToShow?.length ? (
+          {historyChangesToShow?.length ? (
             <PreviousStepVersionDialog
               changes={historyChangesToShow}
-              adaptedAt={adaptationHistory.adaptedAt}
+              adaptedAt={historyChangesToShow[0].adaptedAt}
               onClose={() => setHistoryChangesToShow(null)}
             />
           ) : null}

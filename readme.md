@@ -33,7 +33,7 @@ Application web de RoadmapAI : elle permet de créer un compte, de générer des
 
 ### Roadmaps
 
-- Création à partir d’un objectif, d’une catégorie, du niveau, du temps disponible, d’une échéance et d’un contexte facultatif.
+- Création par étapes successives : objectif, catégorie regroupée par domaine, temps disponible, échéance, niveau et contexte facultatif. Les catégories et leurs groupes viennent du catalogue backend.
 - Génération progressive via Server-Sent Events : le formulaire laisse place à l’avancement et affiche le titre, les étapes et leurs ressources au fur et à mesure de leur réception.
 - La liste Roadmaps montre la génération active; après actualisation ou reconnexion, le frontend recharge son état puis reprend le flux depuis le dernier événement reçu sans relancer de génération. L’identifiant et le questionnaire sont conservés localement; le jeton d’accès ne l’est pas. Depuis l’écran de progression, l’utilisateur peut aussi arrêter explicitement la tâche après confirmation.
 - La reprise couvre la fermeture du flux et les coupures navigateur/réseau. Si le processus backend redémarre pendant la génération, le backend conclut la tâche comme interrompue; l’IA doit alors être relancée.
@@ -45,10 +45,12 @@ Application web de RoadmapAI : elle permet de créer un compte, de générer des
 - Une étape « À faire » peut être régénérée avec une consigne, puis comparée à la version actuelle avant acceptation ou refus. Les étapes commencées ou terminées doivent d’abord être remises à « À faire ».
 - Les ressources de chaque étape peuvent être actualisées avec une consigne facultative. Une proposition est comparée aux ressources actuelles avant d’être acceptée ou refusée; cela fonctionne aussi sur les étapes commencées ou terminées.
 - La suite d’une roadmap peut être adaptée en streaming selon la progression et le profil. Les étapes commencées ou terminées sont conservées, les étapes « À faire » sont remplacées après confirmation du flux; la dernière adaptation peut être annulée depuis le détail.
+- L’historique durable des adaptations est chargé depuis `GET /api/v1/roadmaps/{id}/adapt/revisions`. Chaque étape liée à une ancienne version affiche son historique ciblé; les étapes sans prédécesseur explicite sont identifiées comme nouvelles. Les révisions plus anciennes sans lien explicite utilisent encore l’ordre comme repli.
 
 ### Ressources
 
 - Liste paginée au fil du défilement, avec recherche, roadmap, catégorie, type, état de l’étape, tri et filtre des favoris.
+- Le formulaire de génération et le filtre Ressources chargent le catalogue commun depuis `GET /api/v1/categories`; Ressources envoie la catégorie exacte avec `category_value` à `GET /api/v1/resources`.
 - Ajout et retrait des favoris via le backend.
 - Aperçu isolé de la ressource sélectionnée : intégration vidéo lorsque le fournisseur est pris en charge, ou aperçu intégré quand le site l’autorise, avec lien d’ouverture externe.
 - Les ressources d’une roadmap archivée sont retirées de cette liste par le backend; elles restent consultables depuis le détail de la roadmap archivée.

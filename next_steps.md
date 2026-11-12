@@ -312,3 +312,16 @@ Ajouter chaque nouvelle action de reprise tout en bas, avec sa date. La dernièr
 ### 2026-11-05 — Après la reprise persistante de la génération
 
 - Si les générations doivent survivre aussi à un redémarrage du processus backend, remplacer la tâche `asyncio` locale par un worker durable; le comportement actuel conclut une tâche active avec `interrupted` au redémarrage.
+
+### 2026-11-12 — Après le catalogue des catégories et l'historique durable des adaptations
+
+- Si le backend ajoute la route d'annulation ciblée, permettre de restaurer une seule étape adaptée depuis son historique; l'annulation complète de la dernière adaptation reste déjà disponible.
+- Clarifier/ajouter côté backend le contrat des tendances mensuelles du dashboard si elles doivent correspondre à la maquette.
+- Ajouter les capacités e-mail, photo de profil et suppression du compte décrites dans `SETTINGS_PAGE_BACKEND_REQUIREMENTS.md`, puis activer les actions correspondantes sur la page Paramètres.
+- Si les générations doivent survivre à un redémarrage du processus backend, remplacer la tâche `asyncio` locale par un worker durable.
+
+### 2026-11-12 — Après le parcours de génération en plusieurs étapes
+
+- Si le backend ajoute une route dédiée, permettre de restaurer une seule étape adaptée depuis son historique; l'annulation complète de la dernière adaptation reste disponible.
+- Compléter les capacités Paramètres et les tendances mensuelles du tableau de bord si leurs contrats backend sont livrés.
+- Pour conserver une génération active après un redémarrage du processus backend, remplacer la tâche `asyncio` locale par un worker durable.

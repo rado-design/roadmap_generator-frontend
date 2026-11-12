@@ -21,6 +21,7 @@ export interface ResourceItem {
   type: string;
   created_at: string;
   category: ResourceCategory;
+  category_value: string;
   is_favorite: boolean;
   step: { id: number; order: number; title: string; status: StepProgressStatus };
   roadmap: { id: number; title: string };
@@ -38,6 +39,7 @@ export interface ResourceListParams {
   offset: number;
   search?: string;
   category?: ResourceCategory;
+  category_value?: string;
   roadmap_id?: number;
   type?: string;
   created_from?: string;

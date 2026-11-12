@@ -62,6 +62,18 @@
   padding: 40px;
 }
 
+.wizardProgress { display: grid; gap: 10px; }
+.wizardProgressLabel { display: flex; align-items: center; justify-content: space-between; gap: 16px; color: var(--color-on-surface-variant); font-size: 12px; line-height: 16px; }
+.wizardProgressLabel strong { color: var(--color-on-surface); font-size: 14px; font-weight: 600; line-height: 20px; }
+.wizardProgressTrack { display: block; width: 100%; height: 8px; appearance: none; border: 0; border-radius: var(--radius-full); background: var(--color-surface-container); }
+.wizardProgressTrack::-webkit-progress-bar { border-radius: var(--radius-full); background: var(--color-surface-container); }
+.wizardProgressTrack::-webkit-progress-value { border-radius: var(--radius-full); background: var(--color-primary); }
+.wizardProgressTrack::-moz-progress-bar { border-radius: var(--radius-full); background: var(--color-primary); }
+.wizardStep { min-height: 180px; }
+.wizardStepTitle { margin-bottom: 20px; color: var(--color-on-surface); font-size: 16px; font-weight: 600; line-height: 24px; }
+.wizardStepTitle:focus { outline: none; }
+.wizardStepTitle:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 4px; border-radius: var(--radius-default); }
+
 .generationProgress {
   display: grid;
   gap: 24px;
@@ -215,6 +227,13 @@
 .helper { color: var(--color-on-surface-variant); font-size: 12px; line-height: 16px; }
 .choices { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
 
+.categoryGroups { display: grid; gap: 8px; margin-top: 16px; }
+.categoryGroup { border: 1px solid var(--color-outline-variant); border-radius: var(--radius-lg); background: var(--color-surface-container-lowest); }
+.categoryGroup summary { display: flex; min-height: 48px; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; color: var(--color-on-surface); font-size: 14px; font-weight: 500; line-height: 20px; cursor: pointer; }
+.categoryGroup summary:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: var(--radius-lg); }
+.categoryGroup[open] summary { border-bottom: 1px solid var(--color-outline-variant); }
+.categoryGroup .choices { padding: 0 16px 16px; }
+
 .choice {
   display: inline-flex;
   min-height: 44px;
@@ -237,13 +256,6 @@
 
 .selected { border-color: var(--color-primary); background: var(--color-primary-fixed); color: var(--color-on-primary-container); }
 
-.scheduleFields {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: start;
-  gap: 24px;
-}
-
 .hoursControl { display: flex; align-items: center; gap: 12px; }
 .hoursControl .input { max-width: 120px; }
 .hoursControl > span { color: var(--color-on-surface); }
@@ -251,6 +263,7 @@
 .formActions { padding-top: 24px; border-top: 1px solid var(--color-outline-variant); }
 .formActions :global(button) { width: auto; min-height: 44px; padding: 8px 16px; }
 .formActions > p { margin-top: 12px; color: var(--color-on-surface-variant); font-size: 12px; line-height: 16px; }
+.wizardActions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 
 .error {
   display: flex;
@@ -334,7 +347,10 @@
   .cancelDialogContent { padding: 24px 20px 20px; }
   .cancelDialogActions { width: 100%; flex-direction: column-reverse; }
   .cancelDialogActions :global(button) { width: 100%; }
-  .scheduleFields,
   .aside { grid-template-columns: 1fr; }
   .formActions :global(button) { width: 100%; min-height: 44px; padding: 8px 16px; }
+  .wizardActions { align-items: stretch; }
+  .wizardActions :global(button) { width: auto; flex: 1; }
+  .wizardActions > span { display: none; }
+  .wizardProgressLabel { align-items: flex-start; flex-direction: column; gap: 4px; }
 }

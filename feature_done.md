@@ -341,3 +341,16 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 - Le panneau de progression propose maintenant d'arrêter la génération; une confirmation stylée précède l'appel à `DELETE /api/v1/roadmaps/generations/{id}`.
 - Après l'annulation, la tâche disparaît de la liste et le formulaire réapparaît avec ses paramètres; si la génération se termine avant la confirmation backend, son état final est restauré au lieu d'être effacé.
 - Vérification: contrôle TypeScript ciblé avec `--ignoreDeprecations 6.0`, build Vite et `git diff --check`.
+
+### 2026-11-12 — Catalogue de catégories et historique durable des adaptations
+
+- Le formulaire de génération et le filtre Ressources chargent les catégories depuis `GET /api/v1/categories`; le filtre envoie la catégorie exacte via `category_value` et les listes de catégories codées en dur côté frontend ont été retirées.
+- Le détail d'une roadmap récupère les adaptations depuis `GET /api/v1/roadmaps/{id}/adapt/revisions`. Les anciennes versions s'appuient sur `step_links`, le repère « Modifiée » ne s'affiche que si le contenu diffère, et une étape ayant explicitement `replaced_step_id: null` est signalée comme nouvelle.
+- Pour les révisions enregistrées avant `step_links`, l'association par ordre reste un repli de compatibilité. L'annulation ciblée d'une seule étape n'est pas fournie par l'API et reste à faire si elle est ajoutée côté backend.
+- Vérification: TypeScript (`tsc --noEmit -p tsconfig.app.json --ignoreDeprecations 6.0`), build Vite et `git diff --check`.
+
+### 2026-11-12 — Génération organisée en étapes
+
+- Le formulaire de génération présente désormais un champ à la fois, avec progression et navigation précédent/suivant; les valeurs restent conservées en changeant d'étape.
+- Les catégories du catalogue backend sont regroupées selon leur famille et repliées afin de réduire la hauteur de la sélection. Les écrans et la progression sont structurés à partir d'une liste d'étapes extensible.
+- Vérification: TypeScript, build Vite et détection Impeccable. L'inspection visuelle via Chrome n'a pas abouti, le contrôle Computer Use n'ayant pas pu déterminer l'URL du navigateur.

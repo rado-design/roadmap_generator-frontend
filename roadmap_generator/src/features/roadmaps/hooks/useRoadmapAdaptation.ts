@@ -14,6 +14,7 @@ export function useAdaptRoadmap(roadmapId: number) {
     onSettled: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: detailKey }),
+        queryClient.invalidateQueries({ queryKey: ["roadmaps", "revisions", roadmapId] }),
         queryClient.invalidateQueries({ queryKey: ["roadmaps"] }),
         queryClient.invalidateQueries({ queryKey: ["resources"] }),
         queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
@@ -32,6 +33,7 @@ export function useUndoRoadmapAdaptation(roadmapId: number) {
     onSettled: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: detailKey }),
+        queryClient.invalidateQueries({ queryKey: ["roadmaps", "revisions", roadmapId] }),
         queryClient.invalidateQueries({ queryKey: ["roadmaps"] }),
         queryClient.invalidateQueries({ queryKey: ["resources"] }),
         queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
