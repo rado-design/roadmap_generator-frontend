@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation, useNavigate } from "react-router";
 import { AppLayout } from "../../app/layouts";
@@ -29,6 +29,48 @@ const deadlines = [
   { value: "none", label: "Pas de limite" },
 ];
 
+function CancelGenerationConfirmDialog({ open, isLoading, error, onConfirm, onCancel }: {
+  open: boolean;
+  isLoading: boolean;
+  error?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const dialogId = useId();
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (open && !dialog.open) dialog.showModal();
+    if (!open && dialog.open) dialog.close();
+    return () => { if (dialog.open) dialog.close(); };
+  }, [open]);
+
+  return (
+    <dialog
+      ref={dialogRef}
+      className={styles.cancelDialog}
+      aria-labelledby={`${dialogId}-title`}
+      aria-describedby={`${dialogId}-description`}
+      aria-busy={isLoading}
+      onCancel={(event) => { event.preventDefault(); if (!isLoading) onCancel(); }}
+      onClick={(event) => { if (event.target === event.currentTarget && !isLoading) onCancel(); }}
+    >
+      <div className={styles.cancelDialogContent}>
+        <span className={styles.cancelDialogIcon} aria-hidden="true"><Icon name="stop_circle" /></span>
+        <h2 id={`${dialogId}-title`}>Arrêter la génération ?</h2>
+        <p id={`${dialogId}-description`}>La tâche sera arrêtée et aucune roadmap ne sera créée. Vos paramètres resteront dans le formulaire.</p>
+        {error ? <p className={styles.cancelDialogError} role="alert">{error}</p> : null}
+        <div className={styles.cancelDialogActions}>
+          <Button type="button" variant="outline" disabled={isLoading} onClick={onCancel}>Continuer la génération</Button>
+          <Button type="button" isLoading={isLoading} disabled={isLoading} onClick={onConfirm}>Arrêter la génération</Button>
+        </div>
+      </div>
+    </dialog>
+  );
+}
+
 export function GenerateRoadmapPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -55,11 +97,18 @@ export function GenerateRoadmapPage() {
   const [level, setLevel] = useState<LearnerLevel>(() => generation.request?.level ?? "beginner");
   const [background, setBackground] = useState(() => generation.request?.background ?? "");
   const [validationError, setValidationError] = useState<string>();
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState<string>();
 
   useEffect(() => {
     mountedRef.current = true;
     return () => { mountedRef.current = false; };
   }, []);
+
+  useEffect(() => {
+    if (!isPending && !isCancelling) setCancelConfirmOpen(false);
+  }, [isPending, isCancelling]);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -90,6 +139,22 @@ export function GenerateRoadmapPage() {
 
   const returnToForm = () => {
     generation.returnToForm();
+  };
+
+  const cancelGeneration = async () => {
+    setIsCancelling(true);
+    setCancelError(undefined);
+    try {
+      await generation.cancel();
+      setCancelConfirmOpen(false);
+    } catch (error) {
+      const message = typeof error === "object" && error !== null && "message" in error
+        ? String(error.message)
+        : "Impossible d'annuler la génération. Réessayez.";
+      setCancelError(message);
+    } finally {
+      setIsCancelling(false);
+    }
   };
 
   return (
@@ -158,7 +223,11 @@ export function GenerateRoadmapPage() {
                           {step.learning_objectives.map((objective) => <li key={objective}>{objective}</li>)}
                         </ul>
                       ) : null}
-                      {step.resources.length > 0 ? (
+                      {step.resources === null ? (
+                        <p className={styles.generatedResourcesPending}>
+                          {generation.status === "failed" ? "La recherche de ressources a été interrompue." : "Recherche des ressources de cette étape…"}
+                        </p>
+                      ) : step.resources.length > 0 ? (
                         <div className={styles.generatedResources}>
                           <strong>Ressources</strong>
                           <ul>
@@ -192,6 +261,19 @@ export function GenerateRoadmapPage() {
                 </Button>
               </div>
             ) : null}
+            {isPending ? (
+              <div className={styles.cancelGenerationAction}>
+                <Button
+                  variant="outline"
+                  icon="stop_circle"
+                  disabled={!generation.generationId || isCancelling}
+                  onClick={() => { setCancelError(undefined); setCancelConfirmOpen(true); }}
+                >
+                  Annuler la génération
+                </Button>
+              </div>
+            ) : null}
+            {cancelError && !cancelConfirmOpen ? <p className={styles.cancelError} role="alert">{cancelError}</p> : null}
           </section>
         ) : (
         <div className={styles.columns}>
@@ -380,6 +462,13 @@ export function GenerateRoadmapPage() {
         )}
         </div>
       </div>
+      <CancelGenerationConfirmDialog
+        open={cancelConfirmOpen}
+        isLoading={isCancelling}
+        error={cancelError}
+        onConfirm={() => void cancelGeneration()}
+        onCancel={() => { if (!isCancelling) setCancelConfirmOpen(false); }}
+      />
     </AppLayout>
   );
 }

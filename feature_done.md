@@ -327,3 +327,17 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 
 - La grille interne du modal est maintenant contrainte à sa largeur; un contenu d'iframe large ne décale plus l'en-tête hors écran. Les boutons précédent/suivant partagent également la largeur disponible.
 - Vérification: contrôle TypeScript ciblé avec `--ignoreDeprecations 6.0`, build Vite et `git diff --check`.
+
+### 2026-11-05 — Reprise persistante de la génération de roadmap
+
+- La génération consomme l'événement SSE `generation`, mémorise l'identifiant et le dernier `id:` reçu, puis reprend via `GET /roadmaps/generations/{id}/events` avec `Last-Event-ID` après une coupure.
+- Au retour de session ou après actualisation, l'état est rechargé depuis `GET /roadmaps/generations/{id}`; les étapes produites, recherches de ressources en attente, erreurs et résultats terminés sont restaurés sans démarrer une seconde tâche.
+- L'identifiant et les paramètres de génération sont conservés dans `localStorage` pour retrouver la tâche; aucun jeton d'accès n'y est écrit. La carte de génération dans Roadmaps reprend l'état rechargé.
+- Limite : après redémarrage du processus backend, une tâche encore active est marquée `interrupted` par le backend et doit être relancée; le worker IA ne reprend pas au milieu de son calcul.
+- Vérification: contrôle TypeScript ciblé avec `--ignoreDeprecations 6.0`, build Vite et `git diff --check`.
+
+### 2026-11-05 — Annulation explicite d'une génération
+
+- Le panneau de progression propose maintenant d'arrêter la génération; une confirmation stylée précède l'appel à `DELETE /api/v1/roadmaps/generations/{id}`.
+- Après l'annulation, la tâche disparaît de la liste et le formulaire réapparaît avec ses paramètres; si la génération se termine avant la confirmation backend, son état final est restauré au lieu d'être effacé.
+- Vérification: contrôle TypeScript ciblé avec `--ignoreDeprecations 6.0`, build Vite et `git diff --check`.

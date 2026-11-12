@@ -285,18 +285,6 @@ Ajouter chaque nouvelle action de reprise tout en bas, avec sa date. La dernièr
 - Ajouter les capacités e-mail, photo de profil et suppression du compte décrites dans `SETTINGS_PAGE_BACKEND_REQUIREMENTS.md`, puis activer les actions correspondantes sur la page Paramètres.
 - Clarifier/ajouter côté backend le contrat des tendances mensuelles du dashboard si elles doivent correspondre à la maquette.
 
-### 2026-11-03 — Après la reprise de la génération pendant la navigation
-
-- Découpler la génération de roadmap de la connexion SSE et ajouter un état de tâche persistant, un endpoint de statut/résultat et la reprise du flux après reconnexion; voir `ROADMAP_GENERATION_RESUME_BACKEND_REQUIREMENTS.md` dans le dépôt backend.
-
-### 2026-11-03 — Après la carte de génération dans Roadmaps
-
-- Implémenter le contrat backend de tâche de génération persistante et de reprise SSE décrit dans `ROADMAP_GENERATION_RESUME_BACKEND_REQUIREMENTS.md`, afin que la carte et son avancement survivent aussi à une actualisation ou à une reconnexion.
-
-### 2026-11-03 — Après la création d'une nouvelle roadmap depuis la liste
-
-- Poursuivre côté backend la génération persistante et la reprise SSE documentées dans `ROADMAP_GENERATION_RESUME_BACKEND_REQUIREMENTS.md`; le frontend conserve actuellement la génération seulement pendant la session de l'onglet.
-
 ### 2026-11-03 — Après la régénération des ressources
 
 - Intégrer l'adaptation en streaming de la suite d'une roadmap lorsque `POST /roadmaps/{id}/adapt/stream` et son contrat SSE sont disponibles; voir `ROADMAP_REGENERATION_BACKEND_REQUIREMENTS.md`.
@@ -309,14 +297,6 @@ Ajouter chaque nouvelle action de reprise tout en bas, avec sa date. La dernièr
 
 - Intégrer l'adaptation en streaming de la suite d'une roadmap lorsque `POST /roadmaps/{id}/adapt/stream` et son contrat SSE seront disponibles; voir `ROADMAP_REGENERATION_BACKEND_REQUIREMENTS.md`.
 
-### 2026-11-05 — Après l'intégration de l'adaptation d'une roadmap
-
-- Reprendre la génération de roadmap après actualisation ou reconnexion en intégrant la tâche persistante, le statut et la reprise SSE lorsqu'ils seront exposés par le backend; voir `ROADMAP_GENERATION_RESUME_BACKEND_REQUIREMENTS.md`.
-
-### 2026-11-05 — Après l'affichage des ressources dans l'aperçu d'adaptation
-
-- Reprendre la génération de roadmap après actualisation ou reconnexion en intégrant la tâche persistante, le statut et la reprise SSE lorsqu'ils seront exposés par le backend; voir `ROADMAP_GENERATION_RESUME_BACKEND_REQUIREMENTS.md`.
-
 ### 2026-11-05 — Après l'historique des étapes adaptées
 
 - Remplacer l'instantané `sessionStorage` et l'association temporaire par numéro d'ordre par un endpoint authentifié d'historique incluant le lien explicite ancienne/nouvelle étape; ajouter aussi l'annulation ciblée d'une étape adaptée, tout en gardant l'annulation complète cohérente après une restauration partielle. Voir `ROADMAP_ADAPTATION_HISTORY_BACKEND_REQUIREMENTS.md` dans le dépôt backend.
@@ -328,3 +308,7 @@ Ajouter chaque nouvelle action de reprise tout en bas, avec sa date. La dernièr
 ### 2026-11-05 — Après la correction du débordement horizontal du modal mobile
 
 - Intégrer l'historique durable des adaptations et l'annulation ciblée d'une étape quand les contrats backend décrits dans `ROADMAP_ADAPTATION_HISTORY_BACKEND_REQUIREMENTS.md` seront disponibles.
+
+### 2026-11-05 — Après la reprise persistante de la génération
+
+- Si les générations doivent survivre aussi à un redémarrage du processus backend, remplacer la tâche `asyncio` locale par un worker durable; le comportement actuel conclut une tâche active avec `interrupted` au redémarrage.

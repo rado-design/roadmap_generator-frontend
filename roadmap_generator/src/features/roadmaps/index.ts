@@ -13,6 +13,8 @@ export type {
   GeneratedRoadmapStep,
   RoadmapCategory,
   RoadmapGenerationEvent,
+  GenerationStepSnapshot,
+  RoadmapGenerationSnapshot,
   LearnerLevel,
 } from "./api/generateRoadmap";
 export type {

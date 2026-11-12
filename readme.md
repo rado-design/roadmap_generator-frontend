@@ -35,7 +35,8 @@ Application web de RoadmapAI : elle permet de créer un compte, de générer des
 
 - Création à partir d’un objectif, d’une catégorie, du niveau, du temps disponible, d’une échéance et d’un contexte facultatif.
 - Génération progressive via Server-Sent Events : le formulaire laisse place à l’avancement et affiche le titre, les étapes et leurs ressources au fur et à mesure de leur réception.
-- La liste Roadmaps montre une carte temporaire pour la génération active; elle permet de revenir au flux et disparaît quand la roadmap est enregistrée.
+- La liste Roadmaps montre la génération active; après actualisation ou reconnexion, le frontend recharge son état puis reprend le flux depuis le dernier événement reçu sans relancer de génération. L’identifiant et le questionnaire sont conservés localement; le jeton d’accès ne l’est pas. Depuis l’écran de progression, l’utilisateur peut aussi arrêter explicitement la tâche après confirmation.
+- La reprise couvre la fermeture du flux et les coupures navigateur/réseau. Si le processus backend redémarre pendant la génération, le backend conclut la tâche comme interrompue; l’IA doit alors être relancée.
 - « Créer une roadmap » ouvre un nouveau formulaire après une génération terminée, sans réafficher son ancien résultat.
 - Liste avec recherche, filtres par catégorie et état, tri, et chargement progressif des résultats.
 - Vues séparées pour les roadmaps actives et archivées. L’état de la vue est conservé dans l’URL avec `?archived=true`.
@@ -137,7 +138,7 @@ L’URL racine de l’API est configurée avec `VITE_API_BASE_URL`. Le client Ax
 | Authentification | `POST /api/v1/auth/register`, `/verify-otp`, `/resend-otp`, `/login`, `/refresh`, `/logout` |
 | Compte et préférences | `GET/PATCH /api/v1/users/me`, `GET/PUT /api/v1/users/me/learner-profile`, `PUT /api/v1/users/me/password` |
 | Tableau de bord | `GET /api/v1/dashboard` |
-| Roadmaps | `GET /api/v1/roadmaps`, `GET /api/v1/roadmaps/{id}`, `POST /api/v1/roadmaps/generate/stream`, `POST /api/v1/roadmaps/{id}/adapt/stream`, `POST /api/v1/roadmaps/{id}/adapt/undo`, archivage, progression et ajustements des étapes/ressources |
+| Roadmaps | `GET /api/v1/roadmaps`, `GET /api/v1/roadmaps/{id}`, `POST /api/v1/roadmaps/generate/stream`, `GET /api/v1/roadmaps/generations/{id}`, `GET /api/v1/roadmaps/generations/{id}/events`, `DELETE /api/v1/roadmaps/generations/{id}`, `POST /api/v1/roadmaps/{id}/adapt/stream`, `POST /api/v1/roadmaps/{id}/adapt/undo`, archivage, progression et ajustements des étapes/ressources |
 | Ressources | `GET /api/v1/resources`, `PUT/DELETE /api/v1/resources/{id}/favorite` |
 
 Le filtre `archived=true` de `GET /api/v1/roadmaps` renvoie les roadmaps archivées; sans ce paramètre, seules les roadmaps actives sont listées. L’archivage est une opération sur la roadmap : il la rend non modifiable et masque ses ressources de la liste générale. Le frontend invalide les caches des roadmaps, du tableau de bord et des ressources après archivage ou restauration.

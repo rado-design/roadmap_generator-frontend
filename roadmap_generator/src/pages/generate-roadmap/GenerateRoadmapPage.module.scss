@@ -154,6 +154,7 @@
   > strong { font-weight: 600; }
   a { color: var(--color-primary); text-decoration: underline; text-underline-offset: 2px; }
 }
+.generatedStepContent .generatedResourcesPending { margin-top: 10px; color: var(--color-on-surface-variant); font-size: 12px; line-height: 18px; }
 
 .waitingForFirstStep {
   padding: 20px 0;
@@ -163,6 +164,31 @@
 }
 
 .progressActions { padding-top: 4px; }
+.cancelGenerationAction { display: flex; justify-content: flex-end; }
+.cancelGenerationAction :global(button) { width: auto; min-height: 40px; padding: 8px 16px; }
+.cancelError { color: var(--color-error); font-size: 14px; line-height: 20px; }
+
+.cancelDialog {
+  width: min(440px, calc(100% - 32px));
+  max-width: none;
+  margin: auto;
+  padding: 0;
+  overflow: visible;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-2xl);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+  box-shadow: var(--shadow-sm);
+}
+.cancelDialog::backdrop { background: rgb(25 28 30 / 48%); }
+.cancelDialogContent { display: grid; justify-items: center; padding: 28px 24px 24px; text-align: center; }
+.cancelDialogIcon { display: grid; width: 48px; height: 48px; place-items: center; margin-bottom: 16px; border-radius: var(--radius-full); background: var(--color-primary-fixed); color: var(--color-on-primary-container); }
+.cancelDialogIcon :global(.material-symbols-outlined) { font-size: var(--icon-size-md); }
+.cancelDialogContent h2 { font-size: 20px; font-weight: 600; line-height: 28px; }
+.cancelDialogContent > p { max-width: 36ch; margin-top: 8px; color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; }
+.cancelDialogContent > .cancelDialogError { width: 100%; margin-top: 16px; padding: 12px; border: 1px solid var(--color-error); border-radius: var(--radius-lg); background: var(--color-error-container); color: var(--color-on-error-container); }
+.cancelDialogActions { display: flex; justify-content: center; gap: 12px; margin-top: 24px; }
+.cancelDialogActions :global(button) { width: auto; min-width: 116px; min-height: 44px; padding: 10px 16px; }
 
 .field { display: grid; min-width: 0; gap: 8px; }
 .fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
@@ -303,6 +329,11 @@
   .intro h1 { font-size: 24px; line-height: 32px; }
   .form { gap: 24px; padding: 24px; }
   .generationProgress { gap: 20px; padding: 24px; }
+  .cancelGenerationAction { justify-content: stretch; }
+  .cancelGenerationAction :global(button) { width: 100%; }
+  .cancelDialogContent { padding: 24px 20px 20px; }
+  .cancelDialogActions { width: 100%; flex-direction: column-reverse; }
+  .cancelDialogActions :global(button) { width: 100%; }
   .scheduleFields,
   .aside { grid-template-columns: 1fr; }
   .formActions :global(button) { width: 100%; min-height: 44px; padding: 8px 16px; }

@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from "react";
 import { useAuthStore } from "../shared/lib/authStore";
 import { refreshAccessToken } from "../shared/lib/axios";
 import { Icon } from "../shared/components/Icon";
+import { useRoadmapGenerationStore } from "../features/roadmaps/hooks/useRoadmapGenerationStore";
 import styles from "./SessionBootstrap.module.scss";
 
 interface SessionBootstrapProps {
@@ -25,6 +26,12 @@ export function SessionBootstrap({ children }: SessionBootstrapProps) {
   useEffect(() => {
     refreshAccessToken();
   }, []);
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      void useRoadmapGenerationStore.getState().resume();
+    }
+  }, [status]);
 
   if (status === "idle") {
     return (

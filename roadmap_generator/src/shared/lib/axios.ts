@@ -73,7 +73,7 @@ export function refreshAccessToken(): Promise<string | null> {
  */
 apiClient.interceptors.response.use(
   (response) => response,
-  async (error: AxiosError<{ detail?: string; type?: string }>) => {
+  async (error: AxiosError<{ detail?: string; type?: string; generation_id?: string }>) => {
     const originalRequest = error.config as
       | (InternalAxiosRequestConfig & { _retry?: boolean })
       | undefined;
@@ -100,6 +100,10 @@ apiClient.interceptors.response.use(
         "Une erreur inattendue est survenue.",
       status: error.response?.status,
       code: error.response?.data?.type,
+      generation_id: typeof error.response?.data?.generation_id === "string"
+        ? error.response.data.generation_id
+        : undefined,
+      retryable: !error.response || error.response.status >= 500 || error.response.status === 429,
     };
 
     return Promise.reject(apiError);
