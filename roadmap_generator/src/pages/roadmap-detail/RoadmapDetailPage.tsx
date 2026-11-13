@@ -10,6 +10,7 @@ import {
   useDecideResourceAdjustment,
   useAdaptRoadmap,
   useUndoRoadmapAdaptation,
+  useUndoAdaptedStep,
   useSetStepProgress,
   type RoadmapDetail,
   type RoadmapResource,
@@ -444,6 +445,7 @@ interface ChangedStepVersion {
   currentStep: RoadmapStep;
   previousStep: RoadmapStep;
   adaptedAt: string;
+  canUndo: boolean;
 }
 
 function getActiveRevisionHistory(steps: RoadmapStep[], revisions: RoadmapRevision[]) {
@@ -476,7 +478,10 @@ function getActiveRevisionHistory(steps: RoadmapStep[], revisions: RoadmapRevisi
         id: previous.id ?? currentStep.id,
         progress: currentStep.progress,
       };
-      const change = getChangedStepVersion(currentStep, previousStep, revision.created_at);
+      const canUndo = revision.is_latest
+        && link?.replaced_step_id != null
+        && currentStep.progress.status === "todo";
+      const change = getChangedStepVersion(currentStep, previousStep, revision.created_at, canUndo);
       if (change) changes.push(change);
     }
   }
@@ -484,19 +489,20 @@ function getActiveRevisionHistory(steps: RoadmapStep[], revisions: RoadmapRevisi
   return { changes, newStepIds };
 }
 
-function getChangedStepVersion(currentStep: RoadmapStep, previousStep: RoadmapStep, adaptedAt: string): ChangedStepVersion | null {
+function getChangedStepVersion(currentStep: RoadmapStep, previousStep: RoadmapStep, adaptedAt: string, canUndo: boolean): ChangedStepVersion | null {
   const contentChanged = currentStep.title !== previousStep.title
     || currentStep.description !== previousStep.description
     || currentStep.estimated_duration_days !== previousStep.estimated_duration_days
     || JSON.stringify(currentStep.learning_objectives) !== JSON.stringify(previousStep.learning_objectives)
     || JSON.stringify(currentStep.resources) !== JSON.stringify(previousStep.resources);
-  return contentChanged ? { currentStep, previousStep, adaptedAt } : null;
+  return contentChanged ? { currentStep, previousStep, adaptedAt, canUndo } : null;
 }
 
-function PreviousStepVersionDialog({ changes, adaptedAt, onClose }: {
+function PreviousStepVersionDialog({ changes, adaptedAt, onClose, onRequestRestore }: {
   changes: ChangedStepVersion[];
   adaptedAt: string;
   onClose: () => void;
+  onRequestRestore: (change: ChangedStepVersion) => void;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const formatAdaptedAt = new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(adaptedAt));
@@ -538,6 +544,9 @@ function PreviousStepVersionDialog({ changes, adaptedAt, onClose }: {
           </div>
         </div>
         <footer className={styles.previousVersionFooter}>
+          {changes.length === 1 && changes[0].canUndo ? (
+            <Button variant="outline" icon="undo" onClick={() => onRequestRestore(changes[0])}>Restaurer cette étape</Button>
+          ) : null}
           <Button onClick={onClose}>Fermer</Button>
         </footer>
       </div>
@@ -545,10 +554,11 @@ function PreviousStepVersionDialog({ changes, adaptedAt, onClose }: {
   );
 }
 
-function UndoAdaptationConfirmDialog({ open, isLoading, error, onConfirm, onCancel }: {
+function UndoAdaptationConfirmDialog({ open, isLoading, error, stepTitle, onConfirm, onCancel }: {
   open: boolean;
   isLoading: boolean;
   error?: string;
+  stepTitle?: string;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
@@ -575,12 +585,16 @@ function UndoAdaptationConfirmDialog({ open, isLoading, error, onConfirm, onCanc
     >
       <div className={styles.undoAdaptationContent}>
         <span className={styles.undoAdaptationIcon} aria-hidden="true"><Icon name="undo" /></span>
-        <h2 id={`${dialogId}-title`}>Annuler la dernière adaptation ?</h2>
-        <p id={`${dialogId}-description`}>Les étapes créées par l’adaptation seront supprimées et les anciennes étapes seront restaurées. Leurs favoris ne seront pas restaurés. Les nouvelles étapes doivent être « À faire » pour permettre l’annulation.</p>
+        <h2 id={`${dialogId}-title`}>{stepTitle ? "Restaurer l’ancienne version ?" : "Annuler la dernière adaptation ?"}</h2>
+        <p id={`${dialogId}-description`}>
+          {stepTitle
+            ? `Seule l’étape « ${stepTitle} » sera remplacée par sa version précédente. Elle repassera à « à faire » et ses favoris ne seront pas restaurés. Les autres étapes adaptées resteront en place.`
+            : "Les étapes créées par l’adaptation seront supprimées et les anciennes étapes seront restaurées. Leurs favoris ne seront pas restaurés. Les nouvelles étapes doivent être « À faire » pour permettre l’annulation."}
+        </p>
         {error ? <p className={styles.undoAdaptationError} role="alert">{error}</p> : null}
         <div className={styles.undoAdaptationActions}>
           <Button type="button" variant="outline" disabled={isLoading} onClick={onCancel}>Garder cette version</Button>
-          <Button type="button" isLoading={isLoading} disabled={isLoading} onClick={onConfirm}>Annuler l’adaptation</Button>
+          <Button type="button" isLoading={isLoading} disabled={isLoading} onClick={onConfirm}>{stepTitle ? "Restaurer cette étape" : "Annuler l’adaptation"}</Button>
         </div>
       </div>
     </dialog>
@@ -1044,12 +1058,14 @@ export function RoadmapDetailPage() {
   const revisionsQuery = useRoadmapRevisions(roadmapId);
   const progressMutation = useSetStepProgress(roadmapId);
   const undoAdaptationMutation = useUndoRoadmapAdaptation(roadmapId ?? 0);
+  const undoAdaptedStepMutation = useUndoAdaptedStep(roadmapId ?? 0);
   const [resourceViewer, setResourceViewer] = useState<{ stepId: number; index: number } | null>(null);
   const [adjustmentStep, setAdjustmentStep] = useState<RoadmapStep | null>(null);
   const [resourceAdjustmentStep, setResourceAdjustmentStep] = useState<RoadmapStep | null>(null);
   const [adaptRoadmapOpen, setAdaptRoadmapOpen] = useState(false);
   const [historyChangesToShow, setHistoryChangesToShow] = useState<ChangedStepVersion[] | null>(null);
   const [undoConfirmOpen, setUndoConfirmOpen] = useState(false);
+  const [stepUndoTarget, setStepUndoTarget] = useState<ChangedStepVersion | null>(null);
   const orderedSteps = useMemo(
     () => [...(data?.steps ?? [])].sort((left, right) => left.order - right.order),
     [data?.steps],
@@ -1102,6 +1118,9 @@ export function RoadmapDetailPage() {
   const adaptationUndoError = undoAdaptationMutation.isError
     ? getActionError(undoAdaptationMutation.error, "La dernière adaptation n’a pas pu être annulée.")
     : undefined;
+  const adaptedStepUndoError = undoAdaptedStepMutation.isError
+    ? getActionError(undoAdaptedStepMutation.error, "L’ancienne version de cette étape n’a pas pu être restaurée.")
+    : undefined;
 
   const updateProgress = (stepId: number, status: RoadmapStep["progress"]["status"]) => {
     progressMutation.mutate({ roadmapId: roadmapId!, stepId, status });
@@ -1114,8 +1133,19 @@ export function RoadmapDetailPage() {
     undoAdaptationMutation.reset();
     setUndoConfirmOpen(true);
   };
+  const openStepUndoConfirmation = (change: ChangedStepVersion) => {
+    undoAdaptedStepMutation.reset();
+    setHistoryChangesToShow(null);
+    setStepUndoTarget(change);
+  };
   const confirmUndoAdaptation = () => {
     if (roadmapId === null) return;
+    if (stepUndoTarget) {
+      void undoAdaptedStepMutation.mutateAsync(stepUndoTarget.currentStep.id).then(() => {
+        setStepUndoTarget(null);
+      }).catch(() => undefined);
+      return;
+    }
     void undoAdaptationMutation.mutateAsync().then(() => {
       setUndoConfirmOpen(false);
     }).catch(() => undefined);
@@ -1326,14 +1356,16 @@ export function RoadmapDetailPage() {
               changes={historyChangesToShow}
               adaptedAt={historyChangesToShow[0].adaptedAt}
               onClose={() => setHistoryChangesToShow(null)}
+              onRequestRestore={openStepUndoConfirmation}
             />
           ) : null}
           <UndoAdaptationConfirmDialog
-            open={undoConfirmOpen}
-            isLoading={undoAdaptationMutation.isPending}
-            error={adaptationUndoError}
+            open={undoConfirmOpen || stepUndoTarget !== null}
+            isLoading={undoAdaptationMutation.isPending || undoAdaptedStepMutation.isPending}
+            error={stepUndoTarget ? adaptedStepUndoError : adaptationUndoError}
+            stepTitle={stepUndoTarget?.currentStep.title}
             onConfirm={confirmUndoAdaptation}
-            onCancel={() => setUndoConfirmOpen(false)}
+            onCancel={() => { setUndoConfirmOpen(false); setStepUndoTarget(null); }}
           />
         </>
       ) : null}

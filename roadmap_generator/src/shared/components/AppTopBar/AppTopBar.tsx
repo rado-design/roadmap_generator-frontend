@@ -1,5 +1,7 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "react-router";
+import { useQuery } from "@tanstack/react-query";
+import { getCurrentUser } from "../../../features/users";
 import { Icon } from "../Icon";
 import styles from "./AppTopBar.module.scss";
 
@@ -17,6 +19,7 @@ export function AppTopBar({
   sidebarOpen,
 }: AppTopBarProps) {
   const [query, setQuery] = useState("");
+  const currentUserQuery = useQuery({ queryKey: ["users", "me"], queryFn: getCurrentUser });
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -77,9 +80,11 @@ export function AppTopBar({
           >
             <Icon name="dark_mode" />
           </button>
-          <span className={styles.avatar} role="img" aria-label="Profil">
-            <Icon name="person" />
-          </span>
+          {currentUserQuery.data?.avatar_url ? (
+            <img className={styles.avatarImage} src={currentUserQuery.data.avatar_url} alt="Photo de profil" />
+          ) : (
+            <span className={styles.avatar} role="img" aria-label="Profil"><Icon name="person" /></span>
+          )}
         </div>
       </div>
     </header>

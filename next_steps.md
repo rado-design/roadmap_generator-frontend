@@ -325,3 +325,13 @@ Ajouter chaque nouvelle action de reprise tout en bas, avec sa date. La dernièr
 - Si le backend ajoute une route dédiée, permettre de restaurer une seule étape adaptée depuis son historique; l'annulation complète de la dernière adaptation reste disponible.
 - Compléter les capacités Paramètres et les tendances mensuelles du tableau de bord si leurs contrats backend sont livrés.
 - Pour conserver une génération active après un redémarrage du processus backend, remplacer la tâche `asyncio` locale par un worker durable.
+
+### 2026-11-13 — Après la restauration ciblée d'une étape
+
+- Si les générations doivent survivre à un redémarrage du processus backend, remplacer la tâche `asyncio` locale par un worker durable.
+- Compléter les capacités Paramètres et les tendances mensuelles du tableau de bord lorsque les contrats backend correspondants seront livrés.
+
+### 2026-11-13 — Après l'intégration de l'avatar et du changement d'e-mail
+
+- Ajouter la suppression du compte lorsque le backend fournit son endpoint et sa politique de confirmation/conservation.
+- Si les générations doivent survivre à un redémarrage du processus backend, remplacer la tâche `asyncio` locale par un worker durable.

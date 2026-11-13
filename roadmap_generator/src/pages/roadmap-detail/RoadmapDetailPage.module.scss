@@ -367,7 +367,7 @@
 .previousVersionNote { margin: 24px 24px 0; color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; }
 .previousVersionList { display: grid; gap: 12px; padding: 24px 24px 0; }
 .previousVersionList .adjustmentVersion { min-height: 0; }
-.previousVersionFooter { display: flex; justify-content: flex-end; padding: 8px 24px 24px; }
+.previousVersionFooter { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; padding: 8px 24px 24px; }
 .previousVersionFooter :global(button) { width: auto; min-height: 40px; padding: 8px 16px; }
 .undoAdaptationDialog { width: min(500px, calc(100% - 32px)); max-width: none; margin: auto; padding: 0; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-2xl); background: var(--color-surface-container-lowest); color: var(--color-on-surface); box-shadow: var(--shadow-sm); }
 .undoAdaptationDialog::backdrop { background: rgb(25 28 30 / 48%); }
@@ -509,6 +509,7 @@
   .previousVersionNote { margin-inline: 16px; }
   .previousVersionList { padding: 16px 16px 0; }
   .previousVersionFooter { padding: 8px 16px 16px; }
+  .previousVersionFooter :global(button) { flex: 1 1 auto; }
   .undoAdaptationContent { padding: 24px 20px 20px; }
   .undoAdaptationActions { width: 100%; flex-direction: column-reverse; }
   .undoAdaptationActions :global(button) { width: 100%; }

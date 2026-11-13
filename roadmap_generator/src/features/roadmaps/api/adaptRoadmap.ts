@@ -115,3 +115,10 @@ export async function undoRoadmapAdaptation(roadmapId: number) {
   const response = await apiClient.post<RoadmapDetail>(`api/v1/roadmaps/${roadmapId}/adapt/undo`);
   return response.data;
 }
+
+export async function undoAdaptedStep(roadmapId: number, createdStepId: number) {
+  const response = await apiClient.post<RoadmapDetail>(
+    `api/v1/roadmaps/${roadmapId}/adapt/revisions/latest/steps/${createdStepId}/undo`,
+  );
+  return response.data;
+}

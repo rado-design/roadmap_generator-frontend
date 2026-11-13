@@ -1,11 +1,16 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { AppLayout, PageHeader } from "../../app/layouts";
 import {
   changePassword,
+  cancelEmailChange,
+  confirmEmailChange,
+  deleteAvatar,
   getCurrentUser,
   getLearnerProfile,
+  requestEmailChange,
+  uploadAvatar,
   updateCurrentUser,
   updateLearnerProfile,
   type ExplanationTone,
@@ -44,6 +49,7 @@ function getErrorMessage(error: unknown, fallback: string) {
     if (typeof detail === "string") return detail;
     if (Array.isArray(detail) && typeof detail[0]?.msg === "string") return detail[0].msg;
   }
+  if (typeof error === "object" && error !== null && "message" in error && typeof error.message === "string") return error.message;
   if (error instanceof Error) return error.message;
   return fallback;
 }
@@ -56,6 +62,8 @@ function getInitials(firstName: string, lastName: string) {
 export function SettingsPage() {
   const navigate = useNavigate();
   const client = useQueryClient();
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
   const clearAccessToken = useAuthStore((state) => state.clearAccessToken);
   const userQuery = useQuery({ queryKey: ["users", "me"], queryFn: getCurrentUser });
   const learnerQuery = useQuery({ queryKey: ["users", "me", "learner-profile"], queryFn: getLearnerProfile });
@@ -72,6 +80,15 @@ export function SettingsPage() {
   const [logoutError, setLogoutError] = useState("");
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
+  const [avatarFeedback, setAvatarFeedback] = useState("");
+  const [avatarFeedbackType, setAvatarFeedbackType] = useState<"success" | "error">("success");
+  const [emailChangeEmail, setEmailChangeEmail] = useState("");
+  const [emailChangePassword, setEmailChangePassword] = useState("");
+  const [emailChangeCode, setEmailChangeCode] = useState("");
+  const [emailFeedback, setEmailFeedback] = useState("");
+  const [emailFeedbackType, setEmailFeedbackType] = useState<"success" | "error">("success");
+  const [resendAvailableAt, setResendAvailableAt] = useState<number | null>(null);
+  const [resendWaitSeconds, setResendWaitSeconds] = useState(0);
 
   useEffect(() => {
     if (userQuery.data) {
@@ -87,6 +104,76 @@ export function SettingsPage() {
       setTone(learnerQuery.data.tone);
     }
   }, [learnerQuery.data]);
+
+  useEffect(() => {
+    setEmailChangeEmail(userQuery.data?.pending_email ?? "");
+  }, [userQuery.data?.pending_email]);
+
+  useEffect(() => {
+    if (resendAvailableAt === null) return;
+    const updateCountdown = () => setResendWaitSeconds(Math.max(0, Math.ceil((resendAvailableAt - Date.now()) / 1000)));
+    updateCountdown();
+    const timer = window.setInterval(updateCountdown, 1000);
+    return () => window.clearInterval(timer);
+  }, [resendAvailableAt]);
+
+  const avatarMutation = useMutation({
+    mutationFn: uploadAvatar,
+    onSuccess: (user) => {
+      client.setQueryData(["users", "me"], user);
+      setAvatarFeedbackType("success");
+      setAvatarFeedback("Photo de profil mise à jour.");
+    },
+    onError: (error) => { setAvatarFeedbackType("error"); setAvatarFeedback(getErrorMessage(error, "Impossible de charger cette photo.")); },
+  });
+
+  const deleteAvatarMutation = useMutation({
+    mutationFn: deleteAvatar,
+    onSuccess: () => {
+      client.setQueryData<Awaited<ReturnType<typeof getCurrentUser>>>(["users", "me"], (user) => user ? { ...user, avatar_url: null } : user);
+      setAvatarFeedbackType("success");
+      setAvatarFeedback("Photo de profil supprimée.");
+    },
+    onError: (error) => { setAvatarFeedbackType("error"); setAvatarFeedback(getErrorMessage(error, "Impossible de supprimer la photo.")); },
+  });
+
+  const emailRequestMutation = useMutation({
+    mutationFn: requestEmailChange,
+    onSuccess: (user) => {
+      client.setQueryData(["users", "me"], user);
+      setEmailChangeCode("");
+      setEmailFeedbackType("success");
+      setEmailFeedback(`Un code de vérification a été envoyé à ${user.pending_email ?? emailChangeEmail}.`);
+      setResendAvailableAt(Date.now() + 60_000);
+    },
+    onError: (error) => { setEmailFeedbackType("error"); setEmailFeedback(getErrorMessage(error, "Impossible d'envoyer le code. Vérifiez votre mot de passe et réessayez.")); },
+  });
+
+  const emailConfirmMutation = useMutation({
+    mutationFn: confirmEmailChange,
+    onSuccess: (user) => {
+      client.setQueryData(["users", "me"], user);
+      setEmailChangePassword("");
+      setEmailChangeCode("");
+      setResendAvailableAt(null);
+      setEmailFeedbackType("success");
+      setEmailFeedback("Votre adresse e-mail a été modifiée.");
+    },
+    onError: (error) => { setEmailFeedbackType("error"); setEmailFeedback(getErrorMessage(error, "Le code n'a pas pu être confirmé. Vérifiez-le puis réessayez.")); },
+  });
+
+  const emailCancelMutation = useMutation({
+    mutationFn: cancelEmailChange,
+    onSuccess: () => {
+      client.setQueryData<Awaited<ReturnType<typeof getCurrentUser>>>(["users", "me"], (user) => user ? { ...user, pending_email: null } : user);
+      setEmailChangePassword("");
+      setEmailChangeCode("");
+      setResendAvailableAt(null);
+      setEmailFeedbackType("success");
+      setEmailFeedback("La demande de changement d'adresse a été annulée.");
+    },
+    onError: (error) => { setEmailFeedbackType("error"); setEmailFeedback(getErrorMessage(error, "Impossible d'annuler la demande. Réessayez.")); },
+  });
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -140,6 +227,58 @@ export function SettingsPage() {
     saveMutation.mutate();
   };
 
+  const handleAvatarFile = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      setAvatarFeedbackType("error");
+      setAvatarFeedback("Choisissez une image JPEG, PNG ou WebP.");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setAvatarFeedbackType("error");
+      setAvatarFeedback("La photo ne doit pas dépasser 2 Mo.");
+      return;
+    }
+    setAvatarFeedback("");
+    setAvatarFeedbackType("success");
+    avatarMutation.mutate(file);
+  };
+
+  const handleEmailChangeRequest = () => {
+    setEmailFeedback("");
+    if (!emailChangeEmail.trim()) {
+      setEmailFeedbackType("error");
+      setEmailFeedback("Saisissez la nouvelle adresse e-mail.");
+      emailInputRef.current?.focus();
+      return;
+    }
+    if (!emailInputRef.current?.checkValidity()) {
+      setEmailFeedbackType("error");
+      setEmailFeedback("Saisissez une adresse e-mail valide.");
+      emailInputRef.current?.reportValidity();
+      return;
+    }
+    if (!emailChangePassword) {
+      setEmailFeedbackType("error");
+      setEmailFeedback("Saisissez votre mot de passe actuel pour confirmer cette demande.");
+      return;
+    }
+    emailRequestMutation.mutate({ new_email: emailChangeEmail.trim(), current_password: emailChangePassword });
+  };
+
+  const handleEmailChangeConfirm = () => {
+    setEmailFeedback("");
+    if (!/^\d{6}$/.test(emailChangeCode)) {
+      setEmailFeedbackType("error");
+      setEmailFeedback("Saisissez le code à 6 chiffres reçu à la nouvelle adresse.");
+      return;
+    }
+    emailConfirmMutation.mutate({ otp_code: emailChangeCode });
+  };
+
   const resetForm = () => {
     setFirstName(userQuery.data?.first_name ?? "");
     setLastName(userQuery.data?.name ?? "");
@@ -149,6 +288,11 @@ export function SettingsPage() {
     setCurrentPassword("");
     setNewPassword("");
     setConfirmPassword("");
+    setEmailChangeEmail(userQuery.data?.pending_email ?? "");
+    setEmailChangePassword("");
+    setEmailChangeCode("");
+    setEmailFeedback("");
+    setResendAvailableAt(null);
     setFormError("");
     setFormSuccess("");
   };
@@ -172,6 +316,9 @@ export function SettingsPage() {
   const isLoading = userQuery.isLoading || learnerQuery.isLoading;
   const isError = userQuery.isError || learnerQuery.isError;
   const initials = getInitials(firstName, lastName);
+  const hasPendingEmail = Boolean(userQuery.data?.pending_email);
+  const emailBusy = emailRequestMutation.isPending || emailConfirmMutation.isPending || emailCancelMutation.isPending;
+  const avatarBusy = avatarMutation.isPending || deleteAvatarMutation.isPending;
 
   return (
     <AppLayout>
@@ -193,10 +340,21 @@ export function SettingsPage() {
           <section className={styles.card} aria-labelledby="personal-info-title">
             <h2 className={styles.sectionTitle} id="personal-info-title">Informations personnelles</h2>
             <div className={styles.avatarRow}>
-              <span className={styles.avatar} aria-hidden="true">{initials}</span>
+              {userQuery.data.avatar_url ? (
+                <img className={styles.avatarImage} src={userQuery.data.avatar_url} alt="Photo de profil" />
+              ) : (
+                <span className={styles.avatar} aria-hidden="true">{initials}</span>
+              )}
               <div>
-                <Button type="button" variant="outline" disabled title="Le changement de photo n'est pas disponible pour le moment.">Changer la photo</Button>
-                <p className={styles.helper}>Le chargement d'une photo de profil sera disponible prochainement.</p>
+                <input className={styles.visuallyHidden} ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarFile} aria-label="Choisir une photo de profil" />
+                <div className={styles.avatarActions}>
+                  <Button type="button" variant="outline" disabled={avatarBusy} isLoading={avatarMutation.isPending} onClick={() => avatarInputRef.current?.click()}>
+                    {userQuery.data.avatar_url ? "Changer la photo" : "Ajouter une photo"}
+                  </Button>
+                  {userQuery.data.avatar_url ? <Button type="button" variant="outline" disabled={avatarBusy} isLoading={deleteAvatarMutation.isPending} onClick={() => deleteAvatarMutation.mutate()}>Supprimer la photo</Button> : null}
+                </div>
+                <p className={styles.helper}>JPEG, PNG ou WebP · 2 Mo maximum</p>
+                {avatarFeedback ? <p className={avatarFeedbackType === "error" ? styles.errorMessage : styles.successMessage} role={avatarFeedbackType === "error" ? "alert" : "status"}>{avatarFeedback}</p> : null}
               </div>
             </div>
             <div className={styles.personalFields}>
@@ -211,8 +369,76 @@ export function SettingsPage() {
               <div className={styles.field}>
                 <label htmlFor="settings-email">Adresse e-mail</label>
                 <input id="settings-email" type="email" autoComplete="email" value={userQuery.data.email} readOnly aria-describedby="settings-email-helper" />
-                <p className={styles.helper} id="settings-email-helper">L'adresse e-mail ne peut pas encore être modifiée.</p>
+                <p className={styles.helper} id="settings-email-helper">Adresse utilisée pour vous connecter.</p>
               </div>
+            </div>
+            <div className={styles.emailChangePanel}>
+              <h3>Changer l'adresse e-mail</h3>
+              <p className={styles.helper}>Un code à usage unique sera envoyé à la nouvelle adresse pour confirmer le changement.</p>
+              <div className={styles.emailChangeFields}>
+              <div className={styles.field}>
+                <label htmlFor="settings-new-email">Nouvelle adresse e-mail</label>
+                <input
+                  id="settings-new-email"
+                  ref={emailInputRef}
+                  type="email"
+                  autoComplete="email"
+                  value={emailChangeEmail}
+                  onChange={(event) => setEmailChangeEmail(event.target.value)}
+                  aria-describedby="settings-email-change-helper"
+                />
+                <p className={styles.helper} id="settings-email-change-helper">
+                  {hasPendingEmail
+                    ? `Un code a été envoyé à ${userQuery.data.pending_email}. Saisissez-le ci-dessous pour confirmer.`
+                    : "Votre mot de passe actuel sera demandé et un code sera envoyé à cette adresse."}
+                </p>
+              </div>
+              <div className={styles.field}>
+                <label htmlFor="settings-email-current-password">Mot de passe actuel pour modifier l'adresse</label>
+                <input
+                  id="settings-email-current-password"
+                  type="password"
+                  autoComplete="current-password"
+                  value={emailChangePassword}
+                  onChange={(event) => setEmailChangePassword(event.target.value)}
+                />
+              </div>
+              </div>
+              <div className={styles.emailChangeActions}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={emailBusy || (hasPendingEmail && resendWaitSeconds > 0)}
+                  isLoading={emailRequestMutation.isPending}
+                  onClick={handleEmailChangeRequest}
+                >
+                  {hasPendingEmail
+                    ? resendWaitSeconds > 0 ? `Renvoyer le code dans ${resendWaitSeconds}s` : "Renvoyer le code"
+                    : "Envoyer le code de vérification"}
+                </Button>
+                {hasPendingEmail ? <Button type="button" variant="outline" disabled={emailBusy} onClick={() => emailCancelMutation.mutate()}>Annuler la demande</Button> : null}
+              </div>
+              {hasPendingEmail ? (
+                <div className={styles.emailConfirmation}>
+                  <div className={styles.field}>
+                    <label htmlFor="settings-email-code">Code de vérification</label>
+                    <input
+                      id="settings-email-code"
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      pattern="[0-9]{6}"
+                      maxLength={6}
+                      value={emailChangeCode}
+                      onChange={(event) => setEmailChangeCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+                      aria-describedby="settings-email-code-helper"
+                    />
+                    <p className={styles.helper} id="settings-email-code-helper">Saisissez les 6 chiffres envoyés à {userQuery.data.pending_email}.</p>
+                  </div>
+                  <Button type="button" disabled={emailBusy} isLoading={emailConfirmMutation.isPending} onClick={handleEmailChangeConfirm}>Confirmer la nouvelle adresse</Button>
+                </div>
+              ) : null}
+              {emailFeedback ? <p className={emailFeedbackType === "error" ? styles.errorMessage : styles.successMessage} role={emailFeedbackType === "error" ? "alert" : "status"}>{emailFeedback}</p> : null}
             </div>
           </section>
 

@@ -46,6 +46,7 @@ Application web de RoadmapAI : elle permet de créer un compte, de générer des
 - Les ressources de chaque étape peuvent être actualisées avec une consigne facultative. Une proposition est comparée aux ressources actuelles avant d’être acceptée ou refusée; cela fonctionne aussi sur les étapes commencées ou terminées.
 - La suite d’une roadmap peut être adaptée en streaming selon la progression et le profil. Les étapes commencées ou terminées sont conservées, les étapes « À faire » sont remplacées après confirmation du flux; la dernière adaptation peut être annulée depuis le détail.
 - L’historique durable des adaptations est chargé depuis `GET /api/v1/roadmaps/{id}/adapt/revisions`. Chaque étape liée à une ancienne version affiche son historique ciblé; les étapes sans prédécesseur explicite sont identifiées comme nouvelles. Les révisions plus anciennes sans lien explicite utilisent encore l’ordre comme repli.
+- Depuis l’historique d’une étape, l’utilisateur peut restaurer uniquement sa version précédente si elle appartient à la dernière adaptation, possède un prédécesseur et est encore « À faire ». Les autres étapes adaptées restent en place; les favoris de l’ancienne version ne sont pas restaurés.
 
 ### Ressources
 
@@ -59,7 +60,7 @@ Application web de RoadmapAI : elle permet de créer un compte, de générer des
 
 - Modification du prénom, du nom et du profil d’apprenant (langue des ressources, style d’apprentissage et ton des explications).
 - Changement du mot de passe avec vérification de l’actuel.
-- Les actions de changement d’adresse e-mail, de photo de profil et de suppression du compte restent désactivées tant que leurs endpoints ne sont pas disponibles.
+- Les changements d’adresse e-mail et d’avatar sont disponibles dans Paramètres; la suppression du compte attend encore son endpoint backend.
 
 ### Pages publiques
 
@@ -138,14 +139,14 @@ L’URL racine de l’API est configurée avec `VITE_API_BASE_URL`. Le client Ax
 | Domaine | Endpoints utilisés |
 | --- | --- |
 | Authentification | `POST /api/v1/auth/register`, `/verify-otp`, `/resend-otp`, `/login`, `/refresh`, `/logout` |
-| Compte et préférences | `GET/PATCH /api/v1/users/me`, `GET/PUT /api/v1/users/me/learner-profile`, `PUT /api/v1/users/me/password` |
+| Compte et préférences | `GET/PATCH /api/v1/users/me`, `GET/PUT /api/v1/users/me/learner-profile`, `PUT /api/v1/users/me/password`, `POST /api/v1/users/me/email-change`, `POST /api/v1/users/me/email-change/confirm`, `DELETE /api/v1/users/me/email-change`, `PUT/DELETE /api/v1/users/me/avatar` |
 | Tableau de bord | `GET /api/v1/dashboard` |
-| Roadmaps | `GET /api/v1/roadmaps`, `GET /api/v1/roadmaps/{id}`, `POST /api/v1/roadmaps/generate/stream`, `GET /api/v1/roadmaps/generations/{id}`, `GET /api/v1/roadmaps/generations/{id}/events`, `DELETE /api/v1/roadmaps/generations/{id}`, `POST /api/v1/roadmaps/{id}/adapt/stream`, `POST /api/v1/roadmaps/{id}/adapt/undo`, archivage, progression et ajustements des étapes/ressources |
+| Roadmaps | `GET /api/v1/roadmaps`, `GET /api/v1/roadmaps/{id}`, `POST /api/v1/roadmaps/generate/stream`, `GET /api/v1/roadmaps/generations/{id}`, `GET /api/v1/roadmaps/generations/{id}/events`, `DELETE /api/v1/roadmaps/generations/{id}`, `POST /api/v1/roadmaps/{id}/adapt/stream`, `GET /api/v1/roadmaps/{id}/adapt/revisions`, `POST /api/v1/roadmaps/{id}/adapt/undo`, `POST /api/v1/roadmaps/{id}/adapt/revisions/latest/steps/{created_step_id}/undo`, archivage, progression et ajustements des étapes/ressources |
 | Ressources | `GET /api/v1/resources`, `PUT/DELETE /api/v1/resources/{id}/favorite` |
 
 Le filtre `archived=true` de `GET /api/v1/roadmaps` renvoie les roadmaps archivées; sans ce paramètre, seules les roadmaps actives sont listées. L’archivage est une opération sur la roadmap : il la rend non modifiable et masque ses ressources de la liste générale. Le frontend invalide les caches des roadmaps, du tableau de bord et des ressources après archivage ou restauration.
 
-L’ajustement d’une étape crée d’abord une proposition persistée côté backend; l’étape n’est modifiée qu’après acceptation. L’adaptation complète remplace la suite « À faire » via le flux SSE, préserve les étapes commencées ou terminées et peut être annulée avec `POST /api/v1/roadmaps/{id}/adapt/undo` après confirmation dans l’interface. L’historique est accessible dans la barre d’actions et individuellement sur chaque étape modifiée; l’association entre anciennes et nouvelles étapes est temporairement déduite du numéro d’ordre, car le backend ne fournit pas encore de lien explicite. L’annulation ciblée d’une étape attend aussi une route backend; les besoins d’historique durable et d’annulation partielle sont documentés dans `ROADMAP_ADAPTATION_HISTORY_BACKEND_REQUIREMENTS.md`.
+L’ajustement d’une étape crée d’abord une proposition persistée côté backend; l’étape n’est modifiée qu’après acceptation. L’adaptation complète remplace la suite « À faire » via le flux SSE, préserve les étapes commencées ou terminées et peut être annulée après confirmation. L’historique est accessible globalement et par étape via les révisions backend. Depuis l’aperçu d’une ancienne version, une étape de la dernière adaptation peut être restaurée isolément si elle est encore « À faire » et possède un lien explicite; les favoris de ses ressources ne sont pas restaurés. L’annulation complète reste également disponible.
 
 Le contrat détaillé et les règles métier vivent dans le dépôt backend. Pour les démarrer ou vérifier leurs prérequis, consulter le [README backend](../roadmap_generator-backend/README.md).
 
@@ -204,7 +205,7 @@ Le `package.json` ne définit pas actuellement de commande `test`.
 
 ## Limites connues
 
-- Le changement d’adresse e-mail, le téléversement d’avatar et la suppression de compte ne sont pas encore disponibles dans le backend; les actions correspondantes sont inactives dans Paramètres.
+- La suppression de compte n’est pas encore disponible dans le backend; l’action correspondante reste inactive dans Paramètres. L’avatar et le changement d’adresse avec confirmation par code sont intégrés.
 - Le formulaire « mot de passe oublié » n’envoie pas encore de demande au backend.
 - Les ressources sont archivées avec leur roadmap; il n’existe pas d’action d’archivage indépendante par ressource dans le contrat actuellement consommé par le frontend.
 - L’export des roadmaps reste désactivé.

@@ -354,3 +354,16 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 - Le formulaire de génération présente désormais un champ à la fois, avec progression et navigation précédent/suivant; les valeurs restent conservées en changeant d'étape.
 - Les catégories du catalogue backend sont regroupées selon leur famille et repliées afin de réduire la hauteur de la sélection. Les écrans et la progression sont structurés à partir d'une liste d'étapes extensible.
 - Vérification: TypeScript, build Vite et détection Impeccable. L'inspection visuelle via Chrome n'a pas abouti, le contrôle Computer Use n'ayant pas pu déterminer l'URL du navigateur.
+
+### 2026-11-13 — Restauration ciblée d'une étape adaptée
+
+- L'aperçu d'historique d'une étape propose de restaurer son ancienne version lorsque le lien backend est explicite, que la révision est la dernière et que l'étape est encore « À faire ».
+- Une confirmation stylisée précise que seule cette étape sera restaurée et que ses favoris ne seront pas récupérés. L'appel à `POST /api/v1/roadmaps/{id}/adapt/revisions/latest/steps/{created_step_id}/undo` actualise le détail, l'historique, les listes, les ressources et le tableau de bord.
+- Vérification: TypeScript et `git diff --check`.
+
+### 2026-11-13 — Photo de profil et changement d'adresse e-mail
+
+- Paramètres permet d'ajouter, remplacer et supprimer l'avatar avec validation JPEG/PNG/WebP et limite frontend de 2 Mo; l'image est aussi affichée dans la barre supérieure.
+- Le changement d'adresse demande le mot de passe courant, envoie un code à la nouvelle adresse, permet de renvoyer le code après le délai backend de 60 secondes, de confirmer ou d'annuler la demande. L'adresse affichée comme courante ne change qu'après confirmation backend.
+- La suppression du compte reste indisponible : aucun endpoint backend n'est fourni.
+- Vérification: TypeScript (`tsc --noEmit -p tsconfig.app.json --ignoreDeprecations 6.0`) et `git diff --check`.

@@ -15,7 +15,10 @@
 
 .avatarRow { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin: 16px 0 24px; }
 .avatar { display: grid; width: 72px; height: 72px; flex: none; place-items: center; border-radius: var(--radius-full); background: var(--color-primary-fixed); color: var(--color-on-primary-container); font-size: 20px; font-weight: 600; }
+.avatarImage { display: block; width: 72px; height: 72px; flex: none; border-radius: var(--radius-full); object-fit: cover; }
 .avatarRow :global(button) { width: auto; min-height: 40px; padding: 8px 16px; box-shadow: none; }
+.avatarActions { display: flex; flex-wrap: wrap; gap: 8px; }
+.visuallyHidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); clip-path: inset(50%); white-space: nowrap; }
 
 .personalFields { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
 .field { display: flex; min-width: 0; flex-direction: column; gap: 6px; }
@@ -26,6 +29,14 @@
 .field input:focus-visible,
 .field select:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
 .field input[readonly] { background: var(--color-surface-container-low); color: var(--color-on-surface-variant); }
+.emailChangePanel { display: grid; gap: 16px; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--color-outline-variant); }
+.emailChangePanel h3 { color: var(--color-on-surface); font-size: 14px; font-weight: 600; line-height: 20px; }
+.emailChangePanel > .helper { margin-top: -12px; }
+.emailChangeFields { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
+.emailChangeActions { display: flex; flex-wrap: wrap; gap: 12px; }
+.emailChangeActions :global(button) { width: auto; min-height: 40px; padding: 8px 16px; box-shadow: none; }
+.emailConfirmation { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 16px; }
+.emailConfirmation :global(button) { width: auto; min-height: 44px; padding: 10px 16px; }
 
 .lowerGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); align-items: start; gap: 24px; }
 .learnerCard { display: grid; gap: 24px; }
@@ -62,6 +73,10 @@
   .lowerGrid { grid-template-columns: 1fr; }
   .accountActions { align-items: flex-start; flex-direction: column; }
   .accountActions :global(button) { width: 100%; }
+  .emailChangeActions { align-items: stretch; flex-direction: column; }
+  .emailChangeActions :global(button) { width: 100%; }
+  .emailConfirmation { grid-template-columns: 1fr; }
+  .emailConfirmation :global(button) { width: 100%; }
   .formActions { align-items: stretch; flex-direction: column-reverse; }
   .formActions :global(button) { width: 100%; }
 }

@@ -8,7 +8,7 @@ export { useSetStepProgress } from "./hooks/useSetStepProgress";
 export { useSetRoadmapArchived } from "./hooks/useSetRoadmapArchived";
 export { useProposeStepAdjustment, useDecideStepAdjustment } from "./hooks/useStepAdjustment";
 export { useProposeResourceAdjustment, useDecideResourceAdjustment } from "./hooks/useResourceAdjustment";
-export { useAdaptRoadmap, useUndoRoadmapAdaptation } from "./hooks/useRoadmapAdaptation";
+export { useAdaptRoadmap, useUndoRoadmapAdaptation, useUndoAdaptedStep } from "./hooks/useRoadmapAdaptation";
 export type { RoadmapAdaptEvent, RoadmapAdaptPlan } from "./api/adaptRoadmap";
 export type {
   GenerateRoadmapRequest,

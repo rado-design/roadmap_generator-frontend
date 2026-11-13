@@ -109,6 +109,8 @@
   color: var(--color-on-primary-container);
 }
 
+.avatarImage { display: block; width: 36px; height: 36px; flex: none; border-radius: var(--radius-full); object-fit: cover; }
+
 .avatar :global(.material-symbols-outlined) {
   font-size: var(--icon-size-sm);
 }
