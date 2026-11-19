@@ -335,3 +335,19 @@ Ajouter chaque nouvelle action de reprise tout en bas, avec sa date. La dernièr
 
 - Ajouter la suppression du compte lorsque le backend fournit son endpoint et sa politique de confirmation/conservation.
 - Si les générations doivent survivre à un redémarrage du processus backend, remplacer la tâche `asyncio` locale par un worker durable.
+
+### 2026-11-19 — Après la refonte du détail d'une roadmap
+
+- Continuer l'implémentation des pages restantes à partir de leurs maquettes; conserver le header et le side bar partagés.
+
+### 2026-11-19 — Après les ajustements de la typographie et de la timeline
+
+- Continuer l'implémentation des pages restantes à partir de leurs maquettes; conserver le header et le side bar partagés.
+
+### 2026-11-19 — Après le défilement interne des étapes et les aperçus de repli
+
+- Continuer l'implémentation des pages restantes à partir de leurs maquettes; conserver le header et le side bar partagés.
+
+### 2026-11-19 — Après le rétablissement des liens de ressources
+
+- Continuer l'implémentation des pages restantes à partir de leurs maquettes; conserver le header et le side bar partagés.

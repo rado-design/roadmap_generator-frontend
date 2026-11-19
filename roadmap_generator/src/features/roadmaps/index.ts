@@ -1,5 +1,6 @@
 export { ROADMAPS_PAGE_SIZE, useRoadmaps } from "./hooks/useRoadmaps";
 export { useRoadmapDetail } from "./hooks/useRoadmapDetail";
+export { useRoadmapLearnerProfile } from "./hooks/useRoadmapLearnerProfile";
 export { useCategoryCatalog } from "./hooks/useCategoryCatalog";
 export { useRoadmapRevisions } from "./hooks/useRoadmapRevisions";
 export type { RoadmapRevision, ReplacedStep, RevisionStepLink } from "./api/listRoadmapRevisions";

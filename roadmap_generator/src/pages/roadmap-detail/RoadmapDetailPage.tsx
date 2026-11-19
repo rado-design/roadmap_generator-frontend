@@ -3,6 +3,7 @@ import { Link, useLocation, useParams } from "react-router";
 import { AppLayout } from "../../app/layouts";
 import {
   useRoadmapDetail,
+  useRoadmapLearnerProfile,
   useRoadmapRevisions,
   useProposeStepAdjustment,
   useDecideStepAdjustment,
@@ -37,6 +38,13 @@ const stepStatusLabels = {
   todo: "À faire",
   in_progress: "En cours",
   done: "Terminée",
+} as const;
+
+const levelLabels = {
+  none: "Non précisé",
+  beginner: "Débutant",
+  intermediate: "Intermédiaire",
+  advanced: "Avancé",
 } as const;
 
 function getProgress(roadmap: RoadmapDetail) {
@@ -87,6 +95,16 @@ function getVideoEmbedUrl(url: URL) {
   return null;
 }
 
+function getYouTubeThumbnailUrl(url: URL) {
+  const host = url.hostname.toLocaleLowerCase("fr").replace(/^www\./, "");
+  const id = host === "youtu.be"
+    ? url.pathname.split("/").filter(Boolean)[0]
+    : host === "youtube.com" || host === "m.youtube.com"
+      ? url.searchParams.get("v") ?? url.pathname.match(/^\/(?:embed|shorts)\/([^/]+)/)?.[1]
+      : null;
+  return id ? `https://img.youtube.com/vi/${encodeURIComponent(id)}/hqdefault.jpg` : null;
+}
+
 function getResourceTypeLabel(type: string) {
   const normalized = type.toLocaleLowerCase("fr");
   if (normalized.includes("video")) return "Vidéo";
@@ -99,8 +117,9 @@ function getResourceTypeLabel(type: string) {
 
 function ResourcePreview({ resource }: { resource: RoadmapResource }) {
   const url = getSafeResourceUrl(resource.url);
+  const [previewState, setPreviewState] = useState<"loading" | "ready" | "failed">("loading");
   if (!url) {
-    return <p className={styles.previewFallback}>Aucun aperçu n'est disponible pour cette ressource.</p>;
+    return <ResourceUnavailable resource={resource} />;
   }
 
   const type = resource.type.toLocaleLowerCase("fr");
@@ -111,27 +130,85 @@ function ResourcePreview({ resource }: { resource: RoadmapResource }) {
 
   return (
     <>
-      {isDirectVideo ? (
-        <video className={styles.resourceVideo} controls playsInline preload="metadata">
-          <source src={url.href} />
-          Votre navigateur ne peut pas lire cette vidéo.
+      <div className={styles.resourcePreviewStage}>
+        {previewState === "loading" ? <ResourceUnavailable resource={resource} loading /> : null}
+        {previewState !== "failed" ? isDirectVideo ? (
+          <video className={styles.resourceFrame} controls playsInline preload="metadata" onLoadedData={() => setPreviewState("ready")} onError={() => setPreviewState("failed")}>
+            <source src={url.href} />
+            Votre navigateur ne peut pas lire cette vidéo.
+          </video>
+        ) : (
+          <iframe
+            className={styles.resourceFrame}
+            src={previewUrl}
+            title={`Aperçu : ${resource.title}`}
+            loading="lazy"
+            allow={isVideo ? "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen" : undefined}
+            allowFullScreen={isVideo}
+            referrerPolicy="strict-origin-when-cross-origin"
+            sandbox={isVideo ? "allow-scripts allow-same-origin allow-presentation" : "allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"}
+            onLoad={() => setPreviewState("ready")}
+            onError={() => setPreviewState("failed")}
+          />
+        ) : <ResourceUnavailable resource={resource} />}
+      </div>
+      {previewState === "ready" ? <p className={styles.previewHint}>Si le site ne permet pas l’aperçu intégré, ouvrez la ressource dans un nouvel onglet.</p> : null}
+    </>
+  );
+}
+
+function ResourceUnavailable({ resource, loading = false }: { resource: RoadmapResource; loading?: boolean }) {
+  const url = getSafeResourceUrl(resource.url);
+  const type = getResourceTypeLabel(resource.type);
+  return (
+    <div className={`${styles.resourceUnavailable} ${loading ? styles.loadingResourceUnavailable : ""}`} role={loading ? "status" : undefined}>
+      <span className={styles.resourceUnavailableIcon}><ResourceIcon type={resource.type} /></span>
+      <span className={styles.resourceUnavailableType}>{loading ? "Chargement de l’aperçu" : `Aperçu ${type.toLocaleLowerCase("fr")} indisponible`}</span>
+      <strong>{resource.title}</strong>
+      {url ? <span className={styles.resourceUnavailableHost}>{url.hostname.replace(/^www\./, "")}</span> : null}
+      {loading ? <span className={styles.previewLoadingBar} aria-hidden="true" /> : <span className={styles.resourceUnavailableHint}>La ressource reste accessible depuis son site.</span>}
+    </div>
+  );
+}
+
+function ResourceCardPreview({ resource, kind }: { resource: RoadmapResource; kind: "video" | "article" }) {
+  const safeUrl = getSafeResourceUrl(resource.url);
+  const [previewState, setPreviewState] = useState<"loading" | "ready" | "failed">("loading");
+  if (!safeUrl) {
+    return <span className={`${styles.stepResourceCover} ${kind === "video" ? styles.videoCover : ""}`} aria-hidden="true"><span className={styles.resourceCoverFallback}><ResourceIcon type={resource.type} /><small>Aperçu indisponible</small></span></span>;
+  }
+
+  const isVideo = kind === "video";
+  const isDirectVideo = isVideo && /\.(mp4|webm|ogg)$/i.test(safeUrl.pathname);
+  const youtubeThumbnail = isVideo ? getYouTubeThumbnailUrl(safeUrl) : null;
+  const embedUrl = isVideo ? getVideoEmbedUrl(safeUrl) : safeUrl.href;
+
+  return (
+    <span className={`${styles.stepResourceCover} ${isVideo ? styles.videoCover : ""}`} aria-hidden="true">
+      {previewState !== "ready" ? <span className={`${styles.resourceCoverFallback} ${previewState === "loading" ? styles.loadingCoverFallback : ""}`}><ResourceIcon type={resource.type} />{previewState === "failed" ? <small>Aperçu indisponible</small> : null}</span> : null}
+      {previewState !== "failed" && youtubeThumbnail ? (
+        <img className={styles.resourceCardImage} src={youtubeThumbnail} alt="" loading="lazy" onLoad={() => setPreviewState("ready")} onError={() => setPreviewState("failed")} />
+      ) : null}
+      {previewState !== "failed" && isDirectVideo ? (
+        <video className={styles.resourceCardMedia} muted playsInline preload="metadata" onLoadedData={() => setPreviewState("ready")} onError={() => setPreviewState("failed")}>
+          <source src={safeUrl.href} />
         </video>
-      ) : (
+      ) : null}
+      {previewState !== "failed" && !youtubeThumbnail && !isDirectVideo ? (
         <iframe
-          className={styles.resourceFrame}
-          src={previewUrl}
+          className={styles.resourceCardMedia}
+          src={embedUrl ?? safeUrl.href}
           title={`Aperçu : ${resource.title}`}
           loading="lazy"
-          allow={isVideo ? "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen" : undefined}
-          allowFullScreen={isVideo}
-          referrerPolicy="strict-origin-when-cross-origin"
+          tabIndex={-1}
           sandbox={isVideo ? "allow-scripts allow-same-origin allow-presentation" : "allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"}
+          referrerPolicy="strict-origin-when-cross-origin"
+          onLoad={() => setPreviewState("ready")}
+          onError={() => setPreviewState("failed")}
         />
-      )}
-      <p className={styles.previewHint}>
-        Si le site ne permet pas l'aperçu intégré, ouvrez la ressource dans un nouvel onglet.
-      </p>
-    </>
+      ) : null}
+      {previewState === "failed" ? <span className={styles.resourceCoverFallback}><ResourceIcon type={resource.type} /><small>Aperçu indisponible · {safeUrl.hostname.replace(/^www\./, "")}</small></span> : null}
+    </span>
   );
 }
 
@@ -871,6 +948,8 @@ function ResourceAdjustmentDialog({ roadmapId, step, onClose }: {
 
 function StepCard({
   step,
+  stepNumber,
+  isNextStep,
   previousVersion,
   isNewFromAdaptation,
   onViewPreviousVersion,
@@ -882,12 +961,14 @@ function StepCard({
   allowAdjustment,
 }: {
   step: RoadmapStep;
+  stepNumber: number;
+  isNextStep: boolean;
   previousVersion?: ChangedStepVersion;
   isNewFromAdaptation: boolean;
   onViewPreviousVersion: (change: ChangedStepVersion) => void;
   isUpdating: boolean;
   onProgressChange: (stepId: number, status: RoadmapStep["progress"]["status"]) => void;
-  onOpenResources: (stepId: number) => void;
+  onOpenResources: (stepId: number, index: number) => void;
   onAdjustStep: (step: RoadmapStep) => void;
   onAdjustResources: (step: RoadmapStep) => void;
   allowAdjustment: boolean;
@@ -896,22 +977,16 @@ function StepCard({
   const isActive = step.progress.status === "in_progress";
 
   return (
-    <article id={`step-${step.id}`} className={`${styles.stepCard} ${isActive ? styles.activeStep : ""}`}>
-      <button
-        className={`${styles.checkpoint} ${isDone ? styles.completedCheckpoint : ""} ${isActive ? styles.activeCheckpoint : ""}`}
-        type="button"
-        role="checkbox"
-        aria-checked={isDone}
-        aria-label={isDone ? `Marquer « ${step.title} » comme à faire` : `Marquer « ${step.title} » comme terminée`}
-        disabled={isUpdating}
-        aria-busy={isUpdating}
-        onClick={() => onProgressChange(step.id, isDone ? "todo" : "done")}
-      >
-        {isDone ? <Icon name="check" /> : null}
-      </button>
+    <article id={`step-${step.id}`} className={`${styles.timelineStep} ${isActive ? styles.activeStep : ""}`}>
+      <span className={`${styles.timelineMarker} ${isDone ? styles.completedMarker : isActive || isNextStep ? styles.activeMarker : styles.upcomingMarker}`} aria-hidden="true">
+        {isDone ? <Icon name="check" /> : stepNumber}
+      </span>
       <div className={styles.stepBody}>
         <div className={styles.stepHeading}>
-          <h3 className={`${styles.stepTitle} ${isDone ? styles.completedTitle : ""}`}>{step.title}</h3>
+          <div className={styles.stepHeadingCopy}>
+            <p className={styles.stepEyebrow}>Étape {stepNumber}{isNextStep ? " · Prochaine étape" : ""}</p>
+            <h3 className={`${styles.stepTitle} ${isDone ? styles.completedTitle : ""}`}>{step.title}</h3>
+          </div>
           <select
             className={`${styles.stepStatus} ${isActive ? styles.activeStatus : ""} ${isDone ? styles.doneStatus : ""}`}
             aria-label={`Statut de l'étape ${step.title}`}
@@ -939,19 +1014,34 @@ function StepCard({
             ))}
           </ul>
         ) : null}
+        {step.resources.length > 0 ? (
+          <div className={styles.stepResources} aria-label={`Ressources de l'étape ${step.title}`}>
+            {step.resources.map((resource, index) => {
+              const type = getResourceTypeLabel(resource.type);
+              const kind = type === "Vidéo" ? "video" : "article";
+              const resourceUrl = getSafeResourceUrl(resource.url);
+              return (
+                <article className={styles.stepResourceCard} key={`${step.id}-${index}-${resource.title}`}>
+                  <ResourceCardPreview resource={resource} kind={kind} />
+                  <span className={styles.stepResourceContent}>
+                    <span className={styles.resourceTypePill}>{type.toLocaleLowerCase("fr")}</span>
+                    <strong>{resource.title}</strong>
+                    <span className={styles.stepResourceMeta}>{type}<Icon name="open_in_new" /></span>
+                    <span className={styles.resourceProgressTrack} aria-hidden="true"><span /></span>
+                    <span className={styles.resourcePrompt}>{kind === "video" ? "À regarder" : "À lire"}</span>
+                    {resourceUrl ? (
+                      <a className={styles.stepResourceDirectLink} href={resourceUrl.href} target="_blank" rel="noreferrer">
+                        Ouvrir la ressource<Icon name="open_in_new" />
+                      </a>
+                    ) : null}
+                    <button className={styles.stepResourceOpen} type="button" onClick={() => onOpenResources(step.id, index)}>Ouvrir l’aperçu<Icon name="arrow_forward" /></button>
+                  </span>
+                </article>
+              );
+            })}
+          </div>
+        ) : <p className={styles.noStepResources}>Aucune ressource liée à cette étape.</p>}
         <div className={styles.stepActions}>
-          {step.resources.length > 0 ? (
-            <Button
-              className={styles.stepResourcesButton}
-              variant="outline"
-              icon="collections_bookmark"
-              type="button"
-              onClick={() => onOpenResources(step.id)}
-              aria-label={`Voir les ${step.resources.length} ressources de l'étape ${step.title}`}
-            >
-              Ressources ({step.resources.length})
-            </Button>
-          ) : <p className={styles.noStepResources}>Aucune ressource liée à cette étape.</p>}
           {allowAdjustment && step.progress.status === "todo" ? (
             <Button
               className={styles.stepResourcesButton}
@@ -982,41 +1072,6 @@ function StepCard({
         </div>
       </div>
     </article>
-  );
-}
-
-function ResourceItem({ resource, stepTitle, index }: {
-  resource: RoadmapResource;
-  stepTitle: string;
-  index: number;
-}) {
-  const content = (
-    <>
-      <span className={styles.resourceIcon}><ResourceIcon type={resource.type} /></span>
-      <span className={styles.resourceCopy}>
-        <strong>{resource.title}</strong>
-        <small>{resource.type} · {stepTitle}</small>
-      </span>
-      <span className={styles.resourceActionSlot} aria-hidden="true">
-        {resource.url ? <Icon name="open_in_new" className={styles.externalIcon} /> : null}
-      </span>
-    </>
-  );
-
-  return resource.url ? (
-    <a
-      className={styles.resourceItem}
-      href={resource.url}
-      target="_blank"
-      rel="noreferrer"
-      key={`${stepTitle}-${index}-${resource.title}`}
-    >
-      {content}
-    </a>
-  ) : (
-    <div className={styles.resourceItem} key={`${stepTitle}-${index}-${resource.title}`}>
-      {content}
-    </div>
   );
 }
 
@@ -1055,6 +1110,7 @@ export function RoadmapDetailPage() {
   const parsedId = Number(routeId);
   const roadmapId = Number.isSafeInteger(parsedId) && parsedId > 0 ? parsedId : null;
   const { data, isLoading, isError, error, refetch, isFetching } = useRoadmapDetail(roadmapId);
+  const learnerProfileQuery = useRoadmapLearnerProfile(roadmapId);
   const revisionsQuery = useRoadmapRevisions(roadmapId);
   const progressMutation = useSetStepProgress(roadmapId);
   const undoAdaptationMutation = useUndoRoadmapAdaptation(roadmapId ?? 0);
@@ -1076,6 +1132,7 @@ export function RoadmapDetailPage() {
   );
   const changedStepVersions = revisionHistory.changes;
   const adaptedNewStepIds = revisionHistory.newStepIds;
+  const hasAdaptationHistory = (revisionsQuery.data?.items.length ?? 0) > 0;
 
   useEffect(() => {
     if (!data || !location.hash) return;
@@ -1085,19 +1142,11 @@ export function RoadmapDetailPage() {
     });
   }, [data, location.hash]);
   const completedSteps = orderedSteps.filter((step) => step.progress.status === "done");
-  const inProgressSteps = orderedSteps.filter((step) => step.progress.status === "in_progress");
-  const remainingSteps = orderedSteps
-    .filter((step) => step.progress.status !== "done")
-    .sort((left, right) => {
-      const activeDifference = Number(right.progress.status === "in_progress")
-        - Number(left.progress.status === "in_progress");
-      return activeDifference || left.order - right.order;
-    });
+  const nextStepId = orderedSteps.find((step) => step.progress.status === "in_progress")?.id
+    ?? orderedSteps.find((step) => step.progress.status === "todo")?.id;
   const activeRoadmapStatus = data ? roadmapStatusLabels[data.status] : "";
   const progress = data ? getProgress(data) : 0;
-  const resources = orderedSteps.flatMap((step) =>
-    step.resources.map((resource) => ({ resource, stepTitle: step.title })),
-  );
+  const resourceCount = orderedSteps.reduce((total, step) => total + step.resources.length, 0);
   const resourceStep = resourceViewer
     ? orderedSteps.find((step) => step.id === resourceViewer.stepId)
     : undefined;
@@ -1125,7 +1174,7 @@ export function RoadmapDetailPage() {
   const updateProgress = (stepId: number, status: RoadmapStep["progress"]["status"]) => {
     progressMutation.mutate({ roadmapId: roadmapId!, stepId, status });
   };
-  const openStepResources = (stepId: number) => setResourceViewer({ stepId, index: 0 });
+  const openStepResources = (stepId: number, index = 0) => setResourceViewer({ stepId, index });
   const changeResourceIndex = (index: number) => setResourceViewer((current) => current ? { ...current, index } : current);
   const closeResourceViewer = useCallback(() => setResourceViewer(null), []);
   const refreshAdaptationHistory = () => void revisionsQuery.refetch();
@@ -1152,7 +1201,8 @@ export function RoadmapDetailPage() {
   };
 
   return (
-    <AppLayout>
+    <AppLayout contentClassName={styles.layoutContent}>
+      <div className={styles.detailPage}>
       {roadmapId !== null && (isLoading || (!isError && data)) ? (
         <Link className={styles.backButton} to={returnPath}>
           <Icon name="arrow_back" />
@@ -1181,7 +1231,7 @@ export function RoadmapDetailPage() {
       ) : null}
       {!isLoading && !isError && data ? (
         <>
-          <section className={styles.summary} aria-labelledby="roadmap-title">
+          <header className={styles.pageHeading}>
             <nav className={styles.breadcrumb} aria-label="Fil d'Ariane">
               <Link to="/roadmaps">Mes roadmaps</Link>
               <Icon name="chevron_right" />
@@ -1190,57 +1240,10 @@ export function RoadmapDetailPage() {
             <div className={styles.summaryHeading}>
               <div className={styles.summaryCopy}>
                 <h1 id="roadmap-title">{data.title}</h1>
-                <p>{data.goal}</p>
               </div>
-              <div className={styles.summaryProgress}>
-                <span className={`${styles.roadmapStatus} ${styles[data.status]}`}>
-                  {activeRoadmapStatus}
-                </span>
-                <strong>{progress}%</strong>
-              </div>
+              <span className={`${styles.roadmapStatus} ${styles[data.status]}`}>{activeRoadmapStatus}</span>
             </div>
-            <div
-              className={styles.progressTrack}
-              role="progressbar"
-              aria-label="Progression de la roadmap"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={progress}
-            >
-              <span style={{ width: `${progress}%` }} />
-            </div>
-            <div className={styles.summaryMeta}>
-              <span>Créée le {formatDate(data.created_at)}</span>
-              <span>{data.completed_steps} / {data.total_steps} étapes terminées</span>
-            </div>
-            {!data.archived_at ? (
-              <div className={styles.roadmapActions}>
-                {changedStepVersions.length > 0 ? (
-                  <Button variant="outline" icon="history" onClick={() => setHistoryChangesToShow(changedStepVersions)}>
-                    Historique ({changedStepVersions.length})
-                  </Button>
-                ) : null}
-                <Button
-                  variant="outline"
-                  icon="auto_awesome"
-                  disabled={!orderedSteps.some((step) => step.progress.status === "todo")}
-                  onClick={() => setAdaptRoadmapOpen(true)}
-                >
-                  Adapter la suite
-                </Button>
-                <Button
-                  variant="outline"
-                  icon="undo"
-                  isLoading={undoAdaptationMutation.isPending}
-                  disabled={undoAdaptationMutation.isPending}
-                  onClick={openUndoConfirmation}
-                >
-                  Annuler la dernière adaptation
-                </Button>
-                {adaptationUndoError ? <p className={styles.adaptationUndoError} role="alert">{adaptationUndoError}</p> : null}
-              </div>
-            ) : null}
-          </section>
+          </header>
 
           {data.archived_at ? (
             <div className={styles.archivedNotice} role="status">
@@ -1256,72 +1259,45 @@ export function RoadmapDetailPage() {
             </div>
           ) : null}
 
-          <div className={styles.columns}>
-            <div className={styles.stepsColumn}>
-              {completedSteps.length > 0 ? (
-                <section aria-labelledby="completed-steps-title">
-                  <h2 className={styles.sectionTitle} id="completed-steps-title">
-                    <Icon name="check_circle" />Étapes validées ({completedSteps.length})
-                  </h2>
-                  <div className={styles.stepList}>
-                    {completedSteps.map((step) => (
-                      <StepCard key={step.id} step={step} previousVersion={changedStepVersions.find((change) => change.currentStep.id === step.id)} isNewFromAdaptation={adaptedNewStepIds.includes(step.id)} onViewPreviousVersion={(change) => setHistoryChangesToShow([change])} isUpdating={progressMutation.isPending || Boolean(data.archived_at)} allowAdjustment={!data.archived_at} onProgressChange={updateProgress} onOpenResources={openStepResources} onAdjustStep={setAdjustmentStep} onAdjustResources={setResourceAdjustmentStep} />
-                    ))}
-                  </div>
-                </section>
+          <div className={styles.roadmapLayout}>
+            <aside className={styles.journeyCard} aria-labelledby="journey-title">
+              <span className={styles.journeyLabel}>Parcours</span>
+              <h2 id="journey-title">Votre progression</h2>
+              <p className={styles.journeyGoal}>Objectif : {data.goal}</p>
+              <div className={styles.journeyProgressCopy}><span>{completedSteps.length} / {orderedSteps.length} étapes terminées</span><strong>{progress} %</strong></div>
+              <div className={styles.progressTrack} role="progressbar" aria-label="Progression de la roadmap" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}>
+                <span style={{ width: `${progress}%` }} />
+              </div>
+              <dl className={styles.journeyStats}>
+                <div><Icon name="trending_up" /><dt>Niveau</dt><dd>{learnerProfileQuery.data ? levelLabels[learnerProfileQuery.data.level] : "—"}</dd></div>
+                <div><Icon name="route" /><dt>Étapes</dt><dd>{orderedSteps.length}</dd></div>
+                <div><Icon name="assignment" /><dt>Ressources</dt><dd>{resourceCount}</dd></div>
+                <div><Icon name="calendar_month" /><dt>Créée le</dt><dd>{formatDate(data.created_at)}</dd></div>
+              </dl>
+              {!data.archived_at ? (
+                <div className={styles.journeyActions}>
+                  {changedStepVersions.length > 0 ? <Button variant="outline" icon="history" onClick={() => setHistoryChangesToShow(changedStepVersions)}>Historique ({changedStepVersions.length})</Button> : null}
+                  <Button className={styles.adaptButton} icon="auto_awesome" disabled={!orderedSteps.some((step) => step.progress.status === "todo")} onClick={() => setAdaptRoadmapOpen(true)}>Adapter la suite</Button>
+                  {hasAdaptationHistory ? (
+                    <Button variant="outline" icon="undo" isLoading={undoAdaptationMutation.isPending} disabled={undoAdaptationMutation.isPending} onClick={openUndoConfirmation}>Annuler la dernière adaptation</Button>
+                  ) : null}
+                  {adaptationUndoError ? <p className={styles.adaptationUndoError} role="alert">{adaptationUndoError}</p> : null}
+                </div>
               ) : null}
-
-              <section className={styles.upcomingSection} aria-labelledby="upcoming-steps-title">
-                <h2 className={styles.sectionTitle} id="upcoming-steps-title">Prochaines étapes</h2>
-                {remainingSteps.length > 0 ? (
-                  <div className={styles.stepList}>
-                    {remainingSteps.map((step) => (
-                      <StepCard key={step.id} step={step} previousVersion={changedStepVersions.find((change) => change.currentStep.id === step.id)} isNewFromAdaptation={adaptedNewStepIds.includes(step.id)} onViewPreviousVersion={(change) => setHistoryChangesToShow([change])} isUpdating={progressMutation.isPending || Boolean(data.archived_at)} allowAdjustment={!data.archived_at} onProgressChange={updateProgress} onOpenResources={openStepResources} onAdjustStep={setAdjustmentStep} onAdjustResources={setResourceAdjustmentStep} />
-                    ))}
-                  </div>
-                ) : completedSteps.length > 0 ? (
-                  <p className={styles.completionMessage}>Toutes les étapes de cette roadmap sont terminées.</p>
-                ) : (
-                  <div className={styles.noSteps}>
-                    <Icon name="route" />
-                    <p>Aucune étape n'est encore disponible pour cette roadmap.</p>
-                  </div>
-                )}
-              </section>
-            </div>
-
-            <aside className={styles.aside} aria-label="Informations complémentaires">
-              <section className={styles.asideCard} aria-labelledby="overview-title">
-                <h2 id="overview-title">Vue d'ensemble</h2>
-                <dl className={styles.overviewStats}>
-                  <div className={styles.overviewStat}>
-                    <dt>Validées</dt>
-                    <dd>{completedSteps.length} / {data.total_steps}</dd>
-                  </div>
-                  <div className={styles.overviewStat}>
-                    <dt>En cours</dt>
-                    <dd>{inProgressSteps.length}</dd>
-                  </div>
-                  <div className={styles.overviewStat}>
-                    <dt>Ressources</dt>
-                    <dd>{resources.length}</dd>
-                  </div>
-                </dl>
-              </section>
-
-              <section className={styles.asideCard} aria-labelledby="resources-title">
-                <h2 id="resources-title">Ressources clés</h2>
-                {resources.length > 0 ? (
-                  <div className={styles.resourceList}>
-                    {resources.map(({ resource, stepTitle }, index) => (
-                      <ResourceItem key={`${stepTitle}-${index}-${resource.title}`} resource={resource} stepTitle={stepTitle} index={index} />
-                    ))}
-                  </div>
-                ) : (
-                  <p className={styles.asideNote}>Aucune ressource n'est associée aux étapes de cette roadmap.</p>
-                )}
-              </section>
             </aside>
+
+            <section className={styles.timelinePanel} aria-label="Étapes de la roadmap">
+              {orderedSteps.length > 0 ? (
+                <ol className={styles.timelineList}>
+                  {orderedSteps.map((step, index) => (
+                    <li className={`${styles.timelineListItem} ${step.progress.status === "done" ? styles.completedTimelineItem : step.id === nextStepId ? styles.currentTimelineItem : styles.upcomingTimelineItem}`} key={step.id}>
+                      <StepCard step={step} stepNumber={index + 1} isNextStep={step.id === nextStepId} previousVersion={changedStepVersions.find((change) => change.currentStep.id === step.id)} isNewFromAdaptation={adaptedNewStepIds.includes(step.id)} onViewPreviousVersion={(change) => setHistoryChangesToShow([change])} isUpdating={progressMutation.isPending || Boolean(data.archived_at)} allowAdjustment={!data.archived_at} onProgressChange={updateProgress} onOpenResources={openStepResources} onAdjustStep={setAdjustmentStep} onAdjustResources={setResourceAdjustmentStep} />
+                    </li>
+                  ))}
+                </ol>
+              ) : <div className={styles.noSteps}><Icon name="route" /><p>Aucune étape n'est encore disponible pour cette roadmap.</p></div>}
+              {orderedSteps.length > 0 && completedSteps.length === orderedSteps.length ? <p className={styles.completionMessage}>Toutes les étapes de cette roadmap sont terminées.</p> : null}
+            </section>
           </div>
           {resourceStep && resourceViewer ? (
             <ResourceModal
@@ -1369,6 +1345,7 @@ export function RoadmapDetailPage() {
           />
         </>
       ) : null}
+      </div>
     </AppLayout>
   );
 }

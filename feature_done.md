@@ -367,3 +367,26 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 - Le changement d'adresse demande le mot de passe courant, envoie un code à la nouvelle adresse, permet de renvoyer le code après le délai backend de 60 secondes, de confirmer ou d'annuler la demande. L'adresse affichée comme courante ne change qu'après confirmation backend.
 - La suppression du compte reste indisponible : aucun endpoint backend n'est fourni.
 - Vérification: TypeScript (`tsc --noEmit -p tsconfig.app.json --ignoreDeprecations 6.0`) et `git diff --check`.
+
+### 2026-11-19 — Refonte du détail d'une roadmap selon la maquette
+
+- Le contenu du détail reprend la composition de la maquette : titre et fil d'Ariane, panneau de progression et d'actions, puis étapes présentées en timeline. Le niveau est chargé via l'endpoint de profil propre à la roadmap. Le layout partagé, la barre latérale et le header restent inchangés.
+- Les ressources apparaissent sous leur étape sous forme de cartes article/vidéo; un clic ouvre l'aperçu de la ressource sélectionnée. Les statuts, l'historique par étape, l'annulation, l'adaptation et la régénération restent accessibles.
+- Vérification : TypeScript (`tsc --noEmit -p tsconfig.app.json --ignoreDeprecations 6.0`) et `git diff --check`. La capture navigateur n'a pas pu être réalisée : le navigateur de vérification ne pouvait pas accéder au serveur local et Playwright CLI n'a pas pu télécharger son paquet dans l'environnement.
+
+### 2026-11-19 — Ajustements du détail : typographie, aperçus et progression
+
+- Les titres utilisent maintenant la même police Inter que le reste de l'application. Les cartes de ressources chargent une miniature vidéo ou un aperçu intégré d'article; l'illustration actuelle reste visible tant que l'aperçu charge ou si le média échoue.
+- La timeline distingue les étapes terminées, l'étape actuelle et celles à venir avec les marqueurs et les connecteurs. L'étape « En cours » n'a plus de contour rectangulaire.
+- Vérification : TypeScript (`tsc --noEmit -p tsconfig.app.json --ignoreDeprecations 6.0`) et `git diff --check`.
+
+### 2026-11-19 — Défilement limité aux étapes et état de repli des ressources
+
+- Le titre, le résumé et les actions de progression restent en place; seule la timeline des étapes défile, aussi sur mobile.
+- En cas de chargement en cours ou d'échec d'aperçu, un état visuel avec titre et domaine remplace l'icône d'erreur brute. Les aperçus vidéo conservent une illustration de repli; les liens restent ouvrables.
+- Vérification : TypeScript (`tsc --noEmit -p tsconfig.app.json --ignoreDeprecations 6.0`) et `git diff --check`.
+
+### 2026-11-19 — Rétablissement des liens de ressources dans les cartes
+
+- Les cartes rechargent l’aperçu intégré du lien d’article lorsqu’il est disponible et proposent désormais un lien direct vers la ressource, en plus de l’aperçu modal. Si le chargement échoue, le repli reste visible.
+- Vérification : TypeScript (`tsc --noEmit -p tsconfig.app.json --ignoreDeprecations 6.0`) et `git diff --check`.

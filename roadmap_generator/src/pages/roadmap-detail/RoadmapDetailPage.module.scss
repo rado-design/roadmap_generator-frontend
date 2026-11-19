@@ -14,6 +14,97 @@
   :global(.material-symbols-outlined) { font-size: var(--icon-size-sm); }
 }
 
+.layoutContent { display: flex; height: 100%; min-height: 0; flex-direction: column; overflow: hidden; }
+.detailPage { display: flex; height: calc(100% + 32px); min-height: 0; flex-direction: column; overflow: hidden; margin: -32px -40px 0; padding: 32px 48px 28px; background: #f7f5f1; }
+.pageHeading { margin-bottom: 24px; }
+.pageHeading .backButton { margin-bottom: 18px; }
+.pageHeading .breadcrumb { margin-bottom: 8px; }
+.pageHeading .summaryHeading { align-items: center; margin-top: 0; }
+.pageHeading .summaryCopy h1 { color: #19242c; font-size: 36px; font-weight: 700; line-height: 44px; letter-spacing: -0.02em; }
+.pageHeading .roadmapStatus { background: #dff3eb; color: #176b50; }
+
+.roadmapLayout { display: grid; min-height: 0; flex: 1; grid-template-columns: minmax(270px, 320px) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); align-items: stretch; gap: 32px; }
+.journeyCard,
+.timelinePanel { border: 1px solid #e7dfd3; border-radius: 22px; background: var(--color-surface-container-lowest); box-shadow: 0 3px 8px rgb(25 28 30 / 7%); }
+.journeyCard { display: grid; align-self: start; gap: 12px; padding: 24px; }
+.journeyLabel { width: fit-content; padding: 4px 12px; border-radius: var(--radius-full); background: #e3f1f7; color: var(--color-primary); font-size: 12px; line-height: 16px; }
+.journeyCard h2 { margin-top: 2px; color: #19242c; font-size: 24px; font-weight: 700; line-height: 30px; }
+.journeyGoal { color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; }
+.journeyProgressCopy { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; color: var(--color-on-surface-variant); font-size: 12px; line-height: 16px; }
+.journeyProgressCopy strong { color: var(--color-on-surface); font-weight: 600; }
+.journeyCard .progressTrack { height: 8px; margin: -6px 0 12px; background: #ece7dd; }
+.journeyCard .progressTrack span { background: var(--color-primary); }
+.journeyStats { display: grid; gap: 14px; margin: 0; padding: 18px 0; border-top: 1px solid #e7dfd3; }
+.journeyStats > div { display: grid; grid-template-columns: 20px auto 1fr; align-items: center; gap: 10px; color: var(--color-on-surface); font-size: 14px; line-height: 20px; }
+.journeyStats :global(.material-symbols-outlined) { color: var(--color-primary); font-size: var(--icon-size-sm); }
+.journeyStats dt { color: var(--color-on-surface-variant); }
+.journeyStats dd { margin: 0; justify-self: end; text-align: right; }
+.journeyStats > div:last-child { grid-template-columns: 20px 1fr; }
+.journeyStats > div:last-child dd { grid-column: 2; justify-self: start; }
+.journeyActions { display: grid; gap: 10px; }
+.journeyActions :global(button) { width: 100%; min-height: 42px; padding: 9px 12px; box-shadow: none; }
+.journeyActions .adaptButton { background: #09658a; color: #fff; }
+.journeyActions .adaptationUndoError { margin: 0; }
+
+.timelinePanel { display: flex; min-width: 0; min-height: 0; flex-direction: column; overflow: hidden; padding: 0; }
+.timelineList { display: grid; min-height: 0; flex: 1; gap: 0; overflow-y: auto; overscroll-behavior-y: contain; margin: 0; padding: 30px 32px 28px; list-style: none; scrollbar-color: var(--color-outline-variant) transparent; scrollbar-width: thin; }
+.timelineListItem { position: relative; min-width: 0; padding: 0 0 44px 64px; }
+.timelineListItem::before { position: absolute; top: 40px; bottom: 0; left: 19px; border-left: 2px solid #d6e0e5; content: ""; }
+.completedTimelineItem::before { border-color: var(--color-secondary); }
+.currentTimelineItem::before { border-color: var(--color-primary); }
+.timelineListItem:last-child { padding-bottom: 0; }
+.timelineListItem:last-child::before { display: none; }
+.timelineStep { position: relative; min-width: 0; scroll-margin-top: 24px; }
+.timelineMarker { position: absolute; top: 0; left: -64px; display: grid; width: 40px; height: 40px; place-items: center; border: 2px solid var(--color-primary); border-radius: var(--radius-full); background: var(--color-surface-container-lowest); color: var(--color-primary); font-size: 16px; font-weight: 600; line-height: 24px; box-shadow: 0 0 0 6px #e2eff4; }
+.timelineMarker :global(.material-symbols-outlined) { font-size: 18px; }
+.completedMarker { border-color: var(--color-secondary); background: var(--color-secondary); color: var(--color-on-secondary); box-shadow: 0 0 0 6px #e1f2eb; }
+.activeMarker { background: #eaf5fa; }
+.upcomingMarker { border-color: #cbd6dd; box-shadow: 0 0 0 6px var(--color-surface-container-low); color: var(--color-on-surface-variant); }
+.timelineStep.activeStep { border: 0; box-shadow: none; }
+.stepBody { flex: none; }
+.stepHeading { align-items: flex-start; }
+.stepHeadingCopy { min-width: 0; }
+.stepEyebrow { margin-bottom: 3px; color: var(--color-primary); font-size: 12px; font-weight: 600; line-height: 16px; letter-spacing: 0.04em; text-transform: uppercase; }
+.timelineStep .stepTitle { color: #19242c; font-size: 20px; font-weight: 600; line-height: 28px; }
+.timelineStep .stepStatus { min-width: 108px; min-height: 36px; padding: 0 28px 0 12px; border: 1px solid #ded5c8; border-radius: 12px; background-color: var(--color-surface-container-lowest); color: var(--color-on-surface); font-size: 12px; }
+.timelineStep .activeStatus { background-color: #eaf5fa; color: var(--color-primary); }
+.timelineStep .doneStatus { background-color: #e4f4ec; color: #176b50; }
+.timelineStep .adaptedStepHistory { margin-top: 10px; border: 0; background: #e3f1f7; color: var(--color-primary); }
+.timelineStep .stepDescription { margin-top: 12px; font-size: 14px; line-height: 21px; }
+.timelineStep .objectives { margin-top: 12px; }
+.timelineStep .objectives li { border: 1px solid #e8e1d6; background: #f7f5f1; }
+.stepResources { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 22px; }
+.stepResourceCard { display: flex; min-width: 0; flex-direction: column; overflow: hidden; padding: 0; border: 1px solid #e7dfd3; border-radius: 18px; background: var(--color-surface-container-lowest); color: var(--color-on-surface); text-align: left; box-shadow: 0 2px 5px rgb(25 28 30 / 6%); }
+.stepResourceCard:hover { border-color: var(--color-primary); }
+.stepResourceCard:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+.stepResourceCover { position: relative; display: grid; width: 100%; aspect-ratio: 2.2 / 1; min-height: 120px; overflow: hidden; place-items: center; background: #f8d7aa; color: #a96b1b; }
+.stepResourceCover :global(.material-symbols-outlined) { font-size: 34px; }
+.stepResourceCover.videoCover { background: #104762; color: #fff; }
+.resourceCoverFallback { position: absolute; z-index: 0; inset: 0; display: grid; align-content: center; justify-items: center; gap: 8px; background: inherit; color: inherit; }
+.resourceCoverFallback small { font-size: 11px; line-height: 16px; }
+.loadingCoverFallback { z-index: 2; }
+.resourceCardMedia,
+.resourceCardImage { position: absolute; z-index: 1; inset: 0; display: block; width: 100%; height: 100%; border: 0; object-fit: cover; }
+.resourceCardMedia { background: transparent; pointer-events: none; }
+.resourceCardImage { object-position: center 30%; }
+.stepResourceContent { display: grid; min-width: 0; gap: 10px; padding: 14px; }
+.resourceTypePill { width: fit-content; margin-top: -34px; padding: 3px 10px; border-radius: var(--radius-full); background: #fff; color: var(--color-primary); font-size: 11px; line-height: 16px; }
+.stepResourceContent > strong { display: -webkit-box; min-height: 40px; overflow: hidden; font-size: 14px; font-weight: 600; line-height: 20px; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.stepResourceMeta { display: flex; align-items: center; justify-content: space-between; color: var(--color-on-surface-variant); font-size: 12px; line-height: 16px; }
+.stepResourceMeta :global(.material-symbols-outlined) { font-size: var(--icon-size-sm); }
+.resourceProgressTrack { display: block; height: 7px; overflow: hidden; border-radius: var(--radius-full); background: #ece7dd; }
+.resourceProgressTrack > span { display: block; width: 0; height: 100%; background: var(--color-primary); }
+.resourcePrompt { color: var(--color-on-surface-variant); font-size: 12px; line-height: 16px; }
+.stepResourceOpen { display: inline-flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 2px; padding: 8px 0 0; border: 0; border-top: 1px solid var(--color-outline-variant); background: transparent; color: var(--color-primary); font: inherit; font-size: 12px; font-weight: 600; line-height: 16px; cursor: pointer; }
+.stepResourceDirectLink { display: inline-flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--color-primary); font-size: 12px; font-weight: 600; line-height: 16px; text-decoration: underline; text-underline-offset: 2px; }
+.stepResourceDirectLink:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+.stepResourceDirectLink :global(.material-symbols-outlined) { font-size: var(--icon-size-sm); }
+.stepResourceOpen:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+.stepResourceOpen :global(.material-symbols-outlined) { font-size: var(--icon-size-sm); }
+.timelineStep .stepActions { margin-top: 16px; gap: 10px; }
+.timelineStep .stepResourcesButton { min-height: 38px; padding: 7px 12px; border: 1px solid #ded5c8; border-radius: 12px; }
+.timelineStep .noStepResources { margin-top: 16px; }
+
 .summary,
 .stepCard,
 .asideCard,
@@ -425,6 +516,18 @@
 }
 
 .resourcePreview { min-width: 0; min-height: 0; overflow: auto; padding: 20px 24px; }
+.resourcePreviewStage { position: relative; min-height: 280px; }
+.resourcePreviewStage .resourceFrame { position: relative; z-index: 1; }
+.resourceUnavailable { display: grid; min-height: 280px; align-content: center; justify-items: center; gap: 10px; padding: 28px; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-lg); background: linear-gradient(145deg, var(--color-surface-container-low), var(--color-surface-container-lowest)); text-align: center; }
+.loadingResourceUnavailable { position: absolute; z-index: 2; inset: 0; min-height: 0; }
+.resourceUnavailableIcon { display: grid; width: 48px; height: 48px; place-items: center; border-radius: var(--radius-full); background: var(--color-primary-fixed); color: var(--color-primary); }
+.resourceUnavailableIcon :global(.material-symbols-outlined) { font-size: var(--icon-size-md); }
+.resourceUnavailableType { color: var(--color-primary); font-size: 12px; font-weight: 600; line-height: 16px; }
+.resourceUnavailable > strong { max-width: 48ch; color: var(--color-on-surface); font-size: 16px; font-weight: 600; line-height: 22px; overflow-wrap: anywhere; }
+.resourceUnavailableHost,
+.resourceUnavailableHint { color: var(--color-on-surface-variant); font-size: 12px; line-height: 18px; overflow-wrap: anywhere; }
+.previewLoadingBar { width: min(180px, 60%); height: 6px; overflow: hidden; border-radius: var(--radius-full); background: var(--color-surface-container-highest); }
+.previewLoadingBar::after { display: block; width: 40%; height: 100%; border-radius: inherit; background: var(--color-primary); animation: previewLoad 1.2s ease-in-out infinite alternate; content: ""; }
 .resourceFrame { display: block; width: 100%; max-width: 100%; min-width: 0; height: min(60dvh, 560px); min-height: 280px; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-lg); background: var(--color-surface-container-low); }
 .resourceVideo { display: block; width: 100%; max-width: 100%; max-height: 65dvh; border-radius: var(--radius-lg); background: #101416; }
 .previewHint,
@@ -469,14 +572,39 @@
 .skeletonAside span { min-height: 160px; }
 
 @keyframes pulse { to { opacity: 0.55; } }
+@keyframes previewLoad { to { transform: translateX(150%); } }
 
 @media (max-width: 900px) {
+  .detailPage { height: calc(100% + 24px); margin: -24px -16px 0; padding: 24px 24px 20px; }
+  .roadmapLayout { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: 20px; }
+  .journeyCard { position: static; }
+  .journeyActions { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
   .columns,
   .skeletonColumns { grid-template-columns: 1fr; }
   .aside { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); align-items: start; padding-top: 0; }
 }
 
 @media (max-width: 600px) {
+  .detailPage { height: calc(100% + 24px); margin: -24px -16px 0; padding: 24px 16px 16px; }
+  .pageHeading { margin-bottom: 18px; }
+  .pageHeading .summaryHeading { align-items: flex-start; flex-direction: column; gap: 10px; }
+  .pageHeading .summaryCopy h1 { font-size: 28px; line-height: 36px; }
+  .journeyCard { padding: 20px; border-radius: 18px; }
+  .timelinePanel { padding: 0; border-radius: 18px; }
+  .journeyCard h2 { font-size: 22px; }
+  .journeyStats { gap: 12px; }
+  .journeyActions { grid-template-columns: 1fr; }
+  .timelineListItem { padding: 0 0 36px 46px; }
+  .timelineList { padding: 22px 20px 20px; }
+  .timelineListItem::before { left: 16px; }
+  .timelineMarker { left: -46px; width: 34px; height: 34px; box-shadow: 0 0 0 4px #e2eff4; }
+  .completedMarker { box-shadow: 0 0 0 4px #e1f2eb; }
+  .timelineStep .stepHeading { flex-direction: column; gap: 10px; }
+  .timelineStep .stepTitle { font-size: 20px; line-height: 27px; }
+  .stepResources { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .stepResourceCover { min-height: 100px; }
+  .timelineStep .stepActions { align-items: stretch; flex-direction: column; }
+  .timelineStep .stepResourcesButton { width: 100%; }
   .summary,
   .stepCard,
   .asideCard { padding: 20px; }
@@ -537,5 +665,6 @@
 @media (prefers-reduced-motion: reduce) {
   .skeletonSummary,
   .skeletonSteps span,
-  .skeletonAside span { animation: none; }
+  .skeletonAside span,
+  .previewLoadingBar::after { animation: none; }
 }
