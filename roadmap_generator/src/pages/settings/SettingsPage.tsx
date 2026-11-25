@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
-import { AppLayout, PageHeader } from "../../app/layouts";
+import { AppLayout } from "../../app/layouts";
 import {
   changePassword,
   cancelEmailChange,
@@ -9,6 +9,7 @@ import {
   deleteAvatar,
   getCurrentUser,
   getLearnerProfile,
+  getUsageSummary,
   requestEmailChange,
   uploadAvatar,
   updateCurrentUser,
@@ -17,6 +18,7 @@ import {
   type LearnerLanguage,
   type LearnerProfile,
   type LearningStyle,
+  type UsageSummary,
 } from "../../features/users";
 import { Button, Icon, LogoutConfirmDialog } from "../../shared/components";
 import { useAuthStore } from "../../shared/lib/authStore";
@@ -42,6 +44,16 @@ const tones: { value: ExplanationTone; label: string }[] = [
   { value: "direct", label: "Direct" },
 ];
 
+type SettingsSection = "general" | "learner" | "security" | "quota" | "account";
+
+const settingsSections: { id: SettingsSection; label: string; description: string; editable: boolean }[] = [
+  { id: "general", label: "Général", description: "Gérez votre nom, votre photo et votre adresse e-mail.", editable: true },
+  { id: "learner", label: "Profil d’apprenant", description: "Personnalisez les préférences utilisées pour vos roadmaps.", editable: true },
+  { id: "security", label: "Sécurité", description: "Modifiez le mot de passe de votre compte.", editable: true },
+  { id: "quota", label: "Quota de génération", description: "Consultez votre consommation et les générations disponibles.", editable: false },
+  { id: "account", label: "Compte", description: "Gérez votre session et les actions liées au compte.", editable: false },
+];
+
 function getErrorMessage(error: unknown, fallback: string) {
   if (typeof error === "object" && error !== null && "response" in error) {
     const response = (error as { response?: { data?: { detail?: unknown } } }).response;
@@ -59,6 +71,36 @@ function getInitials(firstName: string, lastName: string) {
   return initials.toLocaleUpperCase("fr") || "R";
 }
 
+function formatUsageDate(value: string | null) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric" }).format(date);
+}
+
+function UsageCard({ usage, isLoading, isError, onRetry }: {
+  usage?: UsageSummary;
+  isLoading: boolean;
+  isError: boolean;
+  onRetry: () => void;
+}) {
+  if (isLoading) return <section className={`${styles.card} ${styles.usageCard}`} aria-busy="true"><h2 className={styles.sectionTitle}>Quota de génération</h2><p className={styles.helper}>Chargement de votre consommation…</p></section>;
+  if (isError || !usage) return <section className={`${styles.card} ${styles.usageCard}`} aria-labelledby="usage-title"><h2 className={styles.sectionTitle} id="usage-title">Quota de génération</h2><p className={styles.helper}>Votre quota est momentanément indisponible.</p><Button type="button" variant="outline" onClick={onRetry}>Réessayer</Button></section>;
+
+  const unlimited = usage.generations_limit === null;
+  const limit = usage.generations_limit ?? 0;
+  const progress = unlimited ? 0 : limit > 0 ? Math.min(100, usage.generations_used / limit * 100) : 100;
+  const resetsAt = formatUsageDate(usage.resets_at);
+  return (
+    <section className={`${styles.card} ${styles.usageCard}`} aria-labelledby="usage-title">
+      <div className={styles.usageHeading}><div><h2 className={styles.sectionTitle} id="usage-title">Quota de génération</h2><p className={styles.sectionDescription}>Plan {usage.plan_name}</p></div><Icon name="auto_awesome" /></div>
+      <div className={styles.usageCount}><strong>{unlimited ? "Illimité" : `${usage.generations_used} / ${limit}`}</strong><span>{unlimited ? "générations" : usage.period === "month" ? "générations ce mois-ci" : "générations au total"}</span></div>
+      {!unlimited ? <div className={styles.usageTrack} role="progressbar" aria-label="Quota de génération utilisé" aria-valuemin={0} aria-valuemax={limit || 1} aria-valuenow={Math.min(usage.generations_used, limit)}><span style={{ width: `${progress}%` }} /></div> : null}
+      <p className={styles.usageRemaining}>{unlimited ? "Votre plan n'a pas de limite de génération." : usage.generations_remaining === 0 ? "Toutes vos générations disponibles ont été utilisées." : `${usage.generations_remaining} génération${usage.generations_remaining === 1 ? " disponible" : "s disponibles"}.`}</p>
+      {resetsAt ? <p className={styles.helper}>Renouvellement le {resetsAt}.</p> : !unlimited && usage.period === "lifetime" ? <p className={styles.helper}>Ce quota ne se renouvelle pas automatiquement.</p> : null}
+    </section>
+  );
+}
+
 export function SettingsPage() {
   const navigate = useNavigate();
   const client = useQueryClient();
@@ -67,6 +109,7 @@ export function SettingsPage() {
   const clearAccessToken = useAuthStore((state) => state.clearAccessToken);
   const userQuery = useQuery({ queryKey: ["users", "me"], queryFn: getCurrentUser });
   const learnerQuery = useQuery({ queryKey: ["users", "me", "learner-profile"], queryFn: getLearnerProfile });
+  const usageQuery = useQuery({ queryKey: ["users", "me", "usage"], queryFn: getUsageSummary });
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [language, setLanguage] = useState<LearnerLanguage>("fr");
@@ -89,6 +132,7 @@ export function SettingsPage() {
   const [emailFeedbackType, setEmailFeedbackType] = useState<"success" | "error">("success");
   const [resendAvailableAt, setResendAvailableAt] = useState<number | null>(null);
   const [resendWaitSeconds, setResendWaitSeconds] = useState(0);
+  const [activeSection, setActiveSection] = useState<SettingsSection>("general");
 
   useEffect(() => {
     if (userQuery.data) {
@@ -319,14 +363,11 @@ export function SettingsPage() {
   const hasPendingEmail = Boolean(userQuery.data?.pending_email);
   const emailBusy = emailRequestMutation.isPending || emailConfirmMutation.isPending || emailCancelMutation.isPending;
   const avatarBusy = avatarMutation.isPending || deleteAvatarMutation.isPending;
+  const selectedSection = settingsSections.find((section) => section.id === activeSection) ?? settingsSections[0];
+  const displayName = [firstName, lastName].filter(Boolean).join(" ") || userQuery.data?.email || "Mon compte";
 
   return (
-    <AppLayout>
-      <PageHeader
-        title="Paramètres"
-        description="Gérez vos informations personnelles, votre sécurité et vos préférences d'apprentissage."
-      />
-
+    <AppLayout contentClassName={styles.settingsCanvas} mainClassName={styles.settingsMain}>
       {isLoading ? (
         <div className={styles.loadingPanel} aria-busy="true">Chargement de vos paramètres…</div>
       ) : isError ? (
@@ -337,7 +378,33 @@ export function SettingsPage() {
         </section>
       ) : userQuery.data && learnerQuery.data ? (
         <form className={styles.settingsForm} onSubmit={handleSubmit}>
-          <section className={styles.card} aria-labelledby="personal-info-title">
+          <header className={styles.settingsIdentity}>
+            {userQuery.data.avatar_url ? (
+              <img className={styles.identityAvatar} src={userQuery.data.avatar_url} alt="" />
+            ) : (
+              <span className={styles.identityAvatarFallback} aria-hidden="true">{initials}</span>
+            )}
+            <div className={styles.identityCopy}>
+              <div className={styles.identityTitle}><span>{displayName}</span><span aria-hidden="true">/</span><h1>{selectedSection.label}</h1></div>
+              <p>{selectedSection.description}</p>
+            </div>
+          </header>
+
+          <div className={styles.settingsLayout}>
+            <nav className={styles.settingsNav} aria-label="Sections des paramètres">
+              {settingsSections.map((section) => (
+                <button
+                  className={activeSection === section.id ? styles.activeSettingsNavItem : undefined}
+                  key={section.id}
+                  type="button"
+                  aria-current={activeSection === section.id ? "page" : undefined}
+                  onClick={() => { setActiveSection(section.id); setFormError(""); setFormSuccess(""); }}
+                >{section.label}</button>
+              ))}
+            </nav>
+            <div className={styles.settingsPanel}>
+          {activeSection === "general" ? (
+          <section className={`${styles.card} ${styles.generalCard}`} aria-labelledby="personal-info-title">
             <h2 className={styles.sectionTitle} id="personal-info-title">Informations personnelles</h2>
             <div className={styles.avatarRow}>
               {userQuery.data.avatar_url ? (
@@ -441,8 +508,9 @@ export function SettingsPage() {
               {emailFeedback ? <p className={emailFeedbackType === "error" ? styles.errorMessage : styles.successMessage} role={emailFeedbackType === "error" ? "alert" : "status"}>{emailFeedback}</p> : null}
             </div>
           </section>
+          ) : null}
 
-          <div className={styles.lowerGrid}>
+          {activeSection === "learner" ? (
             <section className={`${styles.card} ${styles.learnerCard}`} aria-labelledby="learner-profile-title">
               <div>
                 <h2 className={styles.sectionTitle} id="learner-profile-title">Profil d'apprenant</h2>
@@ -477,8 +545,11 @@ export function SettingsPage() {
                 </div>
               </fieldset>
             </section>
+          ) : null}
 
-            <div className={styles.rightColumn}>
+          {activeSection === "quota" ? <UsageCard usage={usageQuery.data} isLoading={usageQuery.isLoading} isError={usageQuery.isError} onRetry={() => void usageQuery.refetch()} /> : null}
+
+          {activeSection === "security" ? (
               <section className={`${styles.card} ${styles.securityCard}`} aria-labelledby="security-title">
                 <h2 className={styles.sectionTitle} id="security-title">Sécurité</h2>
                 <div className={styles.field}>
@@ -495,24 +566,31 @@ export function SettingsPage() {
                   <input id="settings-confirm-password" type="password" autoComplete="new-password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} />
                 </div>
               </section>
+          ) : null}
 
+          {activeSection === "account" ? (
               <section className={`${styles.card} ${styles.accountCard}`} aria-labelledby="account-title">
                 <h2 className={styles.sectionTitle} id="account-title">Compte</h2>
                 <div className={styles.accountActions}>
-                  <Button type="button" variant="outline" onClick={() => setLogoutConfirmOpen(true)} isLoading={isLoggingOut}>Se déconnecter</Button>
+                  <Button className={styles.logoutButton} type="button" variant="outline" onClick={() => setLogoutConfirmOpen(true)} isLoading={isLoggingOut}>Se déconnecter</Button>
                   <Button className={styles.deleteButton} type="button" variant="outline" disabled title="La suppression du compte n'est pas disponible pour le moment.">Supprimer mon compte</Button>
                 </div>
                 {logoutError ? <p className={styles.errorMessage} role="alert">{logoutError}</p> : null}
                 <p className={styles.helper}>La suppression efface définitivement vos roadmaps et votre progression.</p>
               </section>
-            </div>
-          </div>
+          ) : null}
 
-          {formError ? <p className={styles.errorMessage} role="alert">{formError}</p> : null}
-          {formSuccess ? <p className={styles.successMessage} role="status">{formSuccess}</p> : null}
-          <div className={styles.formActions}>
-            <Button type="button" variant="outline" onClick={resetForm}>Annuler</Button>
-            <Button type="submit" isLoading={saveMutation.isPending}>Enregistrer les modifications</Button>
+          {selectedSection.editable ? (
+            <>
+              {formError ? <p className={styles.errorMessage} role="alert">{formError}</p> : null}
+              {formSuccess ? <p className={styles.successMessage} role="status">{formSuccess}</p> : null}
+              <div className={styles.formActions}>
+                <Button type="button" variant="outline" onClick={resetForm}>Annuler</Button>
+                <Button type="submit" isLoading={saveMutation.isPending}>Enregistrer les modifications</Button>
+              </div>
+            </>
+          ) : null}
+            </div>
           </div>
         </form>
       ) : null}

@@ -1,347 +1,199 @@
-
-.metrics {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.metricCard,
 .panel,
-.roadmapCard,
 .statePanel {
+  min-width: 0;
   border: 1px solid var(--color-outline-variant);
   border-radius: var(--radius-2xl);
   background: var(--color-surface-container-lowest);
 }
 
-.metricCard {
-  display: flex;
-  min-height: 120px;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 20px;
-}
+.panel { border: 0; box-shadow: 0 2px 8px rgb(0 101 145 / 7%); }
+:global(:root[data-theme="dark"]) .panel { box-shadow: 0 2px 9px rgb(128 204 239 / 8%); }
 
-.metricTopline {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  gap: 10px;
-  color: var(--color-primary);
-  margin-bottom: 4px;
-}
-
-.metricTopline :global(span.material-symbols-outlined) {
-  font-size: var(--icon-size-md);
-  flex: none;
-}
-
-.metricLabel {
-  color: var(--color-on-surface-variant);
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 18px;
-}
-
-.metricValue {
-  margin-top: 4px;
-  color: var(--color-on-surface);
-  font-size: 28px;
-  font-weight: 600;
-  line-height: 36px;
-  letter-spacing: -0.02em;
-}
-
-.metricSkeleton,
-.roadmapSkeleton {
-  display: block;
-  overflow: hidden;
-  position: relative;
-  background: var(--color-surface-container);
-}
-
-.metricSkeleton {
-  width: 72px;
-  height: 38px;
-  margin-top: 8px;
-  border-radius: var(--radius-default);
-}
-
-.metricSkeleton::after,
-.roadmapSkeleton::after {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 58%), transparent);
-  content: "";
-  transform: translateX(-100%);
-  animation: shimmer 1.4s infinite;
-}
-
-.analysisGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-top: 20px;
-}
-
-.panel {
-  min-height: 208px;
-  padding: 20px;
-}
-
-.panelHeading,
-.sectionHeading,
-.roadmapTopline,
-.progressMeta {
+.welcomeBanner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.panelHeading h2,
-.sectionHeading h2 {
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 24px;
-}
-
-.categoryChart {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 24px;
-  margin-top: 16px;
-}
-
-.donutChart { width: 140px; height: 140px; flex: none; }
-.donutCaption { fill: var(--color-on-surface-variant); font-size: 9px; }
-.donutTotal { fill: var(--color-on-surface); font-size: 20px; font-weight: 600; }
-
-.categoryLegend,
-.statusDistribution {
-  display: grid;
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.categoryLegend { gap: 8px; }
-.categoryLegend li { display: flex; align-items: center; gap: 8px; font-size: 12px; line-height: 16px; }
-.categoryLegend i { width: 10px; height: 10px; flex: none; border-radius: var(--radius-full); }
-
-.statusDistribution { gap: 16px; margin-top: 16px; }
-.statusMeta { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 4px; color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; }
-.statusMeta span:last-child { color: var(--color-on-surface); }
-.statusTrack { overflow: hidden; height: 8px; border-radius: var(--radius-full); background: var(--color-surface-container-highest); }
-.statusTrack span { display: block; height: 100%; border-radius: inherit; }
-
-.statusDistribution > li { min-width: 0; }
-
-@media (max-width: 680px) {
-  .categoryChart { gap: 16px; }
-}
-
-.distributionEmpty {
-  margin-top: 18px;
-  color: var(--color-on-surface-variant);
-  font-size: 13px;
-}
-
-.templateBadge {
-  border-radius: var(--radius-full);
-  background: var(--color-surface-container-low);
-  padding: 4px 9px;
-  color: var(--color-on-surface-variant);
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 16px;
-  text-align: center;
-}
-
-.templateCopy {
-  max-width: 48ch;
-  margin-top: 10px;
-  color: var(--color-on-surface-variant);
-  font-size: 13px;
-  line-height: 19px;
-}
-
-.templatePlaceholder {
-  display: flex;
-  height: 64px;
-  align-items: center;
-  gap: 8px;
-  margin-top: 18px;
-  padding-inline: 12px;
-  border: 1px dashed var(--color-outline-variant);
-  border-radius: var(--radius-lg);
-  color: var(--color-on-surface-variant);
-  font-size: 12px;
-  line-height: 16px;
-}
-
-.templatePlaceholder :global(.material-symbols-outlined) {
-  color: var(--color-outline);
-  font-size: var(--icon-size-sm);
-}
-
-.roadmapsSection {
-  margin-top: 32px;
-}
-
-.sectionHeading {
+  gap: 14px;
   margin-bottom: 16px;
-}
-
-.sectionHeading p {
-  margin-top: 4px;
-  color: var(--color-on-surface-variant);
+  padding: 14px 18px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
   font-size: 14px;
   line-height: 19px;
 }
 
-.allRoadmapsLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--color-primary);
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: none;
-}
-
-.allRoadmapsLink:hover { text-decoration: underline; }
-
-.roadmapGrid {
+.welcomeIcon {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.roadmapCard {
-  display: block;
-  min-width: 0;
-  padding: 20px;
-  color: inherit;
-  text-decoration: none;
-
-  &:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
-  &:hover { border-color: var(--color-primary); }
-}
-
-.roadmapIcon {
-  display: inline-grid;
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
+  flex: none;
   place-items: center;
-  border-radius: var(--radius-lg);
-  background: var(--color-primary-fixed);
-  color: var(--color-on-primary-container);
-}
-
-.stepCount {
-  color: var(--color-on-surface-variant);
-  font-size: 12px;
-  line-height: 16px;
-}
-
-.roadmapTitle {
-  overflow: hidden;
-  margin-top: 16px;
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 23px;
-  text-overflow: ellipsis;
-}
-
-.roadmapGoal {
-  display: -webkit-box;
-  overflow: hidden;
-  min-height: 40px;
-  margin-top: 4px;
-  color: var(--color-on-surface-variant);
-  font-size: 14px;
-  line-height: 20px;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
-.progressMeta {
-  margin-top: 18px;
-  color: var(--color-on-surface-variant);
-  font-size: 12px;
-  line-height: 16px;
-}
-
-.progressMeta span:last-child { color: var(--color-on-surface); font-weight: 600; }
-
-.progressTrack {
-  overflow: hidden;
-  height: 7px;
-  margin-top: 8px;
   border-radius: var(--radius-full);
-  background: var(--color-surface-container-highest);
-}
-
-.progressTrack span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: var(--color-primary);
-}
-
-.roadmapSkeleton {
-  min-height: 194px;
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-2xl);
-}
-
-.statePanel {
-  display: flex;
-  min-height: 176px;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 24px;
-  color: var(--color-on-surface-variant);
-  text-align: center;
-}
-
-.statePanel :global(span.material-symbols-outlined) {
+  background: var(--color-primary-fixed);
   color: var(--color-primary);
-  font-size: var(--icon-size-md);
 }
 
-.statePanel p { max-width: 52ch; font-size: 14px; line-height: 20px; }
+.welcomeTitle { font-weight: 700; }
+.welcomeBanner p + p { color: var(--color-on-surface-variant); }
 
-@keyframes shimmer {
-  to { transform: translateX(100%); }
+.overviewGrid {
+  display: grid;
+  grid-area: overview;
+  min-width: 0;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr);
+  gap: 14px;
 }
+
+.dashboardGrid {
+  display: grid;
+  grid-template-areas: "overview categories" "recent status";
+  grid-template-columns: minmax(0, 1.85fr) minmax(240px, 1fr);
+  grid-template-rows: 260px minmax(350px, auto);
+  align-items: stretch;
+  gap: 14px;
+}
+
+.panel { padding: 18px; }
+.panel h2,
+.sectionHeading h2 { color: var(--color-on-surface); font-size: 16px; font-weight: 600; line-height: 22px; }
+.panelHint { margin-top: 2px; color: var(--color-on-surface-variant); font-size: 12px; line-height: 17px; }
+
+.completionPanel { display: flex; min-height: 260px; flex-direction: column; }
+.gaugeWrap { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: flex-end; }
+.gauge { display: block; width: min(100%, 224px); margin-top: 2px; overflow: visible; }
+.gaugeTrack,
+.gaugeValue { fill: none; stroke-width: 15; stroke-linecap: butt; }
+.gaugeTrack { stroke: var(--color-surface-container-highest); }
+.gaugeValue { stroke: var(--color-secondary); stroke-linecap: round; transition: stroke-dashoffset 400ms ease; }
+.gaugePercent { fill: var(--color-on-surface); font-size: 32px; font-weight: 700; }
+.gaugeCaption { margin-top: -13px; color: var(--color-on-surface-variant); font-size: 12px; }
+.gaugeSkeleton { width: 100%; height: 132px; margin-top: 18px; border-radius: var(--radius-lg); background: var(--color-surface-container); }
+.gaugeUnavailable { margin: auto; color: var(--color-on-surface-variant); font-size: 14px; }
+
+.countPanel { min-height: 260px; }
+.countGrid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 18px; margin-top: 8px; }
+.countItem { display: grid; min-width: 0; grid-template-columns: 34px minmax(0, 1fr) 42px; align-items: center; gap: 9px; min-height: 88px; border-bottom: 1px solid var(--color-surface-container); }
+.countItem:nth-last-child(-n + 2) { border-bottom: 0; }
+.countRing { position: relative; display: grid; width: 42px; height: 42px; place-items: center; border-radius: var(--radius-full); background: conic-gradient(var(--ring-color) var(--ring-progress), var(--color-surface-container-highest) 0); }
+.countRing::before { position: absolute; inset: 4px; border-radius: inherit; background: var(--color-surface-container-lowest); content: ""; }
+.countRing strong { position: relative; color: var(--color-on-surface); font-size: 12px; font-weight: 600; }
+.countIcon { display: grid; width: 34px; height: 34px; place-items: center; border-radius: var(--radius-full); }
+.countIcon :global(.material-symbols-outlined) { font-size: var(--icon-size-sm); }
+.blue { --ring-color: var(--color-primary); background: var(--color-primary-fixed); color: var(--color-primary); }
+.green { --ring-color: var(--color-secondary); background: var(--color-secondary-container); color: var(--color-on-secondary-container); }
+.orange { --ring-color: var(--color-primary-container); background: var(--color-surface-container-low); color: var(--color-primary); }
+.purple { --ring-color: var(--color-outline); background: var(--color-surface-container); color: var(--color-on-surface-variant); }
+.countLabel { color: var(--color-on-surface); font-size: 12px; line-height: 16px; }
+.countSkeleton { width: 42px; height: 42px; border: 4px solid var(--color-surface-container); border-radius: var(--radius-full); }
+
+.panelHeading { display: flex; min-height: 22px; align-items: baseline; justify-content: space-between; gap: 8px; }
+.categoryPanel { grid-area: categories; min-height: 260px; }
+.categoryChart { display: flex; align-items: center; justify-content: space-around; gap: 12px; margin-top: 12px; }
+.donutChart { width: 132px; height: 132px; flex: none; }
+.donutCaption { fill: var(--color-on-surface-variant); font-size: 12px; }
+.donutTotal { fill: var(--color-on-surface); font-size: 16px; font-weight: 600; }
+.categoryLegend { display: grid; min-width: 0; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.categoryLegend li { display: flex; align-items: center; gap: 7px; color: var(--color-on-surface-variant); font-size: 12px; line-height: 16px; }
+.categoryLegend i { width: 9px; height: 9px; flex: none; border-radius: var(--radius-full); }
+.emptyDistribution { display: flex; min-height: 174px; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--color-on-surface-variant); text-align: center; }
+.emptyDistribution p { max-width: 28ch; font-size: 14px; line-height: 20px; }
+.emptyDonut { display: grid; width: 106px; height: 106px; place-items: center; border: 13px solid var(--color-surface-container-highest); border-radius: var(--radius-full); }
+.emptyDonut span { color: var(--color-on-surface-variant); font-size: 16px; font-weight: 600; }
+.distributionEmpty { margin-top: 18px; color: var(--color-on-surface-variant); font-size: 14px; }
+
+.recentPanel { grid-area: recent; min-height: 350px; padding: 18px 0 0; }
+.sectionHeading { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 18px 14px; }
+.sectionHeading p { margin-top: 3px; color: var(--color-on-surface-variant); font-size: 12px; line-height: 17px; }
+.allRoadmapsLink { display: inline-flex; flex: none; align-items: center; gap: 5px; color: var(--color-primary); font-size: 12px; font-weight: 600; text-decoration: none; }
+.allRoadmapsLink:hover { text-decoration: underline; }
+.allRoadmapsLink :global(.material-symbols-outlined) { font-size: 16px; }
+.tableWrap { overflow-x: auto; }
+.roadmapTable { width: 100%; border-collapse: collapse; text-align: left; }
+.roadmapTable th { padding: 10px 12px; background: var(--color-surface-container-low); color: var(--color-on-surface-variant); font-size: 12px; font-weight: 500; white-space: nowrap; }
+.roadmapTable th:first-child,
+.roadmapTable td:first-child { padding-left: 18px; }
+.roadmapTable th:last-child,
+.roadmapTable td:last-child { padding-right: 14px; }
+.roadmapTable td { padding: 12px; border-top: 1px solid var(--color-surface-container); color: var(--color-on-surface-variant); font-size: 12px; white-space: nowrap; }
+.tableRoadmapLink { display: grid; min-width: 145px; gap: 3px; color: inherit; text-decoration: none; }
+.tableRoadmapLink strong { overflow: hidden; max-width: 280px; color: var(--color-on-surface); font-size: 12px; font-weight: 600; text-overflow: ellipsis; }
+.tableRoadmapLink span { overflow: hidden; max-width: 280px; color: var(--color-on-surface-variant); font-size: 12px; text-overflow: ellipsis; }
+.tableRoadmapLink:hover strong { color: var(--color-primary); }
+.tableProgress { display: flex; min-width: 100px; align-items: center; gap: 8px; }
+.tableProgress > span { overflow: hidden; width: 72px; height: 6px; border-radius: var(--radius-full); background: var(--color-surface-container-highest); }
+.tableProgress i { display: block; height: 100%; border-radius: inherit; background: var(--color-secondary); }
+.tableProgress b { color: var(--color-on-surface); font-size: 12px; font-weight: 500; }
+.openLink { display: grid; width: 28px; height: 28px; place-items: center; border-radius: var(--radius-full); color: var(--color-on-surface-variant); text-decoration: none; }
+.openLink:hover { background: var(--color-surface-container); color: var(--color-primary); }
+.openLink:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.openLink :global(.material-symbols-outlined) { font-size: var(--icon-size-sm); }
+.visuallyHidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
+
+.statusPanel { grid-area: status; min-height: 350px; padding: 18px; }
+.statusDistribution { display: grid; gap: 24px; margin: 24px 0 0; padding: 0; list-style: none; }
+.statusDistribution > li { min-width: 0; }
+.statusMeta { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 6px; color: var(--color-on-surface-variant); font-size: 12px; line-height: 17px; }
+.statusMeta span:last-child { color: var(--color-on-surface); font-weight: 600; }
+.statusTrack { overflow: hidden; height: 9px; border-radius: var(--radius-full); background: var(--color-surface-container-highest); }
+.statusTrack span { display: block; height: 100%; border-radius: inherit; }
+.createLink { display: flex; min-height: 38px; align-items: center; justify-content: center; gap: 7px; margin-top: 24px; border: 1px solid var(--color-primary); border-radius: var(--radius-lg); color: var(--color-primary); font-size: 14px; font-weight: 600; text-decoration: none; }
+.createLink:hover { background: var(--color-primary-fixed); }
+.createLink :global(.material-symbols-outlined) { font-size: var(--icon-size-sm); }
+
+.loadingRows { display: grid; }
+.loadingRows span { height: 54px; border-top: 1px solid var(--color-surface-container); background: linear-gradient(90deg, transparent, var(--color-surface-container), transparent); background-size: 200% 100%; animation: shimmer 1.4s infinite; }
+.statePanel { display: flex; min-height: 170px; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 22px; color: var(--color-on-surface-variant); text-align: center; }
+.statePanel :global(.material-symbols-outlined),
+.emptyState > :global(.material-symbols-outlined) { color: var(--color-primary); font-size: var(--icon-size-md); }
+.statePanel p,
+.emptyState p { max-width: 52ch; font-size: 14px; line-height: 19px; }
+.emptyState { display: flex; min-height: 270px; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 22px; color: var(--color-on-surface-variant); text-align: center; }
+.emptyState :global(button) { gap: 6px; }
+
+@keyframes shimmer { to { background-position: -200% 0; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .metricSkeleton::after,
-  .roadmapSkeleton::after { animation: none; }
-  .progressTrack span { transition: none; }
+  .gaugeValue { transition: none; }
+  .loadingRows span { animation: none; }
 }
 
-@media (max-width: 1000px) {
-  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .roadmapGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 1120px) {
+  .dashboardGrid { grid-template-columns: minmax(0, 1.6fr) minmax(220px, 1fr); }
 }
 
-@media (max-width: 680px) {
-  .analysisGrid,
-  .roadmapGrid { grid-template-columns: 1fr; }
-  .panelHeading { align-items: flex-start; flex-direction: column; }
-  .panel { min-height: 188px; }
+@media (max-width: 900px) {
+  .dashboardGrid {
+    grid-template-areas: "overview" "categories" "recent" "status";
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+  }
+  .categoryPanel { min-height: 240px; }
+  .overviewGrid { min-height: 260px; }
+  .statusPanel { display: grid; grid-template-columns: 1fr 1fr; align-items: center; column-gap: 24px; }
+  .statusPanel > .panelHeading { grid-column: 1 / -1; }
+  .statusPanel .statusDistribution { grid-column: 1; }
+  .statusPanel .createLink { grid-column: 2; grid-row: 2; margin-top: 16px; }
 }
 
-@media (max-width: 420px) {
-  .metrics { grid-template-columns: 1fr; }
-  .metricCard { min-height: 132px; }
-  .sectionHeading { align-items: flex-start; }
-  .allRoadmapsLink { flex: none; }
+@media (max-width: 640px) {
+  .welcomeBanner { align-items: flex-start; padding: 12px; }
+  .overviewGrid { grid-template-columns: 1fr; }
+  .completionPanel,
+  .countPanel { min-height: 240px; }
+  .countGrid { column-gap: 10px; }
+  .countItem { grid-template-columns: 30px minmax(0, 1fr) 42px; gap: 6px; }
+  .countIcon { width: 30px; height: 30px; }
+  .categoryChart { justify-content: flex-start; }
+  .sectionHeading { align-items: flex-start; flex-direction: column; gap: 8px; padding-inline: 14px; }
+  .roadmapTable { min-width: 620px; }
+  .roadmapTable th:first-child,
+  .roadmapTable td:first-child { padding-left: 14px; }
+  .statusPanel { display: block; min-height: 300px; }
+}
+
+@media (max-width: 380px) {
+  .countGrid { grid-template-columns: 1fr; }
+  .countItem:nth-last-child(2) { border-bottom: 1px solid var(--color-surface-container); }
+  .statusPanel { padding: 14px; }
 }

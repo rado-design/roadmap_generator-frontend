@@ -57,6 +57,11 @@
 
   /* Typographie */
   --font-body: "Inter", system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-heading: "Inter", system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-page-title-size: 24px;
+  --font-page-title-line-height: 32px;
+  --font-page-title-weight: 700;
+  --font-page-title-letter-spacing: -0.02em;
 
   font-family: var(--font-body);
   color-scheme: light;
@@ -66,6 +71,45 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+:root[data-theme="dark"] {
+  --color-primary: #80ccef;
+  --color-on-primary: #00364b;
+  --color-primary-container: #005775;
+  --color-on-primary-container: #d4f1ff;
+  --color-primary-fixed: #174457;
+
+  --color-secondary: #7cd9ad;
+  --color-on-secondary: #003b29;
+  --color-secondary-container: #18563e;
+  --color-on-secondary-container: #b9f0d2;
+  --color-secondary-fixed: #174b37;
+
+  --color-error: #ffb4ab;
+  --color-on-error: #690005;
+  --color-error-container: #93000a;
+  --color-on-error-container: #ffdad6;
+
+  --color-background: #111619;
+  --color-on-background: #e2e6e9;
+  --color-surface: #111619;
+  --color-on-surface: #e2e6e9;
+  --color-on-surface-variant: #bbc4ca;
+  --color-surface-variant: #414a50;
+  --color-surface-container-lowest: #171d21;
+  --color-surface-container-low: #1d252a;
+  --color-surface-container: #242c31;
+  --color-surface-container-highest: #30393f;
+
+  --color-outline: #8b969d;
+  --color-outline-variant: #424c52;
+
+  --shadow-sm: 0 4px 10px rgb(0 0 0 / 24%), 0 2px 4px rgb(0 0 0 / 18%);
+
+  color-scheme: dark;
+  color: var(--color-on-surface);
+  background: var(--color-background);
 }
 
 *,
@@ -86,7 +130,7 @@ body {
 h1,
 h2,
 h3 {
-  font-family: var(--font-body);
+  font-family: var(--font-heading);
   color: var(--color-on-surface);
   margin: 0;
 }

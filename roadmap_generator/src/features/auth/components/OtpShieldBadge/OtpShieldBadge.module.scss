@@ -53,17 +53,18 @@
 }
 
 .title {
-  font-size: 32px;
-  line-height: 40px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-family: var(--font-heading);
+  font-size: var(--font-page-title-size);
+  line-height: var(--font-page-title-line-height);
+  font-weight: var(--font-page-title-weight);
+  letter-spacing: var(--font-page-title-letter-spacing);
   color: var(--color-on-surface);
   margin-bottom: var(--space-xs);
 }
 
 .description {
-  font-size: 16px;
-  line-height: 24px;
+  font-size: 14px;
+  line-height: 20px;
   color: var(--color-on-surface-variant);
   max-width: 380px;
   margin: 0 auto;

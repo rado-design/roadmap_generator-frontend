@@ -34,7 +34,7 @@
   display: flex;
   width: 100%;
   max-width: 100%;
-  min-height: 40px;
+  min-height: 36px;
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
@@ -94,6 +94,16 @@
   border-radius: var(--radius-lg);
   background: transparent;
   color: var(--color-on-surface-variant);
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.utilityButton:hover:not(:disabled) {
+  background: var(--color-surface-container-low);
+  color: var(--color-on-surface);
+}
+
+.utilityButton:disabled {
   cursor: not-allowed;
   opacity: 0.76;
 }

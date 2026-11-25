@@ -9,6 +9,7 @@ export function useSetRoadmapArchived() {
     onSettled: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["roadmaps"] }),
+        queryClient.invalidateQueries({ queryKey: ["roadmaps", "detail"] }),
         queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
         queryClient.invalidateQueries({ queryKey: ["resources"] }),
       ]);

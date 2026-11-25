@@ -1,6 +1,7 @@
 import axios from "axios";
 import { createStore } from "../../../shared/lib/createStore";
 import { queryClient } from "../../../shared/lib/queryClient";
+import type { ApiError } from "../../../shared/types";
 import {
   generateRoadmap,
   cancelRoadmapGeneration,
@@ -21,6 +22,10 @@ export interface RoadmapGenerationStep extends GeneratedRoadmapStep {
 
 type GenerationStatus = "idle" | "connecting" | "streaming" | "failed" | "complete";
 
+export type GenerationLimitNotice =
+  | { kind: "quota_exceeded"; limit: number; used: number; resets_at: string | null }
+  | { kind: "generation_rate_limited"; limit: number; retry_after_seconds: number };
+
 interface RoadmapGenerationState {
   status: GenerationStatus;
   generationId?: string;
@@ -30,6 +35,7 @@ interface RoadmapGenerationState {
   steps: RoadmapGenerationStep[];
   attempt: number;
   error?: string;
+  limitNotice?: GenerationLimitNotice;
   started: boolean;
   result?: RoadmapDetail;
   start: (request: GenerateRoadmapRequest) => Promise<RoadmapDetail | undefined>;
@@ -49,6 +55,7 @@ interface PersistedGeneration {
   steps: RoadmapGenerationStep[];
   attempt: number;
   error?: string;
+  limitNotice?: GenerationLimitNotice;
   started: boolean;
 }
 
@@ -67,6 +74,7 @@ function readPersistedGeneration(): PersistedGeneration | null {
       steps: Array.isArray(saved.steps) ? saved.steps : [],
       attempt: Number.isSafeInteger(saved.attempt) && Number(saved.attempt) > 0 ? Number(saved.attempt) : 1,
       error: typeof saved.error === "string" ? saved.error : undefined,
+      limitNotice: isGenerationLimitNotice(saved.limitNotice) ? saved.limitNotice : undefined,
       started: Boolean(saved.started),
     };
   } catch {
@@ -84,12 +92,13 @@ const emptyGenerationState = {
   steps: [] as RoadmapGenerationStep[],
   attempt: 1,
   error: undefined,
+  limitNotice: undefined,
   started: false,
   result: undefined,
 };
 const initialGenerationState = {
   ...emptyGenerationState,
-  status: (persisted?.request && persisted.started ? "connecting" : "idle") as GenerationStatus,
+  status: (persisted?.limitNotice ? "failed" : persisted?.request && persisted.started ? "connecting" : "idle") as GenerationStatus,
   generationId: persisted?.generationId,
   lastEventId: persisted?.lastEventId ?? 0,
   request: persisted?.request ?? null,
@@ -97,12 +106,45 @@ const initialGenerationState = {
   steps: persisted?.steps ?? [] as RoadmapGenerationStep[],
   attempt: persisted?.attempt ?? 1,
   error: persisted?.error,
+  limitNotice: persisted?.limitNotice,
   started: persisted?.started ?? false,
   result: undefined,
 };
 
+function isGenerationLimitNotice(value: unknown): value is GenerationLimitNotice {
+  if (typeof value !== "object" || value === null) return false;
+  const notice = value as Record<string, unknown>;
+  if (notice.kind === "quota_exceeded") {
+    return typeof notice.limit === "number" && typeof notice.used === "number"
+      && (typeof notice.resets_at === "string" || notice.resets_at === null);
+  }
+  return notice.kind === "generation_rate_limited"
+    && typeof notice.limit === "number"
+    && typeof notice.retry_after_seconds === "number";
+}
+
+function getGenerationLimitNotice(error: unknown): GenerationLimitNotice | undefined {
+  if (typeof error !== "object" || error === null || !("code" in error)) return undefined;
+  const apiError = error as ApiError;
+  if (apiError.code === "quota_exceeded" && typeof apiError.limit === "number" && typeof apiError.used === "number") {
+    return { kind: "quota_exceeded", limit: apiError.limit, used: apiError.used, resets_at: apiError.resets_at ?? null };
+  }
+  if (apiError.code === "generation_rate_limited" && typeof apiError.limit === "number" && typeof apiError.retry_after_seconds === "number") {
+    return { kind: "generation_rate_limited", limit: apiError.limit, retry_after_seconds: apiError.retry_after_seconds };
+  }
+  return undefined;
+}
+
+function getGenerationErrorMessage(error: unknown, notice?: GenerationLimitNotice) {
+  if (notice?.kind === "quota_exceeded") return "Votre quota de génération est atteint. Consultez votre consommation et la date de renouvellement dans les paramètres.";
+  if (notice?.kind === "generation_rate_limited") return "La limite de générations sur une heure est atteinte. Patientez avant de réessayer.";
+  if (typeof error === "object" && error !== null && "message" in error && typeof error.message === "string") return error.message;
+  return "La génération a échoué. Réessayez.";
+}
+
 function isRetryableConnectionError(error: unknown) {
   if (typeof error === "object" && error !== null && "retryable" in error) {
+    if ("code" in error && (error.code === "quota_exceeded" || error.code === "generation_rate_limited")) return false;
     return Boolean((error as { retryable?: boolean }).retryable);
   }
   if (axios.isAxiosError(error)) {
@@ -122,6 +164,7 @@ async function refreshRoadmapQueries() {
   await Promise.all([
     queryClient.invalidateQueries({ queryKey: ["roadmaps"] }),
     queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
+    queryClient.invalidateQueries({ queryKey: ["users", "me", "usage"] }),
   ]);
 }
 
@@ -265,8 +308,19 @@ export const useRoadmapGenerationStore = createStore<RoadmapGenerationState>(
         } catch (error) {
           const current = get();
           if (current.generationId) return followGeneration(current.generationId);
+          const limitNotice = getGenerationLimitNotice(error);
+          if (limitNotice) {
+            set((state) => ({
+              status: "failed",
+              error: getGenerationErrorMessage(error, limitNotice),
+              limitNotice,
+              started: state.started,
+            }));
+            void queryClient.invalidateQueries({ queryKey: ["users", "me", "usage"] });
+            return undefined;
+          }
           if (!isRetryableConnectionError(error)) {
-            const message = error instanceof Error ? error.message : "La génération a échoué. Réessayez.";
+            const message = getGenerationErrorMessage(error);
             set((state) => ({ status: "failed", error: message, started: state.started }));
             return undefined;
           }
@@ -335,6 +389,7 @@ useRoadmapGenerationStore.subscribe((state) => {
       steps: state.steps,
       attempt: state.attempt,
       error: state.error,
+      limitNotice: state.limitNotice,
       started: state.started,
     };
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));

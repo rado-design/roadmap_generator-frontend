@@ -33,6 +33,16 @@ export interface LearnerProfile {
   default_weekly_hours: number | null;
 }
 
+export interface UsageSummary {
+  plan_code: string;
+  plan_name: string;
+  period: "month" | "lifetime";
+  generations_limit: number | null;
+  generations_used: number;
+  generations_remaining: number | null;
+  resets_at: string | null;
+}
+
 export interface PasswordChange {
   current_password: string;
   new_password: string;
@@ -59,6 +69,11 @@ export async function updateCurrentUser(payload: UserProfileUpdate) {
 
 export async function getLearnerProfile() {
   const response = await apiClient.get<LearnerProfile>("api/v1/users/me/learner-profile");
+  return response.data;
+}
+
+export async function getUsageSummary() {
+  const response = await apiClient.get<UsageSummary>("api/v1/users/me/usage");
   return response.data;
 }
 

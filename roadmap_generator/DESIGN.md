@@ -30,10 +30,10 @@ colors:
 typography:
   display:
     fontFamily: "'Inter', system-ui, 'Segoe UI', Roboto, sans-serif"
-    fontSize: "32px"
-    fontWeight: 600
-    lineHeight: "40px"
-    letterSpacing: "-0.01em"
+    fontSize: "24px"
+    fontWeight: 700
+    lineHeight: "32px"
+    letterSpacing: "-0.02em"
   body:
     fontFamily: "'Inter', system-ui, 'Segoe UI', Roboto, sans-serif"
     fontSize: "16px"
@@ -100,7 +100,7 @@ Clarity and low cognitive load take precedence: one primary action per screen, w
 
 ## Typography
 - **Primary Font**: `Inter`, system-ui, sans-serif.
-- **Title / Display**: 32px / 40px line-height, semi-bold (600), -0.01em letter spacing.
+- **Page Title / Display**: Inter, 24px / 32px line-height, bold (700), -0.02em letter spacing, matching the supplied reference.
 - **Body**: 16px / 24px line-height, regular (400).
 - **UI & Labels**: 14px / 20px line-height, medium (500).
 - **Helper & Errors**: 12px / 16px line-height, regular (400).

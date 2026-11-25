@@ -13,6 +13,7 @@ interface AppLayoutProps {
   children: ReactNode;
   headerActions?: ReactNode;
   contentClassName?: string;
+  mainClassName?: string;
   onSearch?: (query: string) => void;
 }
 
@@ -21,6 +22,7 @@ export function AppLayout({
   children,
   headerActions,
   contentClassName,
+  mainClassName,
   onSearch,
 }: AppLayoutProps) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -85,7 +87,7 @@ export function AppLayout({
         ) : null}
 
         <div className={styles.workspace}>
-          <main className={styles.main}>
+          <main className={`${styles.main} ${mainClassName ?? ""}`.trim()}>
             <div className={`${styles.content} ${contentClassName ?? ""}`.trim()}>
               {children}
             </div>

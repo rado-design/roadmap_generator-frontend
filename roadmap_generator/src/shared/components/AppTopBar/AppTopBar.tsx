@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useLayoutEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { getCurrentUser } from "../../../features/users";
@@ -18,8 +18,25 @@ export function AppTopBar({
   onSearch,
   sidebarOpen,
 }: AppTopBarProps) {
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return window.localStorage.getItem("roadmapai-theme") === "dark";
+    } catch {
+      return false;
+    }
+  });
   const [query, setQuery] = useState("");
   const currentUserQuery = useQuery({ queryKey: ["users", "me"], queryFn: getCurrentUser });
+
+  useLayoutEffect(() => {
+    document.documentElement.dataset.theme = isDarkMode ? "dark" : "light";
+    try {
+      window.localStorage.setItem("roadmapai-theme", isDarkMode ? "dark" : "light");
+    } catch {
+      // The theme remains usable for this session when storage is unavailable.
+    }
+  }, [isDarkMode]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -74,11 +91,12 @@ export function AppTopBar({
           <button
             className={styles.utilityButton}
             type="button"
-            disabled
-            aria-label="Changement de thème bientôt disponible"
-            title="Le changement de thème sera disponible prochainement."
+            aria-label={isDarkMode ? "Activer le mode clair" : "Activer le mode sombre"}
+            title={isDarkMode ? "Activer le mode clair" : "Activer le mode sombre"}
+            aria-pressed={isDarkMode}
+            onClick={() => setIsDarkMode((dark) => !dark)}
           >
-            <Icon name="dark_mode" />
+            <Icon name={isDarkMode ? "light_mode" : "dark_mode"} />
           </button>
           {currentUserQuery.data?.avatar_url ? (
             <img className={styles.avatarImage} src={currentUserQuery.data.avatar_url} alt="Photo de profil" />

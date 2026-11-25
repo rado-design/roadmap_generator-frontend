@@ -9,7 +9,7 @@ import {
   type LearnerLevel,
   type RoadmapCategory,
 } from "../../features/roadmaps";
-import { useRoadmapGenerationStore } from "../../features/roadmaps/hooks/useRoadmapGenerationStore";
+import { useRoadmapGenerationStore, type GenerationLimitNotice } from "../../features/roadmaps/hooks/useRoadmapGenerationStore";
 import { Button } from "../../shared/components/Button";
 import { Icon } from "../../shared/components/Icon";
 import styles from "./GenerateRoadmapPage.module.scss";
@@ -37,6 +37,38 @@ const formSteps = [
   { id: "level", title: "Votre niveau" },
   { id: "background", title: "Contexte complémentaire" },
 ] as const;
+
+function formatResetDate(value: string | null) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric" }).format(date);
+}
+
+function formatWait(seconds: number) {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  if (minutes === 0) return `${seconds} seconde${seconds === 1 ? "" : "s"}`;
+  return remainingSeconds === 0 ? `${minutes} minute${minutes === 1 ? "" : "s"}` : `${minutes} min ${remainingSeconds} s`;
+}
+
+function GenerationLimitAlert({ notice }: { notice: GenerationLimitNotice }) {
+  const quotaReached = notice.kind === "quota_exceeded";
+  const resetDate = quotaReached ? formatResetDate(notice.resets_at) : null;
+  return (
+    <section className={styles.limitNotice} role="alert">
+      <Icon name={quotaReached ? "hourglass_disabled" : "schedule"} />
+      <div>
+        <h3>{quotaReached ? "Votre quota de génération est atteint" : "La limite horaire de génération est atteinte"}</h3>
+        {quotaReached ? (
+          <p>{notice.used} génération{notice.used === 1 ? " utilisée" : "s utilisées"}{notice.limit > 0 ? ` sur ${notice.limit}` : ""}. {resetDate ? `Votre quota sera renouvelé le ${resetDate}.` : "Ce quota ne se renouvelle pas automatiquement."}</p>
+        ) : (
+          <p>{`Limite : ${notice.limit} générations par heure. Réessayez dans ${formatWait(notice.retry_after_seconds)}.`}</p>
+        )}
+        <Link to="/settings">Consulter mon quota dans les paramètres <Icon name="arrow_forward" /></Link>
+      </div>
+    </section>
+  );
+}
 
 function CancelGenerationConfirmDialog({ open, isLoading, error, onConfirm, onCancel }: {
   open: boolean;
@@ -98,6 +130,7 @@ export function GenerateRoadmapPage() {
   const streamTitle = generation.title;
   const streamSteps = generation.steps;
   const streamAttempt = generation.attempt;
+  const limitNotice = generation.limitNotice;
   const mountedRef = useRef(false);
   const [goal, setGoal] = useState(() => generation.request?.goal ?? "");
   const [category, setCategory] = useState<RoadmapCategory>(() => generation.request?.category ?? "programming");
@@ -235,14 +268,24 @@ export function GenerateRoadmapPage() {
               <div>
                 <h2 id="generation-progress-title">
                   {streamError
-                    ? "La génération a rencontré un problème"
+                    ? limitNotice?.kind === "quota_exceeded"
+                      ? "Votre quota de génération est épuisé"
+                      : limitNotice?.kind === "generation_rate_limited"
+                        ? "La limite horaire de génération est atteinte"
+                        : "La génération a rencontré un problème"
                     : generation.status === "complete"
                       ? "Roadmap générée"
                       : streamTitle ?? "Votre roadmap se construit"}
                 </h2>
                 <p>
                   {streamError
-                    ? "La génération n'a pas abouti. Vos paramètres sont conservés."
+                    ? limitNotice?.kind === "quota_exceeded"
+                      ? limitNotice.resets_at
+                        ? "Vous pourrez générer une nouvelle roadmap après le renouvellement de votre quota."
+                        : "Ce quota ne prévoit pas de renouvellement automatique."
+                      : limitNotice?.kind === "generation_rate_limited"
+                        ? "Un délai temporaire s'applique avant votre prochaine tentative."
+                        : "La génération n'a pas abouti. Vos paramètres sont conservés."
                     : generation.status === "complete"
                       ? "Votre roadmap est prête. Vous pouvez la consulter maintenant."
                       : `Les étapes apparaissent au fil de la génération${streamAttempt > 1 ? ` · nouvelle tentative ${streamAttempt}` : ""}.`}
@@ -251,10 +294,7 @@ export function GenerateRoadmapPage() {
             </div>
 
             {streamError ? (
-              <div className={styles.error} role="alert">
-                <Icon name="error" />
-                <span>{streamError}</span>
-              </div>
+              limitNotice ? <GenerationLimitAlert notice={limitNotice} /> : <div className={styles.error} role="alert"><Icon name="error" /><span>{streamError}</span></div>
             ) : generation.status === "complete" ? (
               <div className={styles.streamStatus} role="status">
                 <Icon name="check_circle" />

@@ -5,7 +5,7 @@ import { AppLayout, PageHeader } from "../../app/layouts";
 import { listRoadmaps } from "../../features/roadmaps/api/listRoadmaps";
 import { useCategoryCatalog, type RoadmapCategory } from "../../features/roadmaps";
 import { RESOURCES_PAGE_SIZE, useResources, useSetResourceFavorite, type ResourceItem, type ResourceSort, type StepProgressStatus } from "../../features/resources";
-import { Button, Icon } from "../../shared/components";
+import { Button, FilterSelect, Icon } from "../../shared/components";
 import styles from "./ResourcesPage.module.scss";
 
 const stepStatusLabels: Record<StepProgressStatus, string> = {
@@ -145,23 +145,25 @@ function ResourceCard({ resource, pending, onFavorite, onOpenPreview, from }: {
       <div className={styles.cardTop}>
         <span className={styles.typeIcon} aria-hidden="true"><ResourceIcon type={resource.type} /></span>
         <span className={`${styles.typePill} ${isVideo ? styles.videoType : ""}`}>{resource.type}</span>
+        <span className={`${styles.stepStatusBadge} ${styles[`stepStatus_${resource.step.status}`]}`}>
+          {stepStatusLabels[resource.step.status]}
+        </span>
         <button className={styles.favoriteButton} type="button" aria-label={resource.is_favorite ? `Retirer « ${resource.title} » des favoris` : `Ajouter « ${resource.title} » aux favoris`} aria-pressed={resource.is_favorite} aria-busy={pending} disabled={pending} onClick={() => onFavorite(resource)}>
           <Icon name={resource.is_favorite ? "star" : "star_border"} />
         </button>
       </div>
       <h2 className={styles.cardTitle}>
-        <button type="button" onClick={onOpenPreview} className={styles.previewTrigger}>{resource.title}</button>
+        <button type="button" onClick={onOpenPreview} className={styles.previewTrigger}><span>{resource.title}</span><Icon name="open_in_new" /></button>
       </h2>
-      <p className={styles.date}>{dateLabel}</p>
+      <span className={styles.date}>{dateLabel}</span>
       <div className={styles.context}>
-        <span>Roadmap</span>
+        <span className={styles.contextLabel}>Dans la roadmap</span>
         <Link to={`/roadmaps/${resource.roadmap.id}`} state={{ from }}>{resource.roadmap.title}</Link>
-        <span className={styles.stepLabel}>Étape {resource.step.order + 1}</span>
+        <div className={styles.stepRow}>
+          <span className={styles.stepLabel}>Étape {resource.step.order + 1}</span>
+        </div>
         <div className={styles.stepRow}>
           <Link to={`/roadmaps/${resource.roadmap.id}#step-${resource.step.id}`} state={{ from }} title={resource.step.title}>{resource.step.title}</Link>
-          <span className={`${styles.stepStatusBadge} ${styles[`stepStatus_${resource.step.status}`]}`}>
-            {stepStatusLabels[resource.step.status]}
-          </span>
         </div>
       </div>
     </article>
@@ -216,7 +218,8 @@ export function ResourcesPage() {
     queryFn: () => listRoadmaps({ limit: 100, offset: 0, sort: "recent" }),
   });
   const resources = data?.pages.flatMap((page) => page.items) ?? [];
-  const typeValues = new Set(resources.map((resource) => resource.type).filter(Boolean));
+  const typeValues = new Set(["article", "video", "course", "doc", "book", "podcast", "exercise", "project"]);
+  resources.forEach((resource) => { if (resource.type) typeValues.add(resource.type); });
   if (type !== "all") typeValues.add(type);
   const types = [...typeValues].sort((a, b) => a.localeCompare(b, "fr"));
   const errorMessage = error && typeof error === "object" && "message" in error && typeof error.message === "string"
@@ -259,44 +262,43 @@ export function ResourcesPage() {
       <section className={styles.filters} aria-label="Recherche et filtres des ressources">
         <div className={styles.filterField}>
           <label htmlFor="resource-search">Recherche</label>
-          <input id="resource-search" type="search" value={search} maxLength={100} placeholder="Titre de la ressource…" onChange={(event) => setSearch(event.target.value)} />
+          <div className={styles.searchControl}>
+            <Icon name="search" />
+            <input id="resource-search" type="search" value={search} maxLength={100} placeholder="Rechercher une ressource…" onChange={(event) => setSearch(event.target.value)} />
+          </div>
         </div>
         <div className={styles.filterField}>
-          <label htmlFor="resource-roadmap">Roadmap</label>
-          <select id="resource-roadmap" value={roadmapId} onChange={(event) => setRoadmapId(event.target.value)}>
-            <option value="all">Toutes les roadmaps</option>
-            {roadmapsQuery.data?.items.map((roadmap) => <option key={roadmap.id} value={roadmap.id}>{roadmap.title}</option>)}
-          </select>
+          <FilterSelect label="Trier par" value={sort} onChange={(value) => setSort(value as ResourceSort)} options={[
+            { value: "recent", label: "Plus récentes" },
+            { value: "oldest", label: "Plus anciennes" },
+          ]} />
         </div>
         <div className={styles.filterField}>
-          <label htmlFor="resource-type">Type</label>
-          <select id="resource-type" value={type} onChange={(event) => setType(event.target.value)}>
-            <option value="all">Tous les types</option>
-            {types.map((value) => <option key={value} value={value}>{value}</option>)}
-          </select>
+          <FilterSelect label="Roadmap" value={roadmapId} onChange={setRoadmapId} options={[
+            { value: "all", label: "Toutes les roadmaps" },
+            ...(roadmapsQuery.data?.items.map((roadmap) => ({ value: String(roadmap.id), label: roadmap.title })) ?? []),
+          ]} />
         </div>
         <div className={styles.filterField}>
-          <label htmlFor="resource-step-status">Statut de l'étape</label>
-          <select id="resource-step-status" value={stepStatus} onChange={(event) => setStepStatus(event.target.value as "all" | StepProgressStatus)}>
-            <option value="all">Tous les statuts</option>
-            <option value="todo">À faire</option>
-            <option value="in_progress">En cours</option>
-            <option value="done">Terminée</option>
-          </select>
+          <FilterSelect label="Type" value={type} onChange={setType} options={[
+            { value: "all", label: "Tous les types" },
+            ...types.map((value) => ({ value, label: value })),
+          ]} />
         </div>
         <div className={styles.filterField}>
-          <label htmlFor="resource-category">Catégorie</label>
-          <select id="resource-category" value={category} onChange={(event) => setCategory(event.target.value as "all" | RoadmapCategory)}>
-            <option value="all">Toutes les catégories</option>
-            {categoryCatalog.data?.items.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
-          </select>
+          <FilterSelect label="Statut de l'étape" value={stepStatus} onChange={(value) => setStepStatus(value as "all" | StepProgressStatus)} options={[
+            { value: "all", label: "Tous les statuts" },
+            { value: "todo", label: "À faire" },
+            { value: "in_progress", label: "En cours" },
+            { value: "done", label: "Terminée" },
+          ]} />
+        </div>
+        <div className={styles.filterField}>
+          <FilterSelect label="Catégorie" value={category} onChange={(value) => setCategory(value as "all" | RoadmapCategory)} options={[
+            { value: "all", label: "Toutes les catégories" },
+            ...(categoryCatalog.data?.items.map(({ value, label }) => ({ value, label })) ?? []),
+          ]} />
           {categoryCatalog.isError ? <span className={styles.filterHint} role="alert">Catégories indisponibles</span> : null}
-        </div>
-        <div className={styles.filterField}>
-          <label htmlFor="resource-sort">Trier par</label>
-          <select id="resource-sort" value={sort} onChange={(event) => setSort(event.target.value as ResourceSort)}>
-            <option value="recent">Plus récentes</option><option value="oldest">Plus anciennes</option>
-          </select>
         </div>
         <div className={styles.filterFooter}>
           <label className={styles.favoriteFilter}>

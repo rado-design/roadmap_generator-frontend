@@ -10,4 +10,6 @@ export { Footer } from "./Footer";
 export { Sidebar } from "./Sidebar";
 export { AppTopBar } from "./AppTopBar";
 export { LogoutConfirmDialog } from "./LogoutConfirmDialog/LogoutConfirmDialog";
+export { FilterSelect } from "./FilterSelect/FilterSelect";
+export type { FilterSelectOption } from "./FilterSelect/FilterSelect";
 

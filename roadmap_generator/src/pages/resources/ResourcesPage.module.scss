@@ -40,23 +40,22 @@
 .filterFooter { display: flex; grid-column: 1 / -1; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-top: 4px; }
 .favoriteFilter { display: inline-flex; min-height: 44px; align-items: center; gap: 8px; color: var(--color-on-surface); font-size: 14px; font-weight: 500; cursor: pointer; }
 .favoriteFilter input { width: 16px; height: 16px; accent-color: var(--color-primary); }
-.favoriteFilter:focus-within { outline: 2px solid var(--color-primary); outline-offset: 3px; border-radius: var(--radius-default); }
+.favoriteFilter:focus-within { outline: 2px solid var(--color-primary); outline-offset: 3px; border-radius: var(--radius-full); }
 .favoriteFilter :global(.material-symbols-outlined) { color: var(--color-primary); font-size: var(--icon-size-sm); }
 .filterHint { color: var(--color-on-surface-variant); font-size: 12px; line-height: 16px; }
 .favoriteError { margin: -8px 0 16px; color: var(--color-error); font-size: 14px; line-height: 20px; }
 
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; }
+.grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
 .card,
-.skeleton { min-width: 0; padding: 24px; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-2xl); background: var(--color-surface-container-lowest); }
+.skeleton { min-width: 0; padding: 24px; border: 0; border-radius: var(--radius-2xl); background: var(--color-surface-container-lowest); }
 .card {
   display: flex;
   min-height: 290px;
   flex-direction: column;
   gap: 12px;
-  transition: border-color 0.15s ease;
-
-  &:hover { border-color: var(--color-primary); }
+  box-shadow: 0 1px 4px rgb(0 101 145 / 8%);
 }
+:global(:root[data-theme="dark"]) .card { box-shadow: 0 2px 8px rgb(128 204 239 / 8%); }
 .cardTop { display: flex; align-items: center; gap: 12px; }
 .typeIcon { display: grid; width: 40px; height: 40px; flex: none; place-items: center; border-radius: var(--radius-lg); background: var(--color-primary-fixed); color: var(--color-on-primary-container); }
 .typeIcon :global(.material-symbols-outlined) { font-size: var(--icon-size-sm); }
@@ -69,24 +68,24 @@
 .stepStatus_done { background: var(--color-secondary-container); color: var(--color-on-secondary-container); }
 .favoriteButton {
   display: grid;
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   flex: none;
   place-items: center;
   margin-left: auto;
   padding: 0;
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-full);
-  background: var(--color-surface-container-lowest);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   color: var(--color-on-surface-variant);
   cursor: pointer;
-  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+  transition: color 0.15s ease, transform 0.15s ease;
 }
-.favoriteButton:hover:not(:disabled) { border-color: var(--color-primary); color: var(--color-primary); }
-.favoriteButton[aria-pressed="true"] { border-color: var(--color-primary); background: var(--color-primary-fixed); color: var(--color-primary); }
+.favoriteButton:hover:not(:disabled) { color: var(--color-primary); transform: scale(1.08); }
+.favoriteButton[aria-pressed="true"] { color: var(--color-primary); }
 .favoriteButton:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
 .favoriteButton:disabled { cursor: wait; opacity: 0.65; }
-.favoriteButton :global(.material-symbols-outlined) { font-size: var(--icon-size-sm); }
+.favoriteButton :global(.material-symbols-outlined) { font-size: 22px; }
 
 .cardTitle { min-height: 48px; overflow-wrap: anywhere; font-size: 16px; font-weight: 600; line-height: 24px; }
 .previewTrigger { padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
@@ -113,7 +112,7 @@
 .emptyState > :global(.material-symbols-outlined) { color: var(--color-primary); font-size: var(--icon-size-md); }
 .listFooter { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin-top: 24px; color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; }
 .loadMoreArea { display: flex; min-height: 56px; flex-direction: column; align-items: center; justify-content: center; gap: 12px; margin-top: 20px; color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; }
-.loadMoreArea :global(button) { width: auto; min-height: 40px; padding: 8px 16px; box-shadow: none; }
+.loadMoreArea :global(button) { width: auto; min-height: 36px; padding: 7px 12px; box-shadow: none; }
 
 .resourceDialog { width: min(920px, calc(100% - 32px)); max-width: none; max-height: calc(100dvh - 32px); margin: auto; padding: 0; overflow: hidden; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-2xl); background: var(--color-surface-container-lowest); color: var(--color-on-surface); }
 .resourceDialog::backdrop { background: rgb(25 28 30 / 56%); }
@@ -165,3 +164,68 @@
   .resourceVideo { max-height: 46dvh; }
 }
 @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
+
+/* Cartes claires, avec la hiérarchie compacte de la référence fournie. */
+.card {
+  min-height: 270px;
+  gap: 11px;
+  padding: 18px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+
+  &:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgb(0 101 145 / 16%); }
+}
+:global(:root[data-theme="dark"]) .card:hover { box-shadow: 0 4px 14px rgb(128 204 239 / 18%); }
+.cardTop { gap: 9px; }
+.typeIcon { width: 36px; height: 36px; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-lg); background: var(--color-primary-fixed); color: var(--color-on-primary-container); }
+.typeIcon :global(.material-symbols-outlined) { font-size: var(--icon-size-sm); }
+.typePill,
+.stepStatusBadge { min-height: 23px; padding: 0 9px; font-size: 11px; }
+.cardTitle { display: flex; min-height: 48px; align-items: flex-start; }
+.previewTrigger { display: flex; width: 100%; min-width: 0; align-items: flex-start; justify-content: space-between; gap: 8px; color: inherit; }
+.previewTrigger > span { min-width: 0; }
+.previewTrigger:hover { color: var(--color-primary); text-decoration: none; }
+.previewTrigger :global(.material-symbols-outlined) { flex: none; margin-top: 2px; color: var(--color-on-surface-variant); font-size: 16px; }
+.date { color: var(--color-on-surface-variant); font-size: 12px; line-height: 18px; }
+.context { gap: 5px; margin-top: auto; padding-top: 12px; }
+.contextLabel { color: var(--color-on-surface-variant); font-size: 11px; }
+.stepLabel { margin-top: 0; color: var(--color-on-surface-variant); font-size: 11px; }
+.stepRow { align-items: center; }
+.stepStatusBadge { min-height: 22px; padding-inline: 8px; }
+
+@media (max-width: 1200px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 900px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 680px) {
+  .grid { grid-template-columns: 1fr; gap: 16px; }
+  .card { min-height: 250px; padding: 16px; }
+  .cardTop { gap: 7px; }
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 12px;
+  margin-bottom: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.filterField { position: relative; flex: 0 1 190px; gap: 0; }
+.filterField label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+.filterField:first-child { flex: 1 1 360px; }
+.searchControl { position: relative; display: flex; min-width: 0; align-items: center; }
+.searchControl > :global(.material-symbols-outlined) { position: absolute; left: 14px; color: var(--color-on-surface-variant); font-size: var(--icon-size-sm); pointer-events: none; }
+.searchControl input { min-width: 0; padding-left: 42px; border-radius: var(--radius-full); }
+.filterField select { min-height: 44px; border-radius: var(--radius-full); }
+.filterField:nth-child(2) { flex: 0 1 190px; }
+.filterFooter { flex: 0 0 auto; padding: 0; }
+.favoriteFilter { min-height: 44px; padding: 0 12px; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-full); background: var(--color-surface-container-lowest); }
+.filterHint { position: absolute; top: 100%; left: 0; }
+
+@media (max-width: 760px) {
+  .filters { align-items: stretch; }
+  .filterField:first-child { flex-basis: 100%; }
+  .filterField { flex: 1 1 160px; }
+  .filterFooter { flex: 1 1 160px; }
+}

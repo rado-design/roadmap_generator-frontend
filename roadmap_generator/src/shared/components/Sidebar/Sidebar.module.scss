@@ -111,6 +111,9 @@
   color: var(--color-on-primary-container);
 }
 
+.logoutLink { color: var(--color-error); }
+.logoutLink:hover:not(:disabled) { background: var(--color-error-container); color: var(--color-on-error-container); }
+
 .navIcon {
   flex: none;
   font-size: var(--icon-size-sm);

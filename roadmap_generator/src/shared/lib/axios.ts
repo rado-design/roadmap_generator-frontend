@@ -30,6 +30,32 @@ interface AccessTokenResponse {
 
 let refreshPromise: Promise<string | null> | null = null;
 
+interface ApiErrorPayload {
+  detail?: string;
+  type?: string;
+  generation_id?: string;
+  limit?: number;
+  used?: number;
+  resets_at?: string | null;
+  retry_after_seconds?: number;
+}
+
+function parseApiErrorPayload(data: unknown): ApiErrorPayload {
+  let parsed = data;
+  // Les endpoints SSE sont demandés avec responseType="text"; leurs erreurs
+  // HTTP préalables (402/429/409) arrivent donc sous forme de chaîne JSON.
+  if (typeof parsed === "string") {
+    try {
+      parsed = JSON.parse(parsed) as unknown;
+    } catch {
+      return {};
+    }
+  }
+  return typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)
+    ? parsed as ApiErrorPayload
+    : {};
+}
+
 /**
  * Échange le cookie HttpOnly refresh_token contre un nouvel access token.
  *
@@ -45,8 +71,14 @@ let refreshPromise: Promise<string | null> | null = null;
 export function refreshAccessToken(): Promise<string | null> {
   if (!refreshPromise) {
     refreshPromise = apiClient
-      .post<AccessTokenResponse>("api/v1/auth/refresh")
+      // Le bootstrap masque volontairement l'application pendant cette
+      // requête. Sans délai maximal, une API inaccessible peut donc laisser
+      // l'écran « Restauration de votre session… » affiché indéfiniment.
+      .post<AccessTokenResponse>("api/v1/auth/refresh", undefined, { timeout: 15_000 })
       .then(({ data }) => {
+        if (!data.access_token) {
+          throw new Error("Le serveur n'a pas renvoyé de jeton d'accès.");
+        }
         useAuthStore.getState().setAccessToken(data.access_token);
         return data.access_token;
       })
@@ -73,7 +105,7 @@ export function refreshAccessToken(): Promise<string | null> {
  */
 apiClient.interceptors.response.use(
   (response) => response,
-  async (error: AxiosError<{ detail?: string; type?: string; generation_id?: string }>) => {
+  async (error: AxiosError<unknown>) => {
     const originalRequest = error.config as
       | (InternalAxiosRequestConfig & { _retry?: boolean })
       | undefined;
@@ -93,15 +125,22 @@ apiClient.interceptors.response.use(
       }
     }
 
+    const payload = parseApiErrorPayload(error.response?.data);
     const apiError: ApiError = {
       message:
-        error.response?.data?.detail ??
+        payload.detail ??
         error.message ??
         "Une erreur inattendue est survenue.",
       status: error.response?.status,
-      code: error.response?.data?.type,
-      generation_id: typeof error.response?.data?.generation_id === "string"
-        ? error.response.data.generation_id
+      code: payload.type,
+      generation_id: typeof payload.generation_id === "string"
+        ? payload.generation_id
+        : undefined,
+      limit: typeof payload.limit === "number" ? payload.limit : undefined,
+      used: typeof payload.used === "number" ? payload.used : undefined,
+      resets_at: payload.resets_at,
+      retry_after_seconds: typeof payload.retry_after_seconds === "number"
+        ? payload.retry_after_seconds
         : undefined,
       retryable: !error.response || error.response.status >= 500 || error.response.status === 429,
     };

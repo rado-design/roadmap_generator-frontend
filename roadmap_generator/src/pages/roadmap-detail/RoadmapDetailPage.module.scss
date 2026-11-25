@@ -14,41 +14,50 @@
   :global(.material-symbols-outlined) { font-size: var(--icon-size-sm); }
 }
 
-.layoutContent { display: flex; height: 100%; min-height: 0; flex-direction: column; overflow: hidden; }
-.detailPage { display: flex; height: calc(100% + 32px); min-height: 0; flex-direction: column; overflow: hidden; margin: -32px -40px 0; padding: 32px 48px 28px; background: #f7f5f1; }
-.pageHeading { margin-bottom: 24px; }
+.layoutContent { display: flex; width: calc(100% + 80px); min-height: calc(100dvh - 128px); flex-direction: column; overflow: visible; margin: -32px -40px -16px; padding: 0; background: #f7f5f1; }
+.detailPage { --font-page-title-size: 22px; display: flex; width: 100%; min-height: 100%; flex: 1; flex-direction: column; overflow: visible; margin: 0; padding: 16px 48px 12px; background: #f7f5f1; }
+.detailPage :global(button) { font-size: 13px; border-radius: 16px; }
+.pageHeading { margin-bottom: 16px; }
 .pageHeading .backButton { margin-bottom: 18px; }
 .pageHeading .breadcrumb { margin-bottom: 8px; }
 .pageHeading .summaryHeading { align-items: center; margin-top: 0; }
-.pageHeading .summaryCopy h1 { color: #19242c; font-size: 36px; font-weight: 700; line-height: 44px; letter-spacing: -0.02em; }
+.pageHeading .summaryCopy h1 { color: #19242c; font-family: var(--font-heading); font-size: var(--font-page-title-size); font-weight: var(--font-page-title-weight); line-height: var(--font-page-title-line-height); letter-spacing: var(--font-page-title-letter-spacing); }
 .pageHeading .roadmapStatus { background: #dff3eb; color: #176b50; }
 
-.roadmapLayout { display: grid; min-height: 0; flex: 1; grid-template-columns: minmax(270px, 320px) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); align-items: stretch; gap: 32px; }
+.roadmapLayout { display: grid; min-height: 0; flex: none; grid-template-columns: minmax(270px, 320px) minmax(0, 1fr); grid-template-rows: auto; align-items: start; gap: 32px; }
 .journeyCard,
-.timelinePanel { border: 1px solid #e7dfd3; border-radius: 22px; background: var(--color-surface-container-lowest); box-shadow: 0 3px 8px rgb(25 28 30 / 7%); }
-.journeyCard { display: grid; align-self: start; gap: 12px; padding: 24px; }
+.timelinePanel { border: 0; border-radius: 22px; background: var(--color-surface-container-lowest); box-shadow: 0 2px 9px rgb(0 101 145 / 8%); transition: box-shadow 180ms ease; }
+.journeyCard:hover,
+.timelinePanel:hover { box-shadow: 0 4px 14px rgb(0 101 145 / 15%); }
+.journeyCard { position: sticky; top: 16px; display: grid; align-self: start; gap: 12px; padding: 24px; }
+.archiveIconButton { position: absolute; top: 18px; right: 18px; display: inline-flex !important; width: 34px !important; min-width: 34px; min-height: 34px !important; padding: 6px !important; border: 0 !important; border-radius: var(--radius-full) !important; background: transparent !important; color: var(--color-on-surface-variant) !important; }
+.archiveIconButton:hover:not(:disabled) { background: #fff0ef !important; color: #c62828 !important; }
+.archiveIconButton:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.archiveIconButton :global(.material-symbols-outlined) { font-size: 20px; }
 .journeyLabel { width: fit-content; padding: 4px 12px; border-radius: var(--radius-full); background: #e3f1f7; color: var(--color-primary); font-size: 12px; line-height: 16px; }
-.journeyCard h2 { margin-top: 2px; color: #19242c; font-size: 24px; font-weight: 700; line-height: 30px; }
-.journeyGoal { color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; }
+.journeyCard h2 { margin-top: 2px; color: #19242c; font-size: 22px; font-weight: 700; line-height: 28px; }
+.journeyGoal { color: var(--color-on-surface-variant); font-size: 13px; line-height: 19px; }
 .journeyProgressCopy { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; color: var(--color-on-surface-variant); font-size: 12px; line-height: 16px; }
 .journeyProgressCopy strong { color: var(--color-on-surface); font-weight: 600; }
 .journeyCard .progressTrack { height: 8px; margin: -6px 0 12px; background: #ece7dd; }
 .journeyCard .progressTrack span { background: var(--color-primary); }
 .journeyStats { display: grid; gap: 14px; margin: 0; padding: 18px 0; border-top: 1px solid #e7dfd3; }
-.journeyStats > div { display: grid; grid-template-columns: 20px auto 1fr; align-items: center; gap: 10px; color: var(--color-on-surface); font-size: 14px; line-height: 20px; }
+.journeyStats > div { display: grid; grid-template-columns: 20px auto 1fr; align-items: center; gap: 10px; color: var(--color-on-surface); font-size: 13px; line-height: 19px; }
 .journeyStats :global(.material-symbols-outlined) { color: var(--color-primary); font-size: var(--icon-size-sm); }
 .journeyStats dt { color: var(--color-on-surface-variant); }
 .journeyStats dd { margin: 0; justify-self: end; text-align: right; }
 .journeyStats > div:last-child { grid-template-columns: 20px 1fr; }
 .journeyStats > div:last-child dd { grid-column: 2; justify-self: start; }
-.journeyActions { display: grid; gap: 10px; }
-.journeyActions :global(button) { width: 100%; min-height: 42px; padding: 9px 12px; box-shadow: none; }
+.journeyActions { display: grid; gap: 10px; padding-top: 4px; }
+.journeyActions :global(button) { width: 100%; min-height: 38px; padding: 7px 10px; box-shadow: none; }
 .journeyActions .adaptButton { background: #09658a; color: #fff; }
 .journeyActions .adaptationUndoError { margin: 0; }
+.revisionsError { display: grid; gap: 8px; color: var(--color-error); font-size: 13px; line-height: 18px; }
+.revisionsError :global(button) { width: 100%; }
 
-.timelinePanel { display: flex; min-width: 0; min-height: 0; flex-direction: column; overflow: hidden; padding: 0; }
-.timelineList { display: grid; min-height: 0; flex: 1; gap: 0; overflow-y: auto; overscroll-behavior-y: contain; margin: 0; padding: 30px 32px 28px; list-style: none; scrollbar-color: var(--color-outline-variant) transparent; scrollbar-width: thin; }
-.timelineListItem { position: relative; min-width: 0; padding: 0 0 44px 64px; }
+.timelinePanel { display: flex; min-width: 0; min-height: 0; flex-direction: column; overflow: visible; padding: 0; }
+.timelineList { display: grid; gap: 0; margin: 0; padding: 24px 32px 24px; list-style: none; }
+.timelineListItem { position: relative; min-width: 0; padding: 0 0 48px 64px; }
 .timelineListItem::before { position: absolute; top: 40px; bottom: 0; left: 19px; border-left: 2px solid #d6e0e5; content: ""; }
 .completedTimelineItem::before { border-color: var(--color-secondary); }
 .currentTimelineItem::before { border-color: var(--color-primary); }
@@ -65,17 +74,17 @@
 .stepHeading { align-items: flex-start; }
 .stepHeadingCopy { min-width: 0; }
 .stepEyebrow { margin-bottom: 3px; color: var(--color-primary); font-size: 12px; font-weight: 600; line-height: 16px; letter-spacing: 0.04em; text-transform: uppercase; }
-.timelineStep .stepTitle { color: #19242c; font-size: 20px; font-weight: 600; line-height: 28px; }
+.timelineStep .stepTitle { color: #19242c; font-size: 19px; font-weight: 600; line-height: 26px; }
 .timelineStep .stepStatus { min-width: 108px; min-height: 36px; padding: 0 28px 0 12px; border: 1px solid #ded5c8; border-radius: 12px; background-color: var(--color-surface-container-lowest); color: var(--color-on-surface); font-size: 12px; }
 .timelineStep .activeStatus { background-color: #eaf5fa; color: var(--color-primary); }
 .timelineStep .doneStatus { background-color: #e4f4ec; color: #176b50; }
 .timelineStep .adaptedStepHistory { margin-top: 10px; border: 0; background: #e3f1f7; color: var(--color-primary); }
-.timelineStep .stepDescription { margin-top: 12px; font-size: 14px; line-height: 21px; }
+.timelineStep .stepDescription { margin-top: 12px; font-size: 13px; line-height: 20px; }
 .timelineStep .objectives { margin-top: 12px; }
 .timelineStep .objectives li { border: 1px solid #e8e1d6; background: #f7f5f1; }
 .stepResources { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 22px; }
-.stepResourceCard { display: flex; min-width: 0; flex-direction: column; overflow: hidden; padding: 0; border: 1px solid #e7dfd3; border-radius: 18px; background: var(--color-surface-container-lowest); color: var(--color-on-surface); text-align: left; box-shadow: 0 2px 5px rgb(25 28 30 / 6%); }
-.stepResourceCard:hover { border-color: var(--color-primary); }
+.stepResourceCard { display: flex; min-width: 0; flex-direction: column; overflow: hidden; padding: 0; border: 0; border-radius: 18px; background: var(--color-surface-container-lowest); color: var(--color-on-surface); text-align: left; box-shadow: 0 2px 5px rgb(0 101 145 / 8%); transition: transform 180ms ease, box-shadow 180ms ease; }
+.stepResourceCard:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgb(0 101 145 / 17%); }
 .stepResourceCard:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
 .stepResourceCover { position: relative; display: grid; width: 100%; aspect-ratio: 2.2 / 1; min-height: 120px; overflow: hidden; place-items: center; background: #f8d7aa; color: #a96b1b; }
 .stepResourceCover :global(.material-symbols-outlined) { font-size: 34px; }
@@ -89,20 +98,20 @@
 .resourceCardImage { object-position: center 30%; }
 .stepResourceContent { display: grid; min-width: 0; gap: 10px; padding: 14px; }
 .resourceTypePill { width: fit-content; margin-top: -34px; padding: 3px 10px; border-radius: var(--radius-full); background: #fff; color: var(--color-primary); font-size: 11px; line-height: 16px; }
-.stepResourceContent > strong { display: -webkit-box; min-height: 40px; overflow: hidden; font-size: 14px; font-weight: 600; line-height: 20px; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.stepResourceContent > strong { display: -webkit-box; min-height: 38px; overflow: hidden; font-size: 13px; font-weight: 600; line-height: 19px; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .stepResourceMeta { display: flex; align-items: center; justify-content: space-between; color: var(--color-on-surface-variant); font-size: 12px; line-height: 16px; }
 .stepResourceMeta :global(.material-symbols-outlined) { font-size: var(--icon-size-sm); }
 .resourceProgressTrack { display: block; height: 7px; overflow: hidden; border-radius: var(--radius-full); background: #ece7dd; }
 .resourceProgressTrack > span { display: block; width: 0; height: 100%; background: var(--color-primary); }
 .resourcePrompt { color: var(--color-on-surface-variant); font-size: 12px; line-height: 16px; }
-.stepResourceOpen { display: inline-flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 2px; padding: 8px 0 0; border: 0; border-top: 1px solid var(--color-outline-variant); background: transparent; color: var(--color-primary); font: inherit; font-size: 12px; font-weight: 600; line-height: 16px; cursor: pointer; }
+.stepResourceOpen { display: inline-flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 2px; padding: 8px 0 0; border: 0; border-top: 1px solid var(--color-outline-variant); border-radius: 0 !important; background: transparent; color: var(--color-primary); font: inherit; font-size: 12px !important; font-weight: 600; line-height: 16px; cursor: pointer; }
 .stepResourceDirectLink { display: inline-flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--color-primary); font-size: 12px; font-weight: 600; line-height: 16px; text-decoration: underline; text-underline-offset: 2px; }
 .stepResourceDirectLink:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
 .stepResourceDirectLink :global(.material-symbols-outlined) { font-size: var(--icon-size-sm); }
 .stepResourceOpen:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
 .stepResourceOpen :global(.material-symbols-outlined) { font-size: var(--icon-size-sm); }
 .timelineStep .stepActions { margin-top: 16px; gap: 10px; }
-.timelineStep .stepResourcesButton { min-height: 38px; padding: 7px 12px; border: 1px solid #ded5c8; border-radius: 12px; }
+.timelineStep .stepResourcesButton { min-height: 36px; padding: 6px 10px; border: 1px solid #ded5c8; border-radius: 16px; }
 .timelineStep .noStepResources { margin-top: 16px; }
 
 .summary,
@@ -124,8 +133,8 @@
   align-items: center;
   gap: 4px;
   color: var(--color-on-surface-variant);
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 12px;
+  line-height: 18px;
 
   a { color: inherit; text-decoration: none; }
   a:hover { color: var(--color-primary); text-decoration: underline; }
@@ -142,7 +151,7 @@
 }
 
 .summaryCopy { max-width: 720px; min-width: 0; }
-.summaryCopy h1 { font-size: 32px; font-weight: 600; line-height: 40px; letter-spacing: -0.01em; }
+.summaryCopy h1 { font-family: var(--font-heading); font-size: var(--font-page-title-size); font-weight: var(--font-page-title-weight); line-height: var(--font-page-title-line-height); letter-spacing: var(--font-page-title-letter-spacing); }
 .summaryCopy p { margin-top: 4px; color: var(--color-on-surface-variant); }
 
 .summaryProgress {
@@ -193,7 +202,7 @@
 }
 
 .roadmapActions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 18px; }
-.roadmapActions :global(button) { width: auto; min-height: 40px; padding: 8px 16px; box-shadow: none; }
+.roadmapActions :global(button) { width: auto; min-height: 36px; padding: 6px 12px; border-radius: 16px; box-shadow: none; }
 .adaptationUndoError { flex-basis: 100%; color: var(--color-error); font-size: 14px; line-height: 20px; }
 
 .columns {
@@ -362,9 +371,11 @@
   background: var(--color-surface-container-low);
   color: inherit;
   text-decoration: none;
+  box-shadow: 0 1px 4px rgb(0 101 145 / 7%);
+  transition: background-color 160ms ease, box-shadow 160ms ease;
 
   &:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
-  &:hover { background: var(--color-surface-container); }
+  &:hover { background: var(--color-surface-container); box-shadow: 0 4px 12px rgb(0 101 145 / 16%); }
 }
 
 .resourceIcon { display: grid; width: 24px; height: 24px; place-items: center; color: var(--color-on-surface-variant); }
@@ -411,7 +422,7 @@
 .adjustmentForm textarea:disabled { background: var(--color-surface-container-low); cursor: wait; }
 .adjustmentHelper { color: var(--color-on-surface-variant); font-size: 12px; line-height: 16px; }
 .adjustmentActions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; padding-top: 8px; }
-.adjustmentActions :global(button) { width: auto; min-height: 40px; padding: 8px 16px; box-shadow: none; }
+.adjustmentActions :global(button) { width: auto; min-height: 36px; padding: 6px 12px; border-radius: 16px; box-shadow: none; }
 .adjustmentError { margin: 0 24px 16px; padding: 12px 16px; border: 1px solid var(--color-error); border-radius: var(--radius-lg); background: var(--color-error-container); color: var(--color-on-error-container); font-size: 14px; line-height: 20px; }
 .adjustmentComparison { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; overflow: auto; padding: 24px; }
 .adjustmentInstruction { margin: 16px 24px 0; color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; }
@@ -455,21 +466,21 @@
 .adaptedStepHistory:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
 .adaptedStepHistory :global(.material-symbols-outlined) { font-size: var(--icon-size-sm); }
 .previousVersionContent { min-height: 0; overflow: auto; }
-.previousVersionNote { margin: 24px 24px 0; color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; }
+.previousVersionNote { margin: 24px 24px 0; color: var(--color-on-surface-variant); font-size: 13px; line-height: 19px; }
 .previousVersionList { display: grid; gap: 12px; padding: 24px 24px 0; }
 .previousVersionList .adjustmentVersion { min-height: 0; }
 .previousVersionFooter { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; padding: 8px 24px 24px; }
-.previousVersionFooter :global(button) { width: auto; min-height: 40px; padding: 8px 16px; }
+.previousVersionFooter :global(button) { width: auto; min-height: 36px; padding: 6px 12px; border-radius: 16px; }
 .undoAdaptationDialog { width: min(500px, calc(100% - 32px)); max-width: none; margin: auto; padding: 0; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-2xl); background: var(--color-surface-container-lowest); color: var(--color-on-surface); box-shadow: var(--shadow-sm); }
 .undoAdaptationDialog::backdrop { background: rgb(25 28 30 / 48%); }
 .undoAdaptationContent { display: grid; justify-items: center; padding: 28px 24px 24px; text-align: center; }
 .undoAdaptationIcon { display: grid; width: 48px; height: 48px; place-items: center; margin-bottom: 16px; border-radius: var(--radius-full); background: var(--color-primary-fixed); color: var(--color-on-primary-container); }
 .undoAdaptationIcon :global(.material-symbols-outlined) { font-size: var(--icon-size-md); }
-.undoAdaptationContent h2 { font-size: 18px; font-weight: 600; line-height: 26px; }
-.undoAdaptationContent > p { max-width: 42ch; margin-top: 8px; color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; }
+.undoAdaptationContent h2 { font-size: 17px; font-weight: 600; line-height: 24px; }
+.undoAdaptationContent > p { max-width: 42ch; margin-top: 8px; color: var(--color-on-surface-variant); font-size: 13px; line-height: 19px; }
 .undoAdaptationContent .undoAdaptationError { width: 100%; margin-top: 16px; padding: 12px; border: 1px solid var(--color-error); border-radius: var(--radius-lg); background: var(--color-error-container); color: var(--color-on-error-container); }
 .undoAdaptationActions { display: flex; justify-content: center; gap: 12px; margin-top: 24px; }
-.undoAdaptationActions :global(button) { width: auto; min-height: 44px; padding: 10px 16px; }
+.undoAdaptationActions :global(button) { width: auto; min-height: 38px; padding: 7px 12px; border-radius: 16px; }
 
 .resourceDialogContent {
   display: grid;
@@ -495,13 +506,13 @@
 .resourceDialogHeader { border-bottom: 1px solid var(--color-outline-variant); }
 .resourceDialogHeading { min-width: 0; }
 .resourceDialogHeading > p { overflow: hidden; color: var(--color-on-surface-variant); font-size: 12px; line-height: 18px; text-overflow: ellipsis; white-space: nowrap; }
-.resourceDialogHeading h2 { margin-top: 3px; font-size: 18px; font-weight: 600; line-height: 26px; overflow-wrap: anywhere; }
+.resourceDialogHeading h2 { margin-top: 3px; font-size: 17px; font-weight: 600; line-height: 24px; overflow-wrap: anywhere; }
 .resourceDialogHeading > span { display: inline-block; margin-top: 4px; color: var(--color-on-surface-variant); font-size: 12px; line-height: 16px; }
 
 .closeResourceDialog {
   display: grid;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   flex: none;
   place-items: center;
   padding: 0;
@@ -514,6 +525,7 @@
   &:hover { background: var(--color-surface-container-low); }
   &:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
 }
+.detailPage .closeResourceDialog { border-radius: var(--radius-full); }
 
 .resourcePreview { min-width: 0; min-height: 0; overflow: auto; padding: 20px 24px; }
 .resourcePreviewStage { position: relative; min-height: 280px; }
@@ -537,7 +549,7 @@
 .resourceDialogFooter { border-top: 1px solid var(--color-outline-variant); }
 .resourceNavigation { display: flex; min-width: 0; align-items: center; gap: 12px; }
 .resourceNavigation > span { min-width: 44px; flex: none; color: var(--color-on-surface-variant); font-size: 12px; text-align: center; }
-.resourceNavigation :global(button) { width: auto; min-width: 0; min-height: 40px; flex: 1 1 0; padding: 8px 12px; box-shadow: none; }
+.resourceNavigation :global(button) { width: auto; min-width: 0; min-height: 36px; flex: 1 1 0; padding: 6px 10px; border-radius: 16px; box-shadow: none; }
 .openResourceLink { display: inline-flex; align-items: center; gap: 6px; color: var(--color-primary); font-size: 14px; font-weight: 500; line-height: 20px; text-decoration: none; }
 .openResourceLink:hover { text-decoration: underline; text-underline-offset: 3px; }
 .openResourceLink:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
@@ -556,7 +568,7 @@
 .noSteps :global(.material-symbols-outlined) { flex: none; color: var(--color-primary); }
 
 .statePanel { display: flex; min-height: 260px; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; }
-.statePanel h1 { color: var(--color-on-surface); font-size: 24px; font-weight: 600; line-height: 32px; }
+.statePanel h1 { color: var(--color-on-surface); font-size: var(--font-page-title-size); font-weight: var(--font-page-title-weight); line-height: var(--font-page-title-line-height); letter-spacing: var(--font-page-title-letter-spacing); }
 .statePanel p { max-width: 60ch; }
 .statePanel > :global(.material-symbols-outlined) { color: var(--color-primary); font-size: var(--icon-size-md); }
 .statePanel a { font-weight: 500; }
@@ -575,8 +587,9 @@
 @keyframes previewLoad { to { transform: translateX(150%); } }
 
 @media (max-width: 900px) {
-  .detailPage { height: calc(100% + 24px); margin: -24px -16px 0; padding: 24px 24px 20px; }
-  .roadmapLayout { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: 20px; }
+  .layoutContent { width: calc(100% + 32px); min-height: calc(100dvh - 112px); margin: -24px -16px -16px; }
+  .detailPage { min-height: 100%; margin: 0; padding: 16px 24px 12px; }
+  .roadmapLayout { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; gap: 20px; }
   .journeyCard { position: static; }
   .journeyActions { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
   .columns,
@@ -585,22 +598,22 @@
 }
 
 @media (max-width: 600px) {
-  .detailPage { height: calc(100% + 24px); margin: -24px -16px 0; padding: 24px 16px 16px; }
-  .pageHeading { margin-bottom: 18px; }
+  .detailPage { min-height: 100%; margin: 0; padding: 16px 16px 12px; }
+  .pageHeading { margin-bottom: 14px; }
   .pageHeading .summaryHeading { align-items: flex-start; flex-direction: column; gap: 10px; }
-  .pageHeading .summaryCopy h1 { font-size: 28px; line-height: 36px; }
+  .pageHeading .summaryCopy h1 { font-size: var(--font-page-title-size); line-height: var(--font-page-title-line-height); }
   .journeyCard { padding: 20px; border-radius: 18px; }
   .timelinePanel { padding: 0; border-radius: 18px; }
-  .journeyCard h2 { font-size: 22px; }
+  .journeyCard h2 { font-size: 21px; line-height: 27px; }
   .journeyStats { gap: 12px; }
   .journeyActions { grid-template-columns: 1fr; }
   .timelineListItem { padding: 0 0 36px 46px; }
-  .timelineList { padding: 22px 20px 20px; }
+  .timelineList { padding: 18px 20px 20px; }
   .timelineListItem::before { left: 16px; }
   .timelineMarker { left: -46px; width: 34px; height: 34px; box-shadow: 0 0 0 4px #e2eff4; }
   .completedMarker { box-shadow: 0 0 0 4px #e1f2eb; }
   .timelineStep .stepHeading { flex-direction: column; gap: 10px; }
-  .timelineStep .stepTitle { font-size: 20px; line-height: 27px; }
+  .timelineStep .stepTitle { font-size: 19px; line-height: 26px; }
   .stepResources { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .stepResourceCover { min-height: 100px; }
   .timelineStep .stepActions { align-items: stretch; flex-direction: column; }
@@ -609,7 +622,7 @@
   .stepCard,
   .asideCard { padding: 20px; }
   .summaryHeading { flex-direction: column; gap: 16px; }
-  .summaryCopy h1 { font-size: 24px; line-height: 32px; }
+  .summaryCopy h1 { font-size: var(--font-page-title-size); line-height: var(--font-page-title-line-height); }
   .summaryProgress { flex-direction: row; align-items: center; justify-content: space-between; width: 100%; }
   .summaryMeta { flex-direction: column; gap: 4px; }
   .stepHeading { flex-direction: column; gap: 8px; }
@@ -662,9 +675,106 @@
   .resourceVideo { max-height: 36dvh; }
 }
 
+.stepStatusControl { position: relative; z-index: 3; flex: none; }
+.stepStatusControl > .stepStatus {
+  display: inline-flex;
+  min-width: 108px;
+  height: 36px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 10px 0 12px;
+  border: 1px solid #ded5c8;
+  border-radius: 12px;
+  appearance: none;
+  background: #fff;
+  color: var(--color-on-surface);
+  font: inherit;
+  font-size: 12px;
+  line-height: 16px;
+  text-align: left;
+  cursor: pointer;
+}
+.stepStatusControl > .stepStatus :global(.material-symbols-outlined) { font-size: 18px; }
+.stepStatusControl > .stepStatus.activeStatus { border-color: #b9dce9; background: #eaf5fa; color: var(--color-primary); }
+.stepStatusControl > .stepStatus.doneStatus { border-color: #c8e9d9; background: #e4f4ec; color: #176b50; }
+.stepStatusControl > .stepStatus:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.stepStatusControl > .stepStatus:disabled { cursor: wait; opacity: 0.7; }
+.stepStatusMenu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 8px);
+  right: 0;
+  display: grid;
+  min-width: 160px;
+  gap: 4px;
+  padding: 6px;
+  border: 1px solid #e5e4e9;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 10px 26px rgb(17 24 39 / 14%);
+}
+.stepStatusOption {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #343946;
+  font: inherit;
+  font-size: 13px;
+  line-height: 18px;
+  text-align: left;
+  cursor: pointer;
+}
+.stepStatusOption:hover,
+.stepStatusOption[aria-checked="true"] { background: #f2f5f7; color: #111827; }
+.stepStatusOption :global(.material-symbols-outlined) { color: var(--color-primary); font-size: 17px; }
+
 @media (prefers-reduced-motion: reduce) {
   .skeletonSummary,
   .skeletonSteps span,
   .skeletonAside span,
   .previewLoadingBar::after { animation: none; }
 }
+
+:global(:root[data-theme="dark"]) .layoutContent,
+:global(:root[data-theme="dark"]) .detailPage { background: var(--color-background); }
+:global(:root[data-theme="dark"]) .pageHeading .summaryCopy h1,
+:global(:root[data-theme="dark"]) .journeyCard h2,
+:global(:root[data-theme="dark"]) .timelineStep .stepTitle { color: var(--color-on-surface); }
+:global(:root[data-theme="dark"]) .timelinePanel,
+:global(:root[data-theme="dark"]) .stepResourceCard,
+:global(:root[data-theme="dark"]) .stepStatusControl > .stepStatus,
+:global(:root[data-theme="dark"]) .stepStatusMenu { border-color: var(--color-outline-variant); background-color: var(--color-surface-container-lowest); color: var(--color-on-surface); }
+:global(:root[data-theme="dark"]) .journeyLabel,
+:global(:root[data-theme="dark"]) .adaptedStepHistory { background: var(--color-primary-fixed); color: var(--color-on-primary-container); }
+:global(:root[data-theme="dark"]) .journeyStats { border-color: var(--color-outline-variant); }
+:global(:root[data-theme="dark"]) .journeyCard .progressTrack,
+:global(:root[data-theme="dark"]) .resourceProgressTrack { background: var(--color-surface-container-highest); }
+:global(:root[data-theme="dark"]) .timelineListItem::before { border-color: var(--color-outline-variant); }
+:global(:root[data-theme="dark"]) .completedTimelineItem::before { border-color: var(--color-secondary); }
+:global(:root[data-theme="dark"]) .currentTimelineItem::before { border-color: var(--color-primary); }
+:global(:root[data-theme="dark"]) .timelineMarker { background: var(--color-surface-container-lowest); box-shadow: 0 0 0 6px var(--color-surface-container-low); }
+:global(:root[data-theme="dark"]) .completedMarker { background: var(--color-secondary); color: var(--color-on-secondary); box-shadow: 0 0 0 6px var(--color-secondary-container); }
+:global(:root[data-theme="dark"]) .activeMarker { background: var(--color-primary-fixed); }
+:global(:root[data-theme="dark"]) .upcomingMarker { border-color: var(--color-outline); }
+:global(:root[data-theme="dark"]) .timelineStep .objectives li { border-color: var(--color-outline-variant); background: var(--color-surface-container-low); color: var(--color-on-surface-variant); }
+:global(:root[data-theme="dark"]) .resourceTypePill { background: var(--color-surface-container-lowest); color: var(--color-on-surface); }
+:global(:root[data-theme="dark"]) .stepStatusControl > .stepStatus.activeStatus { border-color: var(--color-primary); background: var(--color-primary-fixed); color: var(--color-on-primary-container); }
+:global(:root[data-theme="dark"]) .stepStatusControl > .stepStatus.doneStatus { border-color: var(--color-secondary); background: var(--color-secondary-container); color: var(--color-on-secondary-container); }
+:global(:root[data-theme="dark"]) .stepStatusOption { color: var(--color-on-surface); }
+:global(:root[data-theme="dark"]) .stepStatusOption:hover,
+:global(:root[data-theme="dark"]) .stepStatusOption[aria-checked="true"] { background: var(--color-surface-container); color: var(--color-on-surface); }
+:global(:root[data-theme="dark"]) .journeyCard,
+:global(:root[data-theme="dark"]) .timelinePanel,
+:global(:root[data-theme="dark"]) .stepResourceCard { box-shadow: 0 2px 9px rgb(128 204 239 / 8%); }
+:global(:root[data-theme="dark"]) .journeyCard:hover,
+:global(:root[data-theme="dark"]) .timelinePanel:hover,
+:global(:root[data-theme="dark"]) .stepResourceCard:hover { box-shadow: 0 5px 15px rgb(128 204 239 / 18%); }
+:global(:root[data-theme="dark"]) .resourceItem { box-shadow: 0 1px 4px rgb(128 204 239 / 7%); }
+:global(:root[data-theme="dark"]) .resourceItem:hover { box-shadow: 0 4px 12px rgb(128 204 239 / 17%); }

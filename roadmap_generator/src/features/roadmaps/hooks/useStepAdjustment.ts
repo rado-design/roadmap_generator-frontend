@@ -47,6 +47,7 @@ export function useDecideStepAdjustment(roadmapId: number) {
     onSettled: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: detailKey }),
+        queryClient.invalidateQueries({ queryKey: ["roadmaps", "step-adjustment-history", roadmapId] }),
         queryClient.invalidateQueries({ queryKey: ["roadmaps"] }),
         queryClient.invalidateQueries({ queryKey: ["resources"] }),
       ]);

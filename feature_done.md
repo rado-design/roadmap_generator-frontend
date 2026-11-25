@@ -390,3 +390,275 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 
 - Les cartes rechargent l’aperçu intégré du lien d’article lorsqu’il est disponible et proposent désormais un lien direct vers la ressource, en plus de l’aperçu modal. Si le chargement échoue, le repli reste visible.
 - Vérification : TypeScript (`tsc --noEmit -p tsconfig.app.json --ignoreDeprecations 6.0`) et `git diff --check`.
+
+### 2026-11-24 — Refonte du dashboard selon la maquette
+
+- Le dashboard présente une bannière d'accueil, un indicateur visuel du taux de roadmaps terminées, les compteurs réels par état, la répartition par catégorie, et l'état global des parcours.
+- La section des roadmaps récentes affiche jusqu'à cinq éléments renvoyés par le backend, leur catégorie, leur progression d'étapes, leur date de création et un accès au détail. La recherche de la barre supérieure filtre ces résultats.
+- Le lien de création mène au parcours existant `/roadmaps/generate`. Le header partagé et le side bar n'ont pas été modifiés.
+- Vérification : contrôle TypeScript et `git diff --check`.
+
+### 2026-11-24 — Ajustements visuels du dashboard après aperçu
+
+- Les anneaux de la progression globale démarrent au côté gauche et n'affichent plus de segment résiduel à 0 %.
+- Les compteurs « Vos roadmaps » utilisent des anneaux de répartition autour de chaque valeur, comme sur la maquette de référence.
+- Les panneaux conservent une hauteur utile et un état vide illustré lorsqu'aucune donnée n'est disponible; la bannière d'accueil utilise un fond neutre.
+- Vérification : TypeScript, détection Impeccable et `git diff --check`.
+
+### 2026-11-24 — Rétablissement des icônes des compteurs dashboard
+
+- Les icônes d'état sont rétablies à gauche des libellés « Vos roadmaps »; les anneaux des valeurs restent alignés à droite.
+- Vérification : TypeScript et `git diff --check`.
+
+### 2026-11-24 — Sortie garantie de la restauration de session
+
+- L'appel de restauration `/auth/refresh` a maintenant un délai maximal de 15 secondes; l'application ne reste plus bloquée indéfiniment si l'API ne répond pas.
+- Le client rejette aussi une réponse sans `access_token`, ce qui évite de marquer à tort la session comme authentifiée.
+- En cas d'échec, l'état passe à déconnecté et les gardes de routes dirigent vers la connexion.
+- Vérification : TypeScript et `git diff --check`.
+
+### 2026-11-24 — Nouvelle création depuis le dashboard après une génération terminée
+
+- Les actions de création du dashboard réinitialisent désormais l'état d'une génération terminée avant d'ouvrir le formulaire, comme les actions de la liste Roadmaps.
+- La génération active n'est pas interrompue par `startNew`; son état est conservé et les liens transmettent le dashboard comme origine de navigation.
+- Vérification : TypeScript et `git diff --check`.
+
+### 2026-11-24 — Quota de génération dans la génération et les paramètres
+
+- Le frontend consomme `GET /users/me/usage` et affiche le plan, le quota utilisé/restant, la période et le renouvellement dans Paramètres.
+- Une génération refusée en `402 quota_exceeded` affiche le quota atteint, la consommation et la date de renouvellement, avec un lien vers Paramètres. Une `429 generation_rate_limited` affiche sa limite horaire et le délai de reprise sans relancer automatiquement la requête.
+- Les erreurs de limite gardent leur type et leurs métadonnées dans l'état de génération, y compris après actualisation. Le compteur d'usage est invalidé après une génération réussie ou un refus de quota.
+- Vérification : contrôle TypeScript, détection Impeccable et `git diff --check`.
+
+### 2026-11-24 — Vérification complète de l'intégration du quota
+
+- Le build de production fonctionne après retrait de `baseUrl` déprécié de TypeScript 6; l'alias `@/*` reste défini par `paths`.
+- `npm run build` et `git diff --check` passent. Le build signale seulement l'avertissement existant de bundle JavaScript supérieur à 500 kB.
+### 2026-11-24 — Cartes des roadmaps et ressources inspirées de la référence
+
+- Les cartes de roadmaps et de ressources adoptent une surface sombre compacte, avec icônes, badges, titres hiérarchisés et métadonnées lisibles.
+- Les liens d'ouverture, l'aperçu des ressources, les favoris, les états de progression et les actions d'archivage restent accessibles.
+- Vérification : build frontend, détection Impeccable et `git diff --check`.
+### 2026-11-24 — Correction du style et de la grille des cartes
+
+- Les cartes Roadmaps et Ressources restent dans le thème clair; seuls leur structure, leur hiérarchie visuelle et leurs métadonnées s'inspirent de la référence.
+- Les deux listes affichent quatre cartes par ligne sur grand écran, puis trois, deux et une selon la largeur disponible.
+- Vérification : `git diff --check`.
+### 2026-11-24 — Barre de filtres horizontale et archivage depuis le détail
+
+- Les pages Roadmaps et Ressources présentent une barre de recherche avec icône, le tri et les filtres sur une rangée horizontale qui se replie sur mobile, comme sur la maquette.
+- Les actions Archiver/Désarchiver ont été déplacées des cartes vers le panneau de progression du détail d’une roadmap; les deux listes se rafraîchissent après modification.
+- Vérification : build frontend et `git diff --check`.
+### 2026-11-25 — Badge de statut sur les cartes Ressources
+
+- Le statut de l’étape apparaît maintenant dans l’en-tête de la carte, avec le type de ressource et le bouton favori; il n’est plus placé dans le bloc de contexte.
+- Vérification : build frontend et `git diff --check`.
+### 2026-11-25 — Icône favori sans contour circulaire
+
+- Le bouton favori des cartes Ressources affiche maintenant uniquement l’étoile, sans bordure ni fond circulaire; l’état sélectionné reste visible par sa couleur.
+- Vérification : `git diff --check`.
+### 2026-11-25 — Menus déroulants personnalisés pour les filtres
+
+- Les filtres Roadmaps et Ressources utilisent maintenant un composant partagé avec bouton arrondi, panneau blanc espacé et options arrondies, au lieu du menu natif du navigateur.
+- Le menu se ferme après sélection, au clic extérieur ou avec Échap; les options prennent aussi en charge les flèches, Début et Fin au clavier.
+- Vérification : build frontend et `git diff --check`.
+### 2026-11-25 — Persistance des types et focus arrondi des favoris
+
+- Le menu Type garde les types proposés (article, vidéo, cours, documentation, livre, podcast, exercice et projet) même lorsque le résultat courant est filtré sur un seul type.
+- Le contour de focus « Mes favoris » conserve maintenant le rayon arrondi du contrôle.
+- Vérification : build frontend et `git diff --check`.
+### 2026-11-25 — Typographie des titres de page harmonisée
+
+- Les titres principaux des pages partagent maintenant la même police Inter, taille 24 px, graisse 700 et interligne 32 px que la référence; leurs descriptions passent à 14 px / 20 px.
+- Le titre du détail de roadmap, celui de génération et l’écran de vérification OTP suivent les mêmes tokens; les fils d’Ariane du détail sont réduits à 12 px / 18 px. Le grand titre promotionnel de l’accueil et le nom de marque restent distincts.
+- Les tokens typographiques correspondants sont consignés dans `DESIGN.md`.
+- Vérification : build frontend et `git diff --check`.
+### 2026-11-25 — Historique des adaptations accessible sur les roadmaps archivées
+
+- Le bouton d’historique n’est plus caché par les actions désactivées des roadmaps archivées.
+- En cas d’échec de `/adapt/revisions`, le détail explique que l’historique est indisponible et propose de recharger les données.
+- Vérification : build frontend et `git diff --check`.
+### 2026-11-25 — Actions d’historique restaurées dans le panneau Roadmap
+
+- Les boutons Historique et Annuler la dernière adaptation restent visibles dans le panneau de progression; ils indiquent leur chargement et sont désactivés seulement si aucune ancienne version ou adaptation n’est disponible.
+- Les étapes disposant d’une version liée conservent leur action locale « Modifiée · Voir l’historique » et la restauration ciblée.
+- Vérification : build frontend et `git diff --check`.
+### 2026-11-25 — Restauration directe par étape adaptée
+
+- Chaque étape avec une ancienne version associée affiche maintenant « Restaurer l’ancienne version » dans ses actions, en plus du bouton d’historique.
+- L’action ouvre la confirmation existante, respecte les règles backend (étape non commencée, dernière adaptation) et montre son état de chargement sur l’étape concernée.
+- Préférence de travail rappelée : préserver l’historique global et par étape, et maintenir un accès à l’annulation globale et à la restauration ciblée.
+- Vérification : build frontend et `git diff --check`.
+### 2026-11-25 — Historique conservé pour les étapes remplacées au contenu identique
+
+- Une étape associée par `step_links` à son ancienne version reste marquée comme adaptée même si les champs visibles sont identiques; le bouton de restauration sous ses ressources n’est plus masqué par une comparaison de contenu seule.
+- La restauration reste limitée aux liens explicites renvoyés par le backend et aux règles d’éligibilité de la dernière adaptation.
+- Vérification : build frontend et `git diff --check`.
+### 2026-11-25 — Badge d’historique replacé sous chaque étape
+
+- Le badge « Modifiée · Voir l’historique » reste sous le titre de l’étape comme dans l’ancienne maquette; l’ancienne version et la restauration ciblée restent dans sa fenêtre d’historique.
+- La lecture des liens de révision accepte les identifiants numériques sérialisés en texte et les anciens enregistrements dont `step_links` est omis ou nul.
+- Le bouton global d’historique et l’annulation globale restent dans le panneau de progression.
+- Vérification : build frontend et `git diff --check`.
+
+### 2026-11-25 — Ajustements du détail de roadmap
+
+- L’action « Annuler la dernière adaptation » est accessible depuis la fenêtre Historique de la carte « Votre progression ».
+- L’archivage et le désarchivage utilisent une icône discrète en haut à droite de cette carte, avec un survol rouge.
+- La zone de contenu du détail remplit désormais la hauteur et la largeur disponibles avec le fond cassé; le panneau des étapes récupère la hauteur libérée.
+- Vérification : `npm run build`.
+
+### 2026-11-25 — Hauteur visible augmentée pour la première étape
+
+- Réduction des espacements verticaux autour du titre et dans la timeline afin d’agrandir la zone visible sans changer le défilement interne des étapes.
+- L’objectif est de garder visibles les aperçus de ressources et les actions de régénération sur les écrans courants.
+- Vérification : `npm run build` et `git diff --check`.
+
+### 2026-11-25 — Aération sous la timeline
+
+- Augmentation de l’espace inférieur dans la liste défilante des étapes pour dégager les cartes de ressources de la limite du panneau, sur desktop et mobile.
+- Vérification : `git diff --check`.
+
+### 2026-11-25 — Ajustement de l’en-tête et de l’espacement des étapes
+
+- Le contenu du détail commence un peu plus haut, ce qui libère quelques pixels supplémentaires pour la timeline.
+- Un léger espacement supplémentaire sépare les cartes d’étape.
+- Vérification : `git diff --check`.
+
+### 2026-11-25 — Espace entre le panneau et le footer
+
+- Ajout d'une marge intérieure basse de 24 px sur desktop et 20 px sur mobile pour séparer visuellement la carte timeline du footer, tout en conservant le fond cassé.
+- Vérification : `git diff --check`.
+
+### 2026-11-25 — Timeline déroulée sur la hauteur complète de la page
+
+- L’espace sous le détail est ramené à 12 px.
+- La liste des étapes ne se limite plus à une fenêtre interne : le contenu de chaque étape, ses aperçus et ses actions de régénération restent déroulés dans la page principale.
+- La page peut donc grandir avec la roadmap; le footer demeure en bas de l’application.
+- Vérification : `npm run build` et `git diff --check`.
+
+### 2026-11-25 — Carte de progression persistante au défilement
+
+- La carte « Votre progression » reste visible en haut pendant le défilement de la timeline sur écran large; elle reprend le flux normal sur mobile.
+- Vérification : `git diff --check`.
+
+### 2026-11-25 — Boutons du détail plus compacts et arrondis
+
+- Réduction de la hauteur et du padding des boutons de progression, d’historique, de régénération et de navigation des aperçus.
+- Les boutons d’action ont des coins plus arrondis; les commandes uniquement iconiques gardent leur forme circulaire.
+- Vérification : `npm run build` et `git diff --check`.
+
+### 2026-11-25 — Typographie légèrement réduite dans le détail
+
+- Les titres de roadmap et d’étape, titres de la carte progression, titres de modals et textes de description sont réduits d’environ 1 à 2 px, sans changer la famille de police ni la hiérarchie.
+- Vérification : `npm run build` et `git diff --check`.
+
+### 2026-11-25 — Paramètres organisés par rubriques
+
+- La page Paramètres reprend une navigation latérale distincte pour Général, Profil d’apprenant, Sécurité, Quota de génération et Compte.
+- Chaque rubrique affiche son propre contenu dans une carte dédiée, avec une adaptation mobile de la navigation.
+- Les actions existantes de profil, e-mail, préférences, mot de passe, quota et déconnexion sont conservées.
+- Vérification : `npm run build` et `git diff --check`.
+
+### 2026-11-25 — Ajustements visuels des paramètres et boutons
+
+- Le contrôle de photo de profil est placé sous l’avatar et les panneaux des paramètres partagent maintenant le rendu sans cadre de la rubrique Général.
+- Sur mobile, le menu des paramètres utilise une liste compacte en deux colonnes au lieu de boutons en pastilles.
+- Les boutons partagés et plusieurs actions spécifiques (déconnexion, génération, listes) ont une hauteur et un padding réduits.
+- Vérification : `npm run build` et `git diff --check`.
+
+### 2026-11-25 — Paramètres étendus sur la largeur disponible
+
+- Suppression de la largeur maximale de la page Paramètres afin que le panneau de contenu utilise toute la largeur disponible jusqu’au bord droit.
+- Vérification : `git diff --check`.
+
+### 2026-11-25 — Fond des paramètres étendu jusqu’aux bords
+
+- Ajustement de la largeur du conteneur blanc pour compenser les marges négatives du layout et couvrir toute la zone principale, y compris à droite.
+- Adaptation du calcul aux marges plus petites sur mobile.
+- Vérification : `git diff --check`.
+
+### 2026-11-25 — Fond des paramètres prolongé sous le contenu
+
+- Le fond blanc est appliqué à toute la zone de défilement principale, même quand une rubrique contient peu de contenu.
+- Ajout d’une classe optionnelle sur la zone principale d’AppLayout pour permettre ce fond spécifique à la page Paramètres.
+- Vérification : `npm run build` et `git diff --check`.
+
+### 2026-11-25 — Boutons Actives et Archivées compacts
+
+- Réduction de la hauteur et du padding des boutons de bascule des roadmaps afin de les aligner sur la taille des boutons Paramètres.
+- Ajustement du padding du conteneur pour garder une hauteur totale cohérente avec son contour.
+- Vérification : `git diff --check`.
+
+### 2026-11-25 — Déconnexion signalée comme action destructive
+
+- Le bouton de déconnexion des Paramètres et celui de la barre latérale utilisent maintenant une apparence rouge, avec un survol plus contrasté.
+- Vérification : `git diff --check`.
+
+### 2026-11-25 — Confirmation de déconnexion et menu de statut
+
+- Le bouton de confirmation de déconnexion et son icône utilisent maintenant le style rouge d’action destructive.
+- Le statut d’une étape utilise un menu personnalisé avec un espacement visible de 8 px sous le sélecteur; fermeture au clic extérieur ou avec Échap.
+- Vérification : `npm run build` et `git diff --check`.
+
+### 2026-11-25 — Mode sombre activable
+
+- Activation du bouton de thème dans la barre supérieure avec bascule entre mode clair et mode sombre.
+- La préférence est mémorisée localement et rétablie après rechargement.
+- Ajout d’une palette sombre pour l’application, avec ajustements spécifiques des paramètres, de la génération et du détail d’une roadmap.
+- Vérification : `npm run build` et `git diff --check`.
+
+### 2026-11-25 — Curseur du bouton de thème
+
+- Le bouton de thème affiche désormais le curseur pointeur et un état de survol; les commandes encore désactivées gardent le curseur d’indisponibilité.
+- Vérification : `git diff --check`.
+
+### 2026-11-25 — Bordures retirées des cartes Roadmaps et Ressources
+
+- Suppression des bordures extérieures des cartes de roadmap, cartes de création et cartes de ressource, en conservant leurs coins arrondis et leur fond.
+- Vérification : `git diff --check`.
+
+### 2026-11-25 — Ombre légère sur les cartes
+
+- Ajout d’une ombre discrète aux cartes Roadmaps, à la carte de création et aux cartes Ressources, avec une intensité adaptée au mode sombre.
+- Vérification : `git diff --check`.
+
+### 2026-11-25 — Ombres colorées et survol des cartes
+
+- Ajout d’ombres bleutées discrètes aux panneaux du tableau de bord et aux cartes du détail de roadmap.
+- Les cartes Roadmaps, Ressources et ressources d’étape renforcent leur ombre au survol; les ressources se soulèvent légèrement.
+- Le style d’ombre suit aussi le mode sombre.
+- Vérification : `npm run build` et `git diff --check`.
+
+### 2026-11-25 — Survol des cartes du dashboard et ressources de roadmap
+
+- Les panneaux du dashboard renforcent leur ombre bleutée au survol.
+- Les ressources clés de la colonne latérale du détail de roadmap ont maintenant le même retour visuel que les ressources liées aux étapes.
+- Vérification : `git diff --check`.
+
+### 2026-11-25 — Bordures du dashboard et du détail retirées
+
+- Suppression des bordures extérieures des panneaux du dashboard et des cartes principales et ressources du détail d’une roadmap.
+- Retrait de l’accentuation au survol des panneaux du dashboard; les ombres de base sont conservées.
+- Vérification : `git diff --check`.
+
+### 2026-11-25 — Soulignement retiré des flèches des roadmaps récentes
+
+- Suppression du soulignement par défaut sous les flèches d’ouverture des lignes du dashboard et ajout d’un focus clavier explicite.
+- Vérification : `git diff --check`.
+
+### 2026-11-25 — Icônes de catégorie des roadmaps
+
+- Les icônes de catégorie des cartes Roadmaps utilisent maintenant la couleur primaire de l’application, adaptée automatiquement au thème clair ou sombre.
+- Vérification : `git diff --check`.
+
+### 2026-11-25 — Couleur propre à chaque icône de catégorie
+
+- Retrait du fond bleu commun des icônes de catégorie des cartes Roadmaps et attribution d’une couleur dédiée à chaque catégorie.
+- Déclinaisons ajustées pour le mode sombre.
+- Vérification : `git diff --check`.
+
+### 2026-11-25 — Contour des icônes de catégorie restauré
+
+- Restauration d’un contour discret autour des icônes colorées, sans réintroduire le fond bleu.
+- Vérification : `git diff --check`.

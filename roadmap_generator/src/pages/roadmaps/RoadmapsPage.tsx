@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { AppLayout, PageHeader } from "../../app/layouts";
-import { useRoadmaps, useSetRoadmapArchived, type RoadmapCategoryGroup, type RoadmapSort, type RoadmapStatus, type RoadmapSummary } from "../../features/roadmaps";
+import { useRoadmaps, type RoadmapCategoryGroup, type RoadmapSort, type RoadmapStatus, type RoadmapSummary } from "../../features/roadmaps";
 import { useRoadmapGenerationStore } from "../../features/roadmaps/hooks/useRoadmapGenerationStore";
 import { Button } from "../../shared/components/Button";
+import { FilterSelect } from "../../shared/components/FilterSelect/FilterSelect";
 import { Icon } from "../../shared/components/Icon";
 import styles from "./RoadmapsPage.module.scss";
 
@@ -18,6 +19,17 @@ const categoryLabels: Record<RoadmapCategoryGroup, string> = {
   life: "Vie pratique",
   hobbies: "Loisirs",
   other: "Autre",
+};
+const categoryIcons: Record<RoadmapCategoryGroup, string> = {
+  tech: "code",
+  languages: "translate",
+  sciences: "science",
+  business: "business_center",
+  creative: "palette",
+  trades: "handyman",
+  life: "home",
+  hobbies: "sports_esports",
+  other: "school",
 };
 
 const statusLabels: Record<RoadmapStatus, string> = {
@@ -55,12 +67,10 @@ function formatCreationDate(value: string) {
   }).format(date)}`;
 }
 
-function RoadmapCard({ roadmap, from, archived, pending, onArchive }: {
+function RoadmapCard({ roadmap, from, archived }: {
   roadmap: RoadmapSummary;
   from: { pathname: string; search: string; hash: string };
   archived: boolean;
-  pending: boolean;
-  onArchive: (roadmap: RoadmapSummary) => void;
 }) {
   const progress = getProgress(roadmap);
   const statusClass = roadmap.status === "failed"
@@ -71,10 +81,20 @@ function RoadmapCard({ roadmap, from, archived, pending, onArchive }: {
 
   return (
     <article className={`${styles.card} ${archived ? styles.archivedCard : ""}`}>
-      <span className={`${styles.status} ${statusClass}`}>{statusLabels[roadmap.status]}</span>
-      {archived ? <span className={styles.archivedBadge}>Archivée</span> : null}
-      <h2 className={styles.cardTitle}><Link to={`/roadmaps/${roadmap.id}`} state={{ from }}>{roadmap.title}</Link></h2>
+      <div className={styles.cardTop}>
+        <span className={styles.categoryIcon} data-category={roadmap.category} aria-hidden="true"><Icon name={categoryIcons[roadmap.category]} /></span>
+        <span className={styles.categoryName}>{categoryLabels[roadmap.category]}</span>
+        <div className={styles.cardBadges}>
+          <span className={`${styles.status} ${statusClass}`}>{statusLabels[roadmap.status]}</span>
+          {archived ? <span className={styles.archivedBadge}>Archivée</span> : null}
+        </div>
+      </div>
+      <h2 className={styles.cardTitle}><Link to={`/roadmaps/${roadmap.id}`} state={{ from }}><span>{roadmap.title}</span><Icon name="open_in_new" /></Link></h2>
       <p className={styles.goal}>{roadmap.goal}</p>
+      <div className={styles.cardFacts}>
+        <span><Icon name="checklist" />{roadmap.completed_steps}/{roadmap.total_steps} étapes</span>
+        <span><Icon name="calendar_today" />{formatCreationDate(roadmap.created_at).replace("Créée le ", "")}</span>
+      </div>
       <div className={styles.progressMeta}>
         <span>Progression</span>
         <strong>{progress}%</strong>
@@ -88,16 +108,6 @@ function RoadmapCard({ roadmap, from, archived, pending, onArchive }: {
         aria-valuenow={progress}
       >
         <span style={{ width: `${progress}%` }} />
-      </div>
-      <div className={styles.cardMeta}>
-        <span className={styles.dateIcon} aria-hidden="true"><Icon name="calendar_today" /></span>
-        <span>{formatCreationDate(roadmap.created_at)}</span>
-      </div>
-      <div className={styles.cardActions}>
-        <button type="button" onClick={() => onArchive(roadmap)} disabled={pending} aria-busy={pending}>
-          <Icon name={archived ? "unarchive" : "archive"} />
-          {archived ? "Désarchiver" : "Archiver"}
-        </button>
       </div>
     </article>
   );
@@ -116,14 +126,18 @@ function GenerationCard({ title, goal, stepsReceived, from }: {
       state={{ from }}
       aria-label={`Suivre la génération de ${title}`}
     >
-      <span className={`${styles.status} ${styles.generating}`}>{statusLabels.generating}</span>
-      <h2 className={styles.cardTitle}>{title}</h2>
-      <p className={styles.goal}>{goal}</p>
-      <div className={styles.progressMeta}>
-        <span>Étapes reçues</span>
-        <strong>{stepsReceived}</strong>
+      <div className={styles.cardTop}>
+        <span className={styles.categoryIcon} aria-hidden="true"><Icon name="auto_awesome" /></span>
+        <span className={styles.categoryName}>Roadmap en préparation</span>
+        <span className={`${styles.status} ${styles.generating}`}>{statusLabels.generating}</span>
       </div>
-      <div className={styles.cardMeta}>Sélectionnez pour suivre la génération</div>
+      <h2 className={styles.cardTitle}>{title}<Icon name="open_in_new" /></h2>
+      <p className={styles.goal}>{goal}</p>
+      <div className={styles.cardFacts}>
+        <span><Icon name="checklist" />{stepsReceived} étape{stepsReceived === 1 ? "" : "s"} reçue{stepsReceived === 1 ? "" : "s"}</span>
+        <span><Icon name="autorenew" />Suivi en direct</span>
+      </div>
+      <span className={styles.generationProgressHint}>Sélectionnez pour suivre la génération</span>
     </Link>
   );
 }
@@ -142,7 +156,6 @@ export function RoadmapsPage() {
   const [categoryFilter, setCategoryFilter] = useState<"all" | RoadmapCategoryGroup>("all");
   const [sortOrder, setSortOrder] = useState<RoadmapSort>("recent");
   const showArchived = new URLSearchParams(location.search).get("archived") === "true";
-  const archiveMutation = useSetRoadmapArchived();
   const [appliedSearch, setAppliedSearch] = useState("");
   useEffect(() => {
     const timeout = window.setTimeout(() => setAppliedSearch(searchQuery.slice(0, 100)), 250);
@@ -238,46 +251,31 @@ export function RoadmapsPage() {
       <section className={styles.filters} aria-label="Recherche et filtres des roadmaps">
         <div className={styles.filterField}>
           <label htmlFor="roadmap-search">Recherche</label>
-          <input
-            id="roadmap-search"
-            type="search"
-            placeholder="Titre du projet…"
-            value={searchQuery}
-            maxLength={100}
-            onChange={(event) => setSearchQuery(event.target.value)}
-          />
+          <div className={styles.searchControl}>
+            <Icon name="search" />
+            <input id="roadmap-search" type="search" placeholder="Rechercher une roadmap…" value={searchQuery} maxLength={100} onChange={(event) => setSearchQuery(event.target.value)} />
+          </div>
         </div>
         <div className={styles.filterField}>
-          <label htmlFor="roadmap-category">Catégorie</label>
-          <select
-            id="roadmap-category"
-            value={categoryFilter}
-            onChange={(event) => setCategoryFilter(event.target.value as "all" | RoadmapCategoryGroup)}
-          >
-            <option value="all">Toutes les catégories</option>
-            {Object.entries(categoryLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}
-          </select>
+          <FilterSelect label="Trier par" value={sortOrder} onChange={(value) => setSortOrder(value as RoadmapSort)} options={[
+            { value: "recent", label: "Plus récent" },
+            { value: "oldest", label: "Plus ancien" },
+            { value: "progress", label: "Progression" },
+          ]} />
         </div>
         <div className={styles.filterField}>
-          <label htmlFor="roadmap-status">Statut</label>
-          <select
-            id="roadmap-status"
-            value={statusFilter}
-            onChange={(event) => setStatusFilter(event.target.value as "all" | RoadmapStatus)}
-          >
-            <option value="all">Tous les statuts</option>
-            <option value="generating">Génération en cours</option>
-            <option value="ready">Prête</option>
-            <option value="failed">Échec de génération</option>
-          </select>
+          <FilterSelect label="Catégorie" value={categoryFilter} onChange={(value) => setCategoryFilter(value as "all" | RoadmapCategoryGroup)} options={[
+            { value: "all", label: "Toutes les catégories" },
+            ...Object.entries(categoryLabels).map(([value, label]) => ({ value, label })),
+          ]} />
         </div>
         <div className={styles.filterField}>
-          <label htmlFor="roadmap-sort">Trier par</label>
-          <select id="roadmap-sort" value={sortOrder} onChange={(event) => setSortOrder(event.target.value as RoadmapSort)}>
-            <option value="recent">Plus récent</option>
-            <option value="oldest">Plus ancien</option>
-            <option value="progress">Progression</option>
-          </select>
+          <FilterSelect label="Statut" value={statusFilter} onChange={(value) => setStatusFilter(value as "all" | RoadmapStatus)} options={[
+            { value: "all", label: "Tous les statuts" },
+            { value: "generating", label: "Génération en cours" },
+            { value: "ready", label: "Prête" },
+            { value: "failed", label: "Échec de génération" },
+          ]} />
         </div>
         <p className={styles.filterNote}>
           La génération en cours reste affichée en tête si elle correspond aux filtres sélectionnés.
@@ -312,7 +310,6 @@ export function RoadmapsPage() {
         </section>
       ) : (
         <>
-          {archiveMutation.isError ? <p className={styles.archiveError} role="alert">Impossible de modifier l’archivage de cette roadmap. Réessayez.</p> : null}
           <div className={styles.grid}>
             {generationMatchesFilters ? (
               <GenerationCard
@@ -328,8 +325,6 @@ export function RoadmapsPage() {
                 roadmap={roadmap}
                 from={{ pathname: location.pathname, search: location.search, hash: location.hash }}
                 archived={showArchived}
-                pending={archiveMutation.isPending && archiveMutation.variables?.roadmapId === roadmap.id}
-                onArchive={(item) => archiveMutation.mutate({ roadmapId: item.id, archived: !showArchived })}
               />
             ))}
             {!showArchived ? <Link

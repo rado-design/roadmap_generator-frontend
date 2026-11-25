@@ -4,6 +4,7 @@
   padding: 32px 40px 64px;
   background: linear-gradient(var(--color-background), #e6f3fc);
 }
+:global(:root[data-theme="dark"]) .surface { background: linear-gradient(var(--color-background), #14242c); }
 
 .page {
   max-width: 1280px;
@@ -36,7 +37,7 @@
   margin: 0 auto 48px;
   text-align: center;
 
-  h1 { font-size: 32px; font-weight: 600; line-height: 40px; letter-spacing: -0.01em; }
+  h1 { font-family: var(--font-heading); font-size: var(--font-page-title-size); font-weight: var(--font-page-title-weight); line-height: var(--font-page-title-line-height); letter-spacing: var(--font-page-title-letter-spacing); }
   p { margin-top: 4px; color: var(--color-on-surface-variant); }
 }
 
@@ -177,7 +178,7 @@
 
 .progressActions { padding-top: 4px; }
 .cancelGenerationAction { display: flex; justify-content: flex-end; }
-.cancelGenerationAction :global(button) { width: auto; min-height: 40px; padding: 8px 16px; }
+.cancelGenerationAction :global(button) { width: auto; min-height: 36px; padding: 7px 12px; }
 .cancelError { color: var(--color-error); font-size: 14px; line-height: 20px; }
 
 .cancelDialog {
@@ -200,7 +201,7 @@
 .cancelDialogContent > p { max-width: 36ch; margin-top: 8px; color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; }
 .cancelDialogContent > .cancelDialogError { width: 100%; margin-top: 16px; padding: 12px; border: 1px solid var(--color-error); border-radius: var(--radius-lg); background: var(--color-error-container); color: var(--color-on-error-container); }
 .cancelDialogActions { display: flex; justify-content: center; gap: 12px; margin-top: 24px; }
-.cancelDialogActions :global(button) { width: auto; min-width: 116px; min-height: 44px; padding: 10px 16px; }
+.cancelDialogActions :global(button) { width: auto; min-width: 116px; min-height: 36px; padding: 7px 12px; }
 
 .field { display: grid; min-width: 0; gap: 8px; }
 .fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
@@ -261,7 +262,7 @@
 .hoursControl > span { color: var(--color-on-surface); }
 
 .formActions { padding-top: 24px; border-top: 1px solid var(--color-outline-variant); }
-.formActions :global(button) { width: auto; min-height: 44px; padding: 8px 16px; }
+.formActions :global(button) { width: auto; min-height: 36px; padding: 7px 12px; }
 .formActions > p { margin-top: 12px; color: var(--color-on-surface-variant); font-size: 12px; line-height: 16px; }
 .wizardActions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 
@@ -278,6 +279,24 @@
   line-height: 20px;
 
   :global(.material-symbols-outlined) { flex: none; font-size: var(--icon-size-sm); }
+}
+
+.limitNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-low);
+  color: var(--color-on-surface);
+
+  > :global(.material-symbols-outlined) { flex: none; color: var(--color-primary); font-size: var(--icon-size-sm); }
+  h3 { font-size: 14px; font-weight: 600; line-height: 20px; }
+  p { margin-top: 4px; color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; }
+  a { display: inline-flex; align-items: center; gap: 5px; margin-top: 10px; color: var(--color-primary); font-size: 14px; font-weight: 600; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  a :global(.material-symbols-outlined) { font-size: var(--icon-size-sm); }
 }
 
 .aside { display: grid; gap: 24px; }
@@ -348,7 +367,7 @@
   .cancelDialogActions { width: 100%; flex-direction: column-reverse; }
   .cancelDialogActions :global(button) { width: 100%; }
   .aside { grid-template-columns: 1fr; }
-  .formActions :global(button) { width: 100%; min-height: 44px; padding: 8px 16px; }
+  .formActions :global(button) { width: 100%; min-height: 36px; padding: 7px 12px; }
   .wizardActions { align-items: stretch; }
   .wizardActions :global(button) { width: auto; flex: 1; }
   .wizardActions > span { display: none; }

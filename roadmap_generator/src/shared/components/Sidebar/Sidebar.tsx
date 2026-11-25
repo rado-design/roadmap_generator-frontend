@@ -73,7 +73,7 @@ export function Sidebar({
           <span>Centre d’aide</span>
         </button>
         <button
-          className={styles.navLink}
+          className={`${styles.navLink} ${styles.logoutLink}`}
           type="button"
           onClick={() => {
             onNavigate();

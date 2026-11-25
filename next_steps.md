@@ -351,3 +351,142 @@ Ajouter chaque nouvelle action de reprise tout en bas, avec sa date. La dernièr
 ### 2026-11-19 — Après le rétablissement des liens de ressources
 
 - Continuer l'implémentation des pages restantes à partir de leurs maquettes; conserver le header et le side bar partagés.
+
+### 2026-11-24 — Après la refonte du dashboard
+
+- Continuer l'ajustement des pages restantes selon leurs maquettes, en réutilisant les données et fonctionnalités déjà disponibles côté backend.
+
+### 2026-11-24 — Après l'ajustement visuel du dashboard
+
+- Continuer les pages restantes à partir de leurs maquettes, en conservant les données backend et les composants partagés déjà en place.
+
+### 2026-11-24 — Après le rétablissement des icônes du dashboard
+
+- Continuer les pages restantes à partir de leurs maquettes en conservant les repères visuels et données déjà intégrés.
+
+### 2026-11-24 — Après la protection du bootstrap de session
+
+- Continuer les pages restantes selon leurs maquettes, en conservant les contrats backend et les composants partagés.
+
+### 2026-11-24 — Après la correction de création depuis le dashboard
+
+- Continuer l'implémentation des pages restantes à partir des maquettes, en gardant cohérents les parcours d'action entre dashboard et liste des roadmaps.
+
+### 2026-11-24 — Après l'intégration des quotas de génération
+
+- Continuer l'implémentation des pages restantes selon leurs maquettes; les prochains écarts d'API seront vérifiés dans les contrats backend avant d'être notés ici.
+
+### 2026-11-24 — Après le build de l'intégration quota
+
+- Poursuivre les pages restantes en suivant les maquettes, en gardant les routes API comme source de vérité.
+### 2026-11-24 — Après l'ajustement des cartes
+
+- Vérifier le rendu des cartes Roadmaps et Ressources sur desktop et mobile, puis ajuster les détails visuels selon le retour.
+### 2026-11-24 — Après la correction des cartes
+
+- Vérifier le rendu des grilles à quatre colonnes sur desktop et leur adaptation sur tablette et mobile.
+### 2026-11-24 — Après la barre de filtres et le déplacement de l'archivage
+
+- Vérifier visuellement la barre de filtres horizontale et les actions d’archivage dans le détail sur desktop et mobile.
+### 2026-11-25 — Après le déplacement des badges Ressources
+
+- Vérifier le rendu des badges de statut sur les cartes Ressources en desktop et mobile.
+### 2026-11-25 — Après l’ajustement de l’icône favori
+
+- Vérifier visuellement l’étoile seule sur les cartes Ressources et contrôler les états focus, favori et chargement.
+### 2026-11-25 — Après les menus de filtres personnalisés
+
+- Vérifier visuellement l’écart entre les boutons et leurs panneaux, ainsi que le rendu des options longues sur desktop et mobile.
+### 2026-11-25 — Après l'ajustement des filtres Ressources
+
+- Vérifier que la liste de types reste disponible après sélection et que l’état de focus de « Mes favoris » reste arrondi.
+### 2026-11-25 — Après l’harmonisation des titres
+
+- Vérifier les titres de page et descriptions sur desktop/mobile, notamment le détail de roadmap et le formulaire de génération.
+### 2026-11-25 — Après la correction de l’historique des adaptations
+
+- Vérifier qu’une roadmap adaptée affiche ses versions précédentes dans le détail, y compris lorsqu’elle est archivée.
+### 2026-11-25 — Après le rétablissement des actions d’historique
+
+- Contrôler dans une roadmap réellement adaptée que les deux boutons deviennent actifs et que chaque étape modifiée ouvre sa version précédente.
+### 2026-11-25 — Après l’ajout de la restauration directe par étape
+
+- Vérifier dans une roadmap adaptée l’action de restauration sur une étape modifiée, la confirmation, puis l’historique restant sur les autres étapes.
+### 2026-11-25 — Après la correction de détection des étapes remplacées
+
+- Vérifier sur une adaptation récente que chaque étape reliée à une ancienne version affiche son action de restauration sous ses ressources.
+### 2026-11-25 — Après le repositionnement du badge d’historique
+
+- Confirmer visuellement que chaque étape adaptée affiche le badge sous son titre, que la fenêtre montre son ancienne version et que la restauration ciblée est disponible si l’étape peut être annulée.
+
+### 2026-11-25 — Après les ajustements du détail de roadmap
+
+- Vérifier dans le navigateur que le fond cassé couvre toute la zone jusqu’au footer, que la carte montre davantage de timeline, et que l’action d’annulation se trouve dans Historique.
+
+### 2026-11-25 — Après l’augmentation de hauteur de la timeline
+
+- Vérifier visuellement à la résolution de référence que les deux actions de régénération apparaissent au bas de la première étape.
+
+### 2026-11-25 — Après l’ajout d’espace sous la timeline
+
+- Vérifier visuellement que les cartes de ressources gardent une marge nette avant le bas du panneau.
+
+### 2026-11-25 — Après l’ajustement vertical du détail
+
+- Confirmer visuellement l’alignement du titre et l’espace sous chaque étape.
+
+### 2026-11-25 — Après l’ajout de marge au-dessus du footer
+
+- Contrôler visuellement que le bas de la carte timeline n’est plus collé au footer.
+
+### 2026-11-25 — Après le passage de la timeline au défilement de page
+
+- Vérifier sur une roadmap longue que les cartes d’étape restent entières jusqu’aux actions, que la page principale défile et que le footer reste accessible après la dernière étape.
+
+### 2026-11-25 — Après la fixation de la carte de progression
+
+- Vérifier le comportement sticky sur écran large et l’empilement normal sur mobile.
+
+### 2026-11-25 — Après la réduction des boutons du détail
+
+- Vérifier visuellement les proportions des actions de la roadmap et des modals sur desktop et mobile.
+
+### 2026-11-25 — Après l’ajustement de typographie du détail
+
+- Vérifier le rendu des titres et sous-titres sur les largeurs desktop et mobile.
+
+### 2026-11-25 — Après la réorganisation des paramètres
+
+- Vérifier visuellement les rubriques Paramètres sur desktop et mobile, notamment le menu en deux colonnes et la carte Quota.
+
+### 2026-11-25 — Après la réduction globale des boutons
+
+- Vérifier les tailles des actions sur le dashboard, les formulaires, les modals et les pages Roadmaps et Ressources.
+
+### 2026-11-25 — Après l’activation du mode sombre
+
+- Vérifier visuellement les vues Dashboard, Roadmaps, Ressources, Paramètres, Génération et Détail en mode sombre, puis contrôler la persistance après rechargement.
+
+### 2026-11-25 — Après le retrait des bordures des cartes
+
+- Vérifier le contraste des cartes Roadmaps et Ressources en mode clair et sombre.
+
+### 2026-11-25 — Après l’ajout de l’ombre légère
+
+- Vérifier que l’ombre reste discrète sur les cartes Roadmaps et Ressources dans les deux thèmes.
+
+### 2026-11-25 — Après les ombres colorées et les survols
+
+- Vérifier visuellement les ombres du tableau de bord, du détail des roadmaps, des ressources d’étape et les retours au survol des cartes.
+
+### 2026-11-25 — Après l’extension du survol au dashboard
+
+- Vérifier le survol des panneaux du dashboard et des ressources clés dans le détail d’une roadmap, en clair comme en sombre.
+
+### 2026-11-25 — Après le retrait des bordures du dashboard et du détail
+
+- Vérifier le rendu des panneaux du dashboard sans effet au survol et des cartes du détail sans bordure, dans les deux thèmes.
+
+### 2026-11-25 — Après la couleur dédiée aux icônes de catégorie
+
+- Vérifier la lisibilité des couleurs de chaque catégorie sur fond clair et sombre.

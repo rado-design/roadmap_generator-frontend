@@ -1,14 +1,15 @@
 .button {
   width: 100%;
   display: inline-flex;
+  min-height: 36px;
   align-items: center;
   justify-content: center;
   gap: var(--space-xs);
-  padding: 12px var(--space-md);
+  padding: 8px 14px;
   border: none;
-  border-radius: var(--radius-lg);
-  font-size: 14px;
-  line-height: 20px;
+  border-radius: var(--radius-xl);
+  font-size: 13px;
+  line-height: 18px;
   font-weight: 500;
   cursor: pointer;
   box-shadow: var(--shadow-sm);

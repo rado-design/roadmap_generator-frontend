@@ -39,7 +39,7 @@ export function LogoutConfirmDialog({ open, isLoading = false, onConfirm, onCanc
         <p id={`${dialogId}-description`}>Voulez-vous vraiment quitter votre session RoadmapAI ?</p>
         <div className={styles.actions}>
           <Button type="button" variant="outline" disabled={isLoading} onClick={onCancel}>Annuler</Button>
-          <Button type="button" isLoading={isLoading} onClick={onConfirm}>Se déconnecter</Button>
+          <Button className={styles.confirmLogout} type="button" isLoading={isLoading} onClick={onConfirm}>Se déconnecter</Button>
         </div>
       </div>
     </dialog>

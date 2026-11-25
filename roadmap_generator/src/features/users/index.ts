@@ -5,6 +5,7 @@ export {
   deleteAvatar,
   getCurrentUser,
   getLearnerProfile,
+  getUsageSummary,
   requestEmailChange,
   uploadAvatar,
   updateCurrentUser,
@@ -21,4 +22,5 @@ export type {
   PasswordChange,
   SessionLength,
   UserProfileUpdate,
+  UsageSummary,
 } from "./api/userSettings";
