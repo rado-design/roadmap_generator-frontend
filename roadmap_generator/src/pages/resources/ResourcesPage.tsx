@@ -140,30 +140,37 @@ function ResourceCard({ resource, pending, onFavorite, onOpenPreview, from }: {
   const isVideo = /video|vidéo/i.test(resource.type);
   const date = new Date(resource.created_at);
   const dateLabel = Number.isNaN(date.getTime()) ? "Date indisponible" : new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short", year: "numeric" }).format(date);
+  const safeUrl = getSafeResourceUrl(resource.url);
   return (
     <article className={styles.card}>
-      <div className={styles.cardTop}>
-        <span className={styles.typeIcon} aria-hidden="true"><ResourceIcon type={resource.type} /></span>
-        <span className={`${styles.typePill} ${isVideo ? styles.videoType : ""}`}>{resource.type}</span>
-        <span className={`${styles.stepStatusBadge} ${styles[`stepStatus_${resource.step.status}`]}`}>
-          {stepStatusLabels[resource.step.status]}
-        </span>
+      <div className={`${styles.resourceCover} ${isVideo ? styles.videoCover : styles.articleCover}`}>
+        <span className={`${styles.coverType} ${isVideo ? styles.videoType : ""}`}><ResourceIcon type={resource.type} />{getResourceTypeLabel(resource.type)}</span>
         <button className={styles.favoriteButton} type="button" aria-label={resource.is_favorite ? `Retirer « ${resource.title} » des favoris` : `Ajouter « ${resource.title} » aux favoris`} aria-pressed={resource.is_favorite} aria-busy={pending} disabled={pending} onClick={() => onFavorite(resource)}>
-          <Icon name={resource.is_favorite ? "star" : "star_border"} />
+          <Icon name={resource.is_favorite ? "star" : "star_border"} filled={resource.is_favorite} />
         </button>
-      </div>
-      <h2 className={styles.cardTitle}>
-        <button type="button" onClick={onOpenPreview} className={styles.previewTrigger}><span>{resource.title}</span><Icon name="open_in_new" /></button>
-      </h2>
-      <span className={styles.date}>{dateLabel}</span>
-      <div className={styles.context}>
-        <span className={styles.contextLabel}>Dans la roadmap</span>
-        <Link to={`/roadmaps/${resource.roadmap.id}`} state={{ from }}>{resource.roadmap.title}</Link>
-        <div className={styles.stepRow}>
-          <span className={styles.stepLabel}>Étape {resource.step.order + 1}</span>
+        <div className={styles.coverArtwork} aria-hidden="true">
+          {isVideo ? <span className={styles.coverPlay}><Icon name="play_arrow" /></span> : <span className={styles.articleLines}><i /><i /><i /></span>}
         </div>
-        <div className={styles.stepRow}>
+      </div>
+      <div className={styles.cardBody}>
+        <div className={styles.resourceMeta}>
+          <span className={`${styles.stepStatusBadge} ${styles[`stepStatus_${resource.step.status}`]}`}>
+            {stepStatusLabels[resource.step.status]}
+          </span>
+          <span className={styles.date}>{dateLabel}</span>
+        </div>
+        <h2 className={styles.cardTitle}>
+          <button type="button" onClick={onOpenPreview} className={styles.previewTrigger}><span>{resource.title}</span></button>
+        </h2>
+        <div className={styles.context}>
+          <span className={styles.contextLabel}>Dans la roadmap</span>
+          <Link to={`/roadmaps/${resource.roadmap.id}`} state={{ from }} title={resource.roadmap.title}>{resource.roadmap.title}</Link>
+          <span className={styles.stepLabel}>Étape {resource.step.order + 1}</span>
           <Link to={`/roadmaps/${resource.roadmap.id}#step-${resource.step.id}`} state={{ from }} title={resource.step.title}>{resource.step.title}</Link>
+        </div>
+        <div className={styles.resourceCardActions}>
+          {safeUrl ? <a className={styles.resourceOpenLink} href={safeUrl.href} target="_blank" rel="noreferrer">Ouvrir<Icon name="open_in_new" /></a> : <button className={styles.resourceOpenLink} type="button" onClick={onOpenPreview}>Ouvrir<Icon name="arrow_forward" /></button>}
+          <button className={styles.previewIconButton} type="button" onClick={onOpenPreview} aria-label={`Voir l’aperçu de « ${resource.title} »`}><Icon name="visibility" /></button>
         </div>
       </div>
     </article>

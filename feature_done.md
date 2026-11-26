@@ -672,3 +672,42 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 ### 2026-11-26 — Hauteur du footer sur mobile
 
 - Réduction du padding vertical et des espacements internes du footer sur mobile.
+
+### 2026-11-26 — Reprise des styles Roadmaps, Ressources et détail
+
+- Alignement de la liste des roadmaps sur la maquette : filtres horizontaux, grille responsive de trois cartes et accès direct pour commencer, continuer ou revoir un parcours.
+- Refonte des cartes Ressources avec couverture illustrative, statut, contexte roadmap/étape et actions ouvrir/aperçu.
+- Présentation du détail en étapes cartographiées, avec progression latérale fixe, objectifs lisibles et ressources repliables.
+- Maintien des données, filtres, favoris, statuts, historiques, régénérations et aperçus existants.
+
+### 2026-11-26 — Réduction globale de l’échelle de l’interface
+
+- Réduction uniforme de 10 % de l’application, incluant les textes, icônes, boutons, champs et espacements.
+- Compensation de la hauteur du conteneur racine pour qu’il continue à remplir la fenêtre.
+
+### 2026-11-26 — Défilement horizontal après la réduction globale
+
+- Suppression de l’élargissement artificiel du conteneur racine qui provoquait un débordement horizontal.
+
+### 2026-11-26 — Largeur du panneau de progression du détail
+
+- Élargissement léger du panneau « Votre progression » pour laisser plus de place à ses informations.
+
+### 2026-11-26 — Refonte du tableau de bord
+
+- Réorganisation selon la nouvelle maquette : message de bienvenue avec action, trois panneaux de synthèse, puis roadmaps récentes et état des parcours.
+- Remplacement de la répartition par catégories par des actions recommandées construites à partir des parcours existants et des destinations déjà disponibles.
+- Conservation des agrégats backend, des liens de navigation, de la recherche des roadmaps récentes et des états de chargement/erreur.
+- Adaptation de la disposition aux écrans tablette et mobile.
+
+### 2026-11-26 — Favoris et progression des objectifs
+
+- Mise à jour optimiste des favoris sur la page Ressources ; l’étoile active est maintenant pleine et colorée, avec retour à l’état précédent en cas d’erreur API.
+- Ajout de cases à cocher, d’un compteur et d’une barre de progression pour les objectifs de chaque étape du détail d’une roadmap.
+- Conservation locale dans le navigateur de la progression individuelle des objectifs en attendant sa persistance backend.
+- Création de STEP_LEARNING_OBJECTIVES_PROGRESS_BACKEND_REQUIREMENTS.md pour documenter la synchronisation à prévoir.
+
+
+### 2026-11-26 — Couleur des objectifs terminés
+
+- Alignement de la ligne d’objectif cochée, de sa case et de la barre de progression sur le vert menthe de la maquette fournie, avec une variante lisible en mode sombre.

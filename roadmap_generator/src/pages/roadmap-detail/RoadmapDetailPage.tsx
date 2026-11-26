@@ -1096,6 +1096,24 @@ function StepCard({
   onAdjustResources: (step: RoadmapStep) => void;
   allowAdjustment: boolean;
 }) {
+  const [resourcesExpanded, setResourcesExpanded] = useState(true);
+  const objectiveStorageKey = `roadmap-objective-progress:${roadmapId}:${step.id}`;
+  const [completedObjectives, setCompletedObjectives] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(objectiveStorageKey);
+      const parsed: unknown = saved ? JSON.parse(saved) : [];
+      return Array.isArray(parsed) && parsed.every((key) => typeof key === "string") ? parsed as string[] : [];
+    } catch {
+      return [];
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem(objectiveStorageKey, JSON.stringify(completedObjectives));
+    } catch {
+      // La progression reste disponible en mémoire si le stockage local est indisponible.
+    }
+  }, [completedObjectives, objectiveStorageKey]);
   const adjustmentHistoryQuery = useStepAdjustmentHistory(roadmapId, step.id);
   const individualHistoryItem = adjustmentHistoryQuery.data?.items.find((item) => item.restored_at === null);
   const individualVersion = individualHistoryItem ? mapIndividualHistoryItem(step, individualHistoryItem) : undefined;
@@ -1130,16 +1148,57 @@ function StepCard({
           </span>
         ) : null}
         {isNewFromAdaptation ? <span className={styles.adaptedStepHistory}>Nouvelle étape · ajoutée lors d’une adaptation</span> : null}
+        <div className={styles.stepActions}>
+          {activePreviousVersion ? (
+            <Button className={styles.stepResourcesButton} variant="outline" icon="history" type="button" onClick={() => onViewPreviousVersion(activePreviousVersion)}>
+              Voir l’historique
+            </Button>
+          ) : null}
+          {allowAdjustment && step.progress.status === "todo" ? (
+            <Button className={styles.stepResourcesButton} variant="outline" icon="auto_awesome" type="button" disabled={isUpdating} onClick={() => onAdjustStep(step)}>
+              Régénérer l’étape
+            </Button>
+          ) : null}
+          {allowAdjustment ? (
+            <Button className={styles.stepResourcesButton} variant="outline" icon="refresh" type="button" disabled={isUpdating} onClick={() => onAdjustResources(step)}>
+              Régénérer les ressources
+            </Button>
+          ) : null}
+          {allowAdjustment && step.progress.status !== "todo" ? <p className={styles.noStepResources}>Remettez l’étape « À faire » pour régénérer son contenu.</p> : null}
+        </div>
         <p className={styles.stepDescription}>{step.description}</p>
         {step.learning_objectives.length > 0 ? (
-          <ul className={styles.objectives} aria-label="Objectifs d'apprentissage">
-            {step.learning_objectives.map((objective, index) => (
-              <li key={`${step.id}-${index}`}>{objective}</li>
-            ))}
-          </ul>
+          <section className={styles.objectivesSection} aria-label="Objectifs de l’étape">
+            <div className={styles.objectivesHeading}>
+              <h4>Objectifs de l’étape</h4>
+              <span>{completedObjectives.filter((key) => step.learning_objectives.some((objective, index) => key === `${index}:${objective}`)).length} / {step.learning_objectives.length} terminés</span>
+            </div>
+            <div className={styles.objectivesProgressTrack} role="progressbar" aria-label={`Progression des objectifs de l’étape ${stepNumber}`} aria-valuemin={0} aria-valuemax={step.learning_objectives.length} aria-valuenow={step.learning_objectives.filter((objective, index) => completedObjectives.includes(`${index}:${objective}`)).length}>
+              <span style={{ width: `${step.learning_objectives.length ? step.learning_objectives.filter((objective, index) => completedObjectives.includes(`${index}:${objective}`)).length / step.learning_objectives.length * 100 : 0}%` }} />
+            </div>
+            <ul className={styles.objectives}>
+              {step.learning_objectives.map((objective, index) => {
+                const objectiveKey = `${index}:${objective}`;
+                const checked = completedObjectives.includes(objectiveKey);
+                return (
+                  <li key={`${step.id}-${index}`} className={checked ? styles.objectiveCompleted : ""}>
+                    <input className={styles.objectiveCheckbox} type="checkbox" checked={checked} onChange={() => setCompletedObjectives((current) => checked ? current.filter((key) => key !== objectiveKey) : [...current, objectiveKey])} aria-label={`Objectif terminé : ${objective}`} />
+                    <span>{objective}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
         ) : null}
         {step.resources.length > 0 ? (
-          <div className={styles.stepResources} aria-label={`Ressources de l'étape ${step.title}`}>
+          <section className={styles.stepResourcesSection} aria-label={`Ressources de l'étape ${step.title}`}>
+            <button className={styles.resourcesToggle} type="button" aria-expanded={resourcesExpanded} onClick={() => setResourcesExpanded((expanded) => !expanded)}>
+              <span><Icon name="assignment_turned_in" />Ressources ({step.resources.length})</span>
+              <Icon name={resourcesExpanded ? "expand_less" : "expand_more"} />
+            </button>
+            {resourcesExpanded ? <>
+            <p className={styles.resourcesIntro}><Icon name="lightbulb" />Commencez par ces ressources pour bien avancer sur cette étape.</p>
+            <div className={styles.stepResources}>
             {step.resources.map((resource, index) => {
               const type = getResourceTypeLabel(resource.type);
               const kind = type === "Vidéo" ? "video" : "article";
@@ -1150,61 +1209,18 @@ function StepCard({
                   <span className={styles.stepResourceContent}>
                     <span className={styles.resourceTypePill}>{type.toLocaleLowerCase("fr")}</span>
                     <strong>{resource.title}</strong>
-                    <span className={styles.stepResourceMeta}>{type}<Icon name="open_in_new" /></span>
-                    <span className={styles.resourceProgressTrack} aria-hidden="true"><span /></span>
-                    <span className={styles.resourcePrompt}>{kind === "video" ? "À regarder" : "À lire"}</span>
-                    {resourceUrl ? (
-                      <a className={styles.stepResourceDirectLink} href={resourceUrl.href} target="_blank" rel="noreferrer">
-                        Ouvrir la ressource<Icon name="open_in_new" />
-                      </a>
-                    ) : null}
-                    <button className={styles.stepResourceOpen} type="button" onClick={() => onOpenResources(step.id, index)}>Ouvrir l’aperçu<Icon name="arrow_forward" /></button>
+                    <div className={styles.stepResourceActions}>
+                      {resourceUrl ? <a className={styles.stepResourceDirectLink} href={resourceUrl.href} target="_blank" rel="noreferrer">Ouvrir<Icon name="open_in_new" /></a> : <button className={styles.stepResourceDirectLink} type="button" onClick={() => onOpenResources(step.id, index)}>Ouvrir<Icon name="arrow_forward" /></button>}
+                      <button className={styles.stepResourcePreviewButton} type="button" aria-label={`Voir l’aperçu de « ${resource.title} »`} onClick={() => onOpenResources(step.id, index)}><Icon name="visibility" /></button>
+                    </div>
                   </span>
                 </article>
               );
             })}
-          </div>
+            </div>
+            </> : null}
+          </section>
         ) : <p className={styles.noStepResources}>Aucune ressource liée à cette étape.</p>}
-        <div className={styles.stepActions}>
-          {activePreviousVersion ? (
-            <Button
-              className={styles.stepResourcesButton}
-              variant="outline"
-              icon="history"
-              type="button"
-              onClick={() => onViewPreviousVersion(activePreviousVersion)}
-            >
-              Voir l’historique
-            </Button>
-          ) : null}
-          {allowAdjustment && step.progress.status === "todo" ? (
-            <Button
-              className={styles.stepResourcesButton}
-              variant="outline"
-              icon="auto_awesome"
-              type="button"
-              disabled={isUpdating}
-              onClick={() => onAdjustStep(step)}
-            >
-              Régénérer l’étape
-            </Button>
-          ) : null}
-          {allowAdjustment ? (
-            <Button
-              className={styles.stepResourcesButton}
-              variant="outline"
-              icon="refresh"
-              type="button"
-              disabled={isUpdating}
-              onClick={() => onAdjustResources(step)}
-            >
-              Régénérer les ressources
-            </Button>
-          ) : null}
-          {allowAdjustment && step.progress.status !== "todo" ? (
-            <p className={styles.noStepResources}>Remettez l’étape « À faire » pour régénérer son contenu.</p>
-          ) : null}
-        </div>
       </div>
     </article>
   );
@@ -1465,7 +1481,7 @@ export function RoadmapDetailPage() {
               {orderedSteps.length > 0 ? (
                 <ol className={styles.timelineList}>
                   {orderedSteps.map((step, index) => (
-                    <li className={`${styles.timelineListItem} ${step.progress.status === "done" ? styles.completedTimelineItem : step.id === nextStepId ? styles.currentTimelineItem : styles.upcomingTimelineItem}`} key={step.id}>
+                    <li className={`${styles.timelineListItem} ${step.progress.status === "done" ? styles.completedTimelineItem : step.id === nextStepId ? styles.currentTimelineItem : styles.upcomingTimelineItem}`} key={`${roadmapId}-${step.id}`}>
                       <StepCard roadmapId={roadmapId ?? 0} step={step} stepNumber={index + 1} isNextStep={step.id === nextStepId} previousVersion={changedStepVersions.find((change) => change.currentStep.id === step.id)} isNewFromAdaptation={adaptedNewStepIds.includes(step.id)} onViewPreviousVersion={(change) => setHistoryChangesToShow([change])} isUpdating={progressMutation.isPending || Boolean(data.archived_at)} allowAdjustment={!data.archived_at} onProgressChange={updateProgress} onOpenResources={openStepResources} onAdjustStep={setAdjustmentStep} onAdjustResources={setResourceAdjustmentStep} />
                     </li>
                   ))}

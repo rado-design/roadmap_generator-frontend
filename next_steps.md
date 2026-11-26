@@ -498,3 +498,31 @@ Ajouter chaque nouvelle action de reprise tout en bas, avec sa date. La dernièr
 ### 2026-11-26 — Après la réduction du footer mobile
 
 - Vérifier son rendu sur un petit écran lorsque les liens passent sur plusieurs lignes.
+
+### 2026-11-26 — Après la reprise des styles Roadmaps, Ressources et détail
+
+- Vérifier les trois vues en clair et en sombre sur desktop, tablette et mobile, notamment l’alignement des filtres, les cartes ressources et le panneau de progression fixe.
+
+### 2026-11-26 — Après la réduction globale de l’échelle
+
+- Vérifier l’absence de défilement horizontal et le remplissage de la fenêtre sur desktop et mobile; contrôler aussi les modals.
+
+### 2026-11-26 — Après l’élargissement du panneau de progression
+
+- Vérifier que les informations de progression restent visibles à côté des étapes sur les largeurs desktop et tablette.
+
+### 2026-11-26 — Après la refonte du tableau de bord
+
+- Vérifier le rendu de la nouvelle disposition sur desktop, tablette et mobile, en clair et en sombre.
+- Si une recommandation basée sur les ressources ou la prochaine étape est souhaitée, exposer ces informations dans l’API dashboard avant de l’afficher.
+
+### 2026-11-26 — Après l’ajout de la progression des objectifs
+
+- Vérifier le changement visuel de l’étoile sur la page Ressources lors d’un succès API et son retour arrière en cas d’échec.
+- Vérifier la barre des objectifs, le stockage local et le rendu mobile dans le détail d’une roadmap.
+- Implémenter les exigences de persistance backend décrites dans STEP_LEARNING_OBJECTIVES_PROGRESS_BACKEND_REQUIREMENTS.md, puis remplacer le stockage local du frontend par les états synchronisés.
+
+
+### 2026-11-26 — Après l’ajustement des couleurs d’objectifs
+
+- Vérifier visuellement l’état coché en thème clair et sombre sur desktop et mobile.

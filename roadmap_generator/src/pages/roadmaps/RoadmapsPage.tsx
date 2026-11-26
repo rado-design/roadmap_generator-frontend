@@ -77,7 +77,16 @@ function RoadmapCard({ roadmap, from, archived }: {
     ? styles.failed
     : roadmap.status === "generating"
       ? styles.generating
-      : styles.ready;
+      : progress === 100
+        ? styles.completed
+        : progress > 0
+          ? styles.inProgress
+          : styles.ready;
+  const cardStatusLabel = roadmap.status === "failed"
+    ? statusLabels.failed
+    : roadmap.status === "generating"
+      ? statusLabels.generating
+      : progress === 100 ? "Terminée" : progress > 0 ? "En cours" : "Prête";
 
   return (
     <article className={`${styles.card} ${archived ? styles.archivedCard : ""}`}>
@@ -85,7 +94,7 @@ function RoadmapCard({ roadmap, from, archived }: {
         <span className={styles.categoryIcon} data-category={roadmap.category} aria-hidden="true"><Icon name={categoryIcons[roadmap.category]} /></span>
         <span className={styles.categoryName}>{categoryLabels[roadmap.category]}</span>
         <div className={styles.cardBadges}>
-          <span className={`${styles.status} ${statusClass}`}>{statusLabels[roadmap.status]}</span>
+          <span className={`${styles.status} ${statusClass}`}>{cardStatusLabel}</span>
           {archived ? <span className={styles.archivedBadge}>Archivée</span> : null}
         </div>
       </div>
@@ -109,6 +118,10 @@ function RoadmapCard({ roadmap, from, archived }: {
       >
         <span style={{ width: `${progress}%` }} />
       </div>
+      <Link className={styles.cardAction} to={`/roadmaps/${roadmap.id}`} state={{ from }}>
+        <span>{progress === 100 ? "Revoir" : progress > 0 ? "Continuer" : "Commencer"}</span>
+        <Icon name="arrow_forward" />
+      </Link>
     </article>
   );
 }

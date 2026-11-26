@@ -13,7 +13,6 @@ const categoryLabels: Record<string, string> = {
 };
 const statusLabels: Record<string, string> = { completed: "Terminées", in_progress: "En cours", not_started: "À commencer" };
 const EMPTY_ROADMAPS: DashboardRoadmap[] = [];
-const categoryColors = ["#006591", "#006c49", "#586377"];
 const statusColors: Record<string, string> = { completed: "#006c49", in_progress: "#006591", not_started: "#586377" };
 
 function getProgress(roadmap: DashboardRoadmap) {
@@ -44,6 +43,7 @@ function CompletionPanel({ rate, completed, total, isLoading, isError }: {
             <text className={styles.gaugePercent} x="110" y="82" textAnchor="middle">{rate == null ? "—" : `${rate}%`}</text>
           </svg>
           <p className={styles.gaugeCaption}>{completed} / {total} terminée{completed === 1 ? "" : "s"}</p>
+          {completed === 0 && <p className={styles.starterNote}><Icon name="auto_awesome" />Chaque grand projet commence par un premier pas.</p>}
         </div>
       )}
     </section>
@@ -75,28 +75,33 @@ function RoadmapCounts({ total, completed, inProgress, notStarted, isLoading, is
   );
 }
 
-function CategoryDistributionPanel({ items, isLoading }: { items: DashboardDistributionItem[]; isLoading: boolean }) {
-  const total = items.reduce((sum, item) => sum + item.count, 0);
-  const circumference = 2 * Math.PI * 50;
-  let offset = 0;
+function RecommendedActions({ roadmaps, isLoading, onCreate }: { roadmaps: DashboardRoadmap[]; isLoading: boolean; onCreate: () => void }) {
+  const nextRoadmap = roadmaps.find((roadmap) => roadmap.status === "ready" && roadmap.completed_steps < roadmap.total_steps);
+  const actions = [
+    {
+      title: nextRoadmap ? "Continuer votre roadmap" : roadmaps.length ? "Parcourir vos roadmaps" : "Créer votre premier parcours",
+      description: nextRoadmap?.title ?? (roadmaps.length ? "Retrouvez tous vos parcours et leur progression." : "Générez un parcours personnalisé pour commencer."),
+      icon: nextRoadmap ? "checklist" : roadmaps.length ? "route" : "add",
+      to: nextRoadmap ? `/roadmaps/${nextRoadmap.id}` : roadmaps.length ? "/roadmaps" : "/roadmaps/generate",
+    },
+    { title: "Voir toutes les roadmaps", description: "Consultez vos parcours actifs et archivés.", icon: "route", to: "/roadmaps" },
+    { title: "Créer une roadmap", description: "Générez un nouveau parcours personnalisé.", icon: "auto_awesome", to: "/roadmaps/generate" },
+  ];
   return (
-    <section className={`${styles.panel} ${styles.categoryPanel}`} aria-label="Roadmaps par catégorie">
-      <div className={styles.panelHeading}><h2>Catégories</h2><span className={styles.panelHint}>Répartition de vos parcours</span></div>
-      {isLoading ? <p className={styles.distributionEmpty} aria-busy="true">Chargement…</p> : total > 0 ? (
-        <div className={styles.categoryChart}>
-          <svg className={styles.donutChart} viewBox="0 0 120 120" role="img" aria-label={items.map((item) => `${categoryLabels[item.key] ?? item.key} ${item.percent} %`).join(", ")}>
-            {items.filter((item) => item.count > 0).map((item, index) => {
-              const segment = circumference * item.count / total;
-              const segmentOffset = offset;
-              offset += segment;
-              return <circle key={item.key} cx="60" cy="60" r="50" fill="none" stroke={categoryColors[index % categoryColors.length]} strokeWidth="14" strokeDasharray={`${segment} ${circumference - segment}`} strokeDashoffset={-segmentOffset} transform="rotate(-90 60 60)" />;
-            })}
-            <text className={styles.donutCaption} x="60" y="53" textAnchor="middle">Total</text>
-            <text className={styles.donutTotal} x="60" y="73" textAnchor="middle">{total}</text>
-          </svg>
-          <ul className={styles.categoryLegend}>{items.map((item, index) => <li key={item.key}><i style={{ backgroundColor: categoryColors[index % categoryColors.length] }} aria-hidden="true" /><span>{categoryLabels[item.key] ?? item.key} ({item.count})</span></li>)}</ul>
+    <section className={`${styles.panel} ${styles.actionsPanel}`} aria-label="Prochaines actions recommandées">
+      <h2>Prochaines actions recommandées</h2>
+      <p className={styles.panelHint}>Ce qui vous fera avancer le plus vite.</p>
+      {isLoading ? <div className={styles.actionSkeletons} aria-busy="true"><span /><span /><span /></div> : (
+        <div className={styles.actionList}>
+          {actions.map((action) => (
+            <Link className={styles.actionItem} key={action.title} to={action.to} state={action.to === "/roadmaps/generate" ? { from: { pathname: "/dashboard", search: "", hash: "" } } : undefined} onClick={action.to === "/roadmaps/generate" ? onCreate : undefined}>
+              <span className={styles.actionIcon}><Icon name={action.icon} /></span>
+              <span className={styles.actionCopy}><strong>{action.title}</strong><span>{action.description}</span></span>
+              <Icon name="chevron_right" className={styles.actionArrow} />
+            </Link>
+          ))}
         </div>
-      ) : <div className={styles.emptyDistribution}><div className={styles.emptyDonut}><span>0</span></div><p>Aucune catégorie pour le moment. Vos roadmaps apparaîtront ici.</p></div>}
+      )}
     </section>
   );
 }
@@ -131,7 +136,8 @@ export function DashboardPage() {
   const errorMessage = typeof error === "object" && error !== null && "message" in error ? String(error.message) : "Impossible de charger vos roadmaps pour le moment.";
   const total = data?.roadmaps.total ?? 0;
   const completed = data?.roadmaps.completed ?? 0;
-  const displayName = data?.user.display_name?.trim();
+  const displayName = data?.user.display_name?.trim()?.split(/\s+/)[0];
+  const nextRoadmap = roadmaps.find((roadmap) => roadmap.status === "ready" && roadmap.completed_steps < roadmap.total_steps);
 
   return (
     <AppLayout onSearch={setSearchQuery}>
@@ -140,6 +146,7 @@ export function DashboardPage() {
       <section className={styles.welcomeBanner} aria-label="Bienvenue">
         <span className={styles.welcomeIcon} aria-hidden="true"><Icon name="waving_hand" /></span>
         <div><p className={styles.welcomeTitle}>{displayName ? `Bonjour ${displayName} !` : "Bienvenue !"}</p><p>{total === 0 ? "Créez votre premier parcours et commencez à apprendre à votre rythme." : `${completed} roadmap${completed === 1 ? " terminée" : "s terminées"} sur ${total}. Continuez à avancer à votre rythme.`}</p></div>
+        {total > 0 && <Link className={styles.welcomeAction} to={nextRoadmap ? `/roadmaps/${nextRoadmap.id}` : "/roadmaps"}>Continuer <Icon name="arrow_forward" /></Link>}
       </section>
 
       <div className={styles.dashboardGrid}>
@@ -147,7 +154,7 @@ export function DashboardPage() {
           <CompletionPanel rate={data?.completion_rate} completed={completed} total={total} isLoading={isLoading} isError={isError} />
           <RoadmapCounts total={total} completed={completed} inProgress={data?.roadmaps.in_progress ?? 0} notStarted={data?.roadmaps.not_started ?? 0} isLoading={isLoading} isError={isError} />
         </section>
-        <CategoryDistributionPanel items={data?.category_distribution ?? []} isLoading={isLoading} />
+        <RecommendedActions roadmaps={roadmaps} isLoading={isLoading} onCreate={() => generation.startNew()} />
         <section className={`${styles.panel} ${styles.recentPanel}`} aria-labelledby="recent-roadmaps-title">
           <div className={styles.sectionHeading}>
             <div><h2 id="recent-roadmaps-title">Roadmaps récentes</h2><p>Vos cinq parcours prêts les plus récents.</p></div>

@@ -22,6 +22,22 @@
   font-size: 14px;
   line-height: 19px;
 }
+.welcomeBanner > div { min-width: 0; flex: 1; }
+.welcomeAction {
+  display: inline-flex;
+  min-height: 40px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 15px;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+.welcomeAction:hover { filter: brightness(.95); }
 
 .welcomeIcon {
   display: grid;
@@ -38,18 +54,44 @@
 .welcomeBanner p + p { color: var(--color-on-surface-variant); }
 
 .overviewGrid {
-  display: grid;
-  grid-area: overview;
+  display: contents;
+}
+.completionPanel { grid-area: completion; }
+.countPanel { grid-area: counts; }
+.actionsPanel { grid-area: actions; }
+.actionsPanel > .panelHint { margin-top: 3px; }
+.actionList { display: grid; gap: 12px; margin-top: 18px; }
+.actionItem {
+  display: flex;
   min-width: 0;
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr);
-  gap: 14px;
+  min-height: 76px;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface-container-low);
+  color: var(--color-on-surface);
+  text-decoration: none;
+}
+.actionItem:hover { border-color: var(--color-primary); background: var(--color-primary-fixed); }
+.actionItem:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.actionIcon { display: grid; width: 42px; height: 42px; flex: none; place-items: center; border-radius: var(--radius-lg); background: var(--color-surface-container-lowest); color: var(--color-primary); }
+.actionCopy { display: grid; min-width: 0; gap: 3px; }
+.actionCopy strong { font-size: 14px; font-weight: 600; line-height: 18px; }
+.actionCopy > span { overflow: hidden; color: var(--color-on-surface-variant); font-size: 12px; line-height: 17px; text-overflow: ellipsis; }
+.actionArrow { flex: none; margin-left: auto; color: var(--color-on-surface-variant); }
+.actionSkeletons { display: grid; gap: 12px; margin-top: 18px; }
+.actionSkeletons span { height: 76px; border-radius: var(--radius-xl); background: var(--color-surface-container); }
+.overviewGrid {
+  min-width: 0;
 }
 
 .dashboardGrid {
   display: grid;
-  grid-template-areas: "overview categories" "recent status";
-  grid-template-columns: minmax(0, 1.85fr) minmax(240px, 1fr);
-  grid-template-rows: 260px minmax(350px, auto);
+  grid-template-areas: "completion counts actions" "recent recent status";
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: minmax(350px, auto) minmax(350px, auto);
   align-items: stretch;
   gap: 14px;
 }
@@ -59,7 +101,7 @@
 .sectionHeading h2 { color: var(--color-on-surface); font-size: 16px; font-weight: 600; line-height: 22px; }
 .panelHint { margin-top: 2px; color: var(--color-on-surface-variant); font-size: 12px; line-height: 17px; }
 
-.completionPanel { display: flex; min-height: 260px; flex-direction: column; }
+.completionPanel { display: flex; min-height: 350px; flex-direction: column; }
 .gaugeWrap { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: flex-end; }
 .gauge { display: block; width: min(100%, 224px); margin-top: 2px; overflow: visible; }
 .gaugeTrack,
@@ -68,23 +110,29 @@
 .gaugeValue { stroke: var(--color-secondary); stroke-linecap: round; transition: stroke-dashoffset 400ms ease; }
 .gaugePercent { fill: var(--color-on-surface); font-size: 32px; font-weight: 700; }
 .gaugeCaption { margin-top: -13px; color: var(--color-on-surface-variant); font-size: 12px; }
+.starterNote { display: flex; min-height: 58px; align-items: center; gap: 10px; margin: 16px 0 0; padding: 12px 14px; border-radius: var(--radius-xl); background: var(--color-primary-fixed); color: var(--color-primary); font-size: 14px; line-height: 19px; }
+.starterNote :global(.material-symbols-outlined) { flex: none; font-size: var(--icon-size-sm); }
 .gaugeSkeleton { width: 100%; height: 132px; margin-top: 18px; border-radius: var(--radius-lg); background: var(--color-surface-container); }
 .gaugeUnavailable { margin: auto; color: var(--color-on-surface-variant); font-size: 14px; }
 
-.countPanel { min-height: 260px; }
-.countGrid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 18px; margin-top: 8px; }
-.countItem { display: grid; min-width: 0; grid-template-columns: 34px minmax(0, 1fr) 42px; align-items: center; gap: 9px; min-height: 88px; border-bottom: 1px solid var(--color-surface-container); }
-.countItem:nth-last-child(-n + 2) { border-bottom: 0; }
+.countPanel { min-height: 350px; }
+.countGrid { display: grid; grid-template-columns: 1fr; margin-top: 8px; }
+.countItem { display: grid; min-width: 0; grid-template-columns: 52px minmax(0, 1fr) 46px; align-items: center; gap: 10px; min-height: 74px; border-bottom: 1px solid var(--color-surface-container); }
+.countItem:last-child { border-bottom: 0; }
 .countRing { position: relative; display: grid; width: 42px; height: 42px; place-items: center; border-radius: var(--radius-full); background: conic-gradient(var(--ring-color) var(--ring-progress), var(--color-surface-container-highest) 0); }
 .countRing::before { position: absolute; inset: 4px; border-radius: inherit; background: var(--color-surface-container-lowest); content: ""; }
 .countRing strong { position: relative; color: var(--color-on-surface); font-size: 12px; font-weight: 600; }
-.countIcon { display: grid; width: 34px; height: 34px; place-items: center; border-radius: var(--radius-full); }
+.countIcon { display: grid; width: 44px; height: 44px; place-items: center; border-radius: var(--radius-lg); }
 .countIcon :global(.material-symbols-outlined) { font-size: var(--icon-size-sm); }
 .blue { --ring-color: var(--color-primary); background: var(--color-primary-fixed); color: var(--color-primary); }
 .green { --ring-color: var(--color-secondary); background: var(--color-secondary-container); color: var(--color-on-secondary-container); }
 .orange { --ring-color: var(--color-primary-container); background: var(--color-surface-container-low); color: var(--color-primary); }
 .purple { --ring-color: var(--color-outline); background: var(--color-surface-container); color: var(--color-on-surface-variant); }
-.countLabel { color: var(--color-on-surface); font-size: 12px; line-height: 16px; }
+.countRing.blue,
+.countRing.green,
+.countRing.orange,
+.countRing.purple { background: conic-gradient(var(--ring-color) var(--ring-progress), var(--color-surface-container-highest) 0); }
+.countLabel { color: var(--color-on-surface); font-size: 14px; line-height: 18px; }
 .countSkeleton { width: 42px; height: 42px; border: 4px solid var(--color-surface-container); border-radius: var(--radius-full); }
 
 .panelHeading { display: flex; min-height: 22px; align-items: baseline; justify-content: space-between; gap: 8px; }
@@ -159,17 +207,24 @@
 }
 
 @media (max-width: 1120px) {
-  .dashboardGrid { grid-template-columns: minmax(0, 1.6fr) minmax(220px, 1fr); }
+  .dashboardGrid {
+    grid-template-areas: "completion counts" "actions actions" "recent recent" "status status";
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: auto;
+  }
+  .actionsPanel { min-height: 0; }
+  .actionsPanel .actionList { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-width: 900px) {
   .dashboardGrid {
-    grid-template-areas: "overview" "categories" "recent" "status";
+    grid-template-areas: "completion" "counts" "actions" "recent" "status";
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto;
   }
-  .categoryPanel { min-height: 240px; }
-  .overviewGrid { min-height: 260px; }
+  .completionPanel,
+  .countPanel { min-height: 280px; }
+  .actionsPanel .actionList { grid-template-columns: 1fr; }
   .statusPanel { display: grid; grid-template-columns: 1fr 1fr; align-items: center; column-gap: 24px; }
   .statusPanel > .panelHeading { grid-column: 1 / -1; }
   .statusPanel .statusDistribution { grid-column: 1; }
@@ -178,7 +233,7 @@
 
 @media (max-width: 640px) {
   .welcomeBanner { align-items: flex-start; padding: 12px; }
-  .overviewGrid { grid-template-columns: 1fr; }
+  .welcomeAction { min-height: 36px; padding-inline: 10px; }
   .completionPanel,
   .countPanel { min-height: 240px; }
   .countGrid { column-gap: 10px; }

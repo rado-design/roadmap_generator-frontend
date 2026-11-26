@@ -124,8 +124,12 @@ body {
 }
 
 #root {
-  min-height: 100dvh;
+  width: 100%;
+  min-height: 111.111111dvh;
+  zoom: 0.9;
 }
+
+#root > * { min-height: 111.111111dvh; }
 
 h1,
 h2,
