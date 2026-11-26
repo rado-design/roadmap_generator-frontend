@@ -7,9 +7,11 @@ import {
 } from "../api/stepAdjustments";
 
 export function useProposeStepAdjustment(roadmapId: number) {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ stepId, instruction }: { stepId: number; instruction: string }) =>
       proposeStepAdjustment(roadmapId, stepId, instruction),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["users", "me", "usage"] }),
   });
 }
 

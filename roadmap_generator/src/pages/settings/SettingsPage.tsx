@@ -50,7 +50,7 @@ const settingsSections: { id: SettingsSection; label: string; description: strin
   { id: "general", label: "Général", description: "Gérez votre nom, votre photo et votre adresse e-mail.", editable: true },
   { id: "learner", label: "Profil d’apprenant", description: "Personnalisez les préférences utilisées pour vos roadmaps.", editable: true },
   { id: "security", label: "Sécurité", description: "Modifiez le mot de passe de votre compte.", editable: true },
-  { id: "quota", label: "Quota de génération", description: "Consultez votre consommation et les générations disponibles.", editable: false },
+  { id: "quota", label: "Quotas d’utilisation", description: "Consultez vos quotas de génération et de modifications IA.", editable: false },
   { id: "account", label: "Compte", description: "Gérez votre session et les actions liées au compte.", editable: false },
 ];
 
@@ -83,20 +83,33 @@ function UsageCard({ usage, isLoading, isError, onRetry }: {
   isError: boolean;
   onRetry: () => void;
 }) {
-  if (isLoading) return <section className={`${styles.card} ${styles.usageCard}`} aria-busy="true"><h2 className={styles.sectionTitle}>Quota de génération</h2><p className={styles.helper}>Chargement de votre consommation…</p></section>;
-  if (isError || !usage) return <section className={`${styles.card} ${styles.usageCard}`} aria-labelledby="usage-title"><h2 className={styles.sectionTitle} id="usage-title">Quota de génération</h2><p className={styles.helper}>Votre quota est momentanément indisponible.</p><Button type="button" variant="outline" onClick={onRetry}>Réessayer</Button></section>;
+  if (isLoading) return <section className={`${styles.card} ${styles.usageCard}`} aria-busy="true"><h2 className={styles.sectionTitle}>Quotas d’utilisation</h2><p className={styles.helper}>Chargement de votre consommation…</p></section>;
+  if (isError || !usage) return <section className={`${styles.card} ${styles.usageCard}`} aria-labelledby="usage-title"><h2 className={styles.sectionTitle} id="usage-title">Quotas d’utilisation</h2><p className={styles.helper}>Vos quotas sont momentanément indisponibles.</p><Button type="button" variant="outline" onClick={onRetry}>Réessayer</Button></section>;
 
   const unlimited = usage.generations_limit === null;
   const limit = usage.generations_limit ?? 0;
   const progress = unlimited ? 0 : limit > 0 ? Math.min(100, usage.generations_used / limit * 100) : 100;
+  const adjustmentsUnlimited = usage.adjustments_limit === null;
+  const adjustmentsLimit = usage.adjustments_limit ?? 0;
+  const adjustmentsProgress = adjustmentsUnlimited ? 0 : adjustmentsLimit > 0 ? Math.min(100, usage.adjustments_used / adjustmentsLimit * 100) : 100;
   const resetsAt = formatUsageDate(usage.resets_at);
   return (
     <section className={`${styles.card} ${styles.usageCard}`} aria-labelledby="usage-title">
-      <div className={styles.usageHeading}><div><h2 className={styles.sectionTitle} id="usage-title">Quota de génération</h2><p className={styles.sectionDescription}>Plan {usage.plan_name}</p></div><Icon name="auto_awesome" /></div>
+      <div className={styles.usageHeading}><div><h2 className={styles.sectionTitle} id="usage-title">Quotas d’utilisation</h2><p className={styles.sectionDescription}>Plan {usage.plan_name}</p></div><Icon name="auto_awesome" /></div>
+      <div className={styles.usageBudget}>
+      <h3>Génération de roadmaps</h3>
       <div className={styles.usageCount}><strong>{unlimited ? "Illimité" : `${usage.generations_used} / ${limit}`}</strong><span>{unlimited ? "générations" : usage.period === "month" ? "générations ce mois-ci" : "générations au total"}</span></div>
       {!unlimited ? <div className={styles.usageTrack} role="progressbar" aria-label="Quota de génération utilisé" aria-valuemin={0} aria-valuemax={limit || 1} aria-valuenow={Math.min(usage.generations_used, limit)}><span style={{ width: `${progress}%` }} /></div> : null}
       <p className={styles.usageRemaining}>{unlimited ? "Votre plan n'a pas de limite de génération." : usage.generations_remaining === 0 ? "Toutes vos générations disponibles ont été utilisées." : `${usage.generations_remaining} génération${usage.generations_remaining === 1 ? " disponible" : "s disponibles"}.`}</p>
-      {resetsAt ? <p className={styles.helper}>Renouvellement le {resetsAt}.</p> : !unlimited && usage.period === "lifetime" ? <p className={styles.helper}>Ce quota ne se renouvelle pas automatiquement.</p> : null}
+      </div>
+      <div className={styles.usageBudget}>
+        <h3>Modifications par l’IA</h3>
+        <p className={styles.helper}>Quota partagé entre l’adaptation d’une roadmap et la régénération d’une étape.</p>
+        <div className={styles.usageCount}><strong>{adjustmentsUnlimited ? "Illimité" : `${usage.adjustments_used} / ${adjustmentsLimit}`}</strong><span>{adjustmentsUnlimited ? "modifications" : usage.period === "month" ? "modifications ce mois-ci" : "modifications au total"}</span></div>
+        {!adjustmentsUnlimited ? <div className={styles.usageTrack} role="progressbar" aria-label="Quota de modifications par l’IA utilisé" aria-valuemin={0} aria-valuemax={adjustmentsLimit || 1} aria-valuenow={Math.min(usage.adjustments_used, adjustmentsLimit)}><span style={{ width: `${adjustmentsProgress}%` }} /></div> : null}
+        <p className={styles.usageRemaining}>{adjustmentsUnlimited ? "Votre plan n'a pas de limite de modifications par l’IA." : usage.adjustments_remaining === 0 ? "Toutes vos modifications par l’IA disponibles ont été utilisées." : `${usage.adjustments_remaining} modification${usage.adjustments_remaining === 1 ? " disponible" : "s disponibles"}.`}</p>
+      </div>
+      {resetsAt ? <p className={styles.helper}>Renouvellement des quotas le {resetsAt}.</p> : !unlimited && usage.period === "lifetime" ? <p className={styles.helper}>Ces quotas ne se renouvellent pas automatiquement.</p> : null}
     </section>
   );
 }

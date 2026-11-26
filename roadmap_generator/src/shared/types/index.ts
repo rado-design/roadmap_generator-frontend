@@ -4,6 +4,7 @@ export interface ApiError {
   message: string;
   status?: number;
   code?: string;
+  quota?: "generations" | "adjustments" | string;
   generation_id?: string;
   limit?: number;
   used?: number;

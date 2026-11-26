@@ -403,6 +403,34 @@ function getActionError(error: unknown, fallback: string) {
   return fallback;
 }
 
+interface AdjustmentQuotaNotice { used?: number; limit?: number; resetsAt?: string | null }
+
+function getAdjustmentQuotaNotice(error: unknown): AdjustmentQuotaNotice | null {
+  if (typeof error !== "object" || error === null) return null;
+  const candidate = error as { status?: unknown; code?: unknown; quota?: unknown; used?: unknown; limit?: unknown; resets_at?: unknown };
+  if (candidate.status !== 402 || candidate.code !== "quota_exceeded" || candidate.quota !== "adjustments") return null;
+  return {
+    used: typeof candidate.used === "number" ? candidate.used : undefined,
+    limit: typeof candidate.limit === "number" ? candidate.limit : undefined,
+    resetsAt: typeof candidate.resets_at === "string" ? candidate.resets_at : null,
+  };
+}
+
+function AdjustmentQuotaNotice({ quota }: { quota: AdjustmentQuotaNotice }) {
+  const resetDate = quota.resetsAt ? new Date(quota.resetsAt) : null;
+  const formattedReset = resetDate && !Number.isNaN(resetDate.getTime())
+    ? new Intl.DateTimeFormat("fr-FR", { dateStyle: "long" }).format(resetDate)
+    : null;
+  return (
+    <div className={styles.adjustmentQuotaNotice} role="alert">
+      <strong>Votre quota de modifications par l’IA est atteint.</strong>
+      {quota.used !== undefined && quota.limit !== undefined ? <p>Vous avez utilisé {quota.used} modification{quota.used > 1 ? "s" : ""} sur {quota.limit} pour cette période.</p> : null}
+      <p>{formattedReset ? `Votre quota sera renouvelé le ${formattedReset}.` : "Ce quota ne se renouvelle pas automatiquement."}</p>
+      <Link to="/settings">Consulter mes quotas</Link>
+    </div>
+  );
+}
+
 interface AdaptPreviewStep extends GeneratedRoadmapStep { resources: RoadmapResource[] }
 
 function RoadmapAdaptationDialog({ roadmap, onClose, onAdapted }: {
@@ -417,6 +445,7 @@ function RoadmapAdaptationDialog({ roadmap, onClose, onAdapted }: {
   const [attempt, setAttempt] = useState(1);
   const [status, setStatus] = useState<"form" | "running" | "complete" | "failed">("form");
   const [error, setError] = useState<string>();
+  const [quotaNotice, setQuotaNotice] = useState<AdjustmentQuotaNotice | null>(null);
   const adaptMutation = useAdaptRoadmap(roadmap.id);
   const isBusy = adaptMutation.isPending;
   const canClose = !isBusy;
@@ -436,6 +465,7 @@ function RoadmapAdaptationDialog({ roadmap, onClose, onAdapted }: {
     if (cleanedInstruction && (cleanedInstruction.length < 3 || cleanedInstruction.length > 500)) return;
     setStatus("running");
     setError(undefined);
+    setQuotaNotice(null);
     setPlan(undefined);
     setSteps([]);
     setAttempt(1);
@@ -471,7 +501,9 @@ function RoadmapAdaptationDialog({ roadmap, onClose, onAdapted }: {
       onAdapted();
       setStatus("complete");
     }).catch((caught) => {
-      setError(getActionError(caught, "L’adaptation a échoué. La roadmap n’a pas été modifiée."));
+      const quota = getAdjustmentQuotaNotice(caught);
+      if (quota) setQuotaNotice(quota);
+      else setError(getActionError(caught, "L’adaptation a échoué. La roadmap n’a pas été modifiée."));
       setStatus("failed");
     });
   };
@@ -536,6 +568,7 @@ function RoadmapAdaptationDialog({ roadmap, onClose, onAdapted }: {
                 <><Icon name="error" /><div><strong>L’adaptation n’a pas abouti</strong><p>{error ?? "La roadmap n’a pas été modifiée."}</p></div></>
               )}
             </div>
+            {quotaNotice ? <AdjustmentQuotaNotice quota={quotaNotice} /> : null}
             {plan ? (
               <p className={styles.adaptationPlan}>
                 {lockedSteps.length} étape{lockedSteps.length === 1 ? " commencée ou terminée conservée" : "s commencées ou terminées conservées"} · {plan.replaced_step_ids.length} étape{plan.replaced_step_ids.length === 1 ? " remplacée" : "s remplacées"}
@@ -842,9 +875,9 @@ function StepAdjustmentDialog({ roadmapId, step, onClose }: {
             />
             <span className={styles.adjustmentHelper}>{instruction.trim().length}/500 caractères · 3 minimum</span>
             {proposeMutation.isError ? (
-              <p className={styles.adjustmentError} role="alert">
-                {getActionError(proposeMutation.error, "La proposition n’a pas pu être générée. Réessayez.")}
-              </p>
+              getAdjustmentQuotaNotice(proposeMutation.error)
+                ? <AdjustmentQuotaNotice quota={getAdjustmentQuotaNotice(proposeMutation.error)!} />
+                : <p className={styles.adjustmentError} role="alert">{getActionError(proposeMutation.error, "La proposition n’a pas pu être générée. Réessayez.")}</p>
             ) : null}
             <footer className={styles.adjustmentActions}>
               <Button type="button" variant="outline" disabled={isBusy} onClick={onClose}>Annuler</Button>
@@ -989,9 +1022,9 @@ function ResourceAdjustmentDialog({ roadmapId, step, onClose }: {
                 : `${instruction.trim().length}/500 caractères · 3 minimum`}
             </span>
             {proposeMutation.isError ? (
-              <p className={styles.adjustmentError} role="alert">
-                {getActionError(proposeMutation.error, "Les ressources n’ont pas pu être générées. Réessayez.")}
-              </p>
+              getAdjustmentQuotaNotice(proposeMutation.error)
+                ? <AdjustmentQuotaNotice quota={getAdjustmentQuotaNotice(proposeMutation.error)!} />
+                : <p className={styles.adjustmentError} role="alert">{getActionError(proposeMutation.error, "Les ressources n’ont pas pu être générées. Réessayez.")}</p>
             ) : null}
             <footer className={styles.adjustmentActions}>
               <Button type="button" variant="outline" disabled={isBusy} onClick={onClose}>Annuler</Button>

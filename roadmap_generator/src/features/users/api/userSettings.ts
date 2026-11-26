@@ -40,6 +40,9 @@ export interface UsageSummary {
   generations_limit: number | null;
   generations_used: number;
   generations_remaining: number | null;
+  adjustments_limit: number | null;
+  adjustments_used: number;
+  adjustments_remaining: number | null;
   resets_at: string | null;
 }
 

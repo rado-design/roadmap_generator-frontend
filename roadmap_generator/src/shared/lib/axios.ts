@@ -33,6 +33,7 @@ let refreshPromise: Promise<string | null> | null = null;
 interface ApiErrorPayload {
   detail?: string;
   type?: string;
+  quota?: string;
   generation_id?: string;
   limit?: number;
   used?: number;
@@ -133,6 +134,7 @@ apiClient.interceptors.response.use(
         "Une erreur inattendue est survenue.",
       status: error.response?.status,
       code: payload.type,
+      quota: payload.quota,
       generation_id: typeof payload.generation_id === "string"
         ? payload.generation_id
         : undefined,

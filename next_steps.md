@@ -490,3 +490,11 @@ Ajouter chaque nouvelle action de reprise tout en bas, avec sa date. La dernièr
 ### 2026-11-25 — Après la couleur dédiée aux icônes de catégorie
 
 - Vérifier la lisibilité des couleurs de chaque catégorie sur fond clair et sombre.
+
+### 2026-11-26 — Quota des régénérations
+
+- Vérifier si le quota partagé des modifications IA doit aussi couvrir l’actualisation des ressources : l’endpoint backend `POST /roadmaps/{id}/steps/{step_id}/resource-adjustments` ne vérifie actuellement pas ce quota.
+
+### 2026-11-26 — Après la réduction du footer mobile
+
+- Vérifier son rendu sur un petit écran lorsque les liens passent sur plusieurs lignes.

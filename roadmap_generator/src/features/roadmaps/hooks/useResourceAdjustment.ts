@@ -7,9 +7,11 @@ import {
 } from "../api/resourceAdjustments";
 
 export function useProposeResourceAdjustment(roadmapId: number) {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ stepId, instruction }: { stepId: number; instruction?: string }) =>
       proposeResourceAdjustment(roadmapId, stepId, instruction),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["users", "me", "usage"] }),
   });
 }
 

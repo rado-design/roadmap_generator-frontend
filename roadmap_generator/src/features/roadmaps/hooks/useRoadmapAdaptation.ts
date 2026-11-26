@@ -28,6 +28,7 @@ export function useAdaptRoadmap(roadmapId: number) {
         queryClient.invalidateQueries({ queryKey: ["roadmaps"] }),
         queryClient.invalidateQueries({ queryKey: ["resources"] }),
         queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
+        queryClient.invalidateQueries({ queryKey: ["users", "me", "usage"] }),
       ]);
     },
   });

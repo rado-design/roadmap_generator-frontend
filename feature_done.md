@@ -662,3 +662,13 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 
 - Restauration d’un contour discret autour des icônes colorées, sans réintroduire le fond bleu.
 - Vérification : `git diff --check`.
+
+### 2026-11-26 — Quota des adaptations et régénérations IA
+
+- Lecture des quotas `adjustments_*` renvoyés par le backend et affichage du budget dédié dans Paramètres, partagé entre adaptation d’une roadmap et régénération d’étape.
+- Transmission du champ `quota` des erreurs API et affichage d’un message précis avec consommation, date de renouvellement et lien vers les quotas lorsqu’une action est refusée pour quota épuisé.
+- Actualisation du résumé des quotas après les tentatives d’adaptation et de régénération.
+
+### 2026-11-26 — Hauteur du footer sur mobile
+
+- Réduction du padding vertical et des espacements internes du footer sur mobile.
