@@ -63,7 +63,7 @@
 .typePill,
 .stepStatusBadge { display: inline-flex; min-height: 24px; align-items: center; padding: 0 12px; border-radius: var(--radius-full); background: var(--color-surface-variant); color: var(--color-on-surface-variant); font-size: 12px; font-weight: 500; line-height: 16px; }
 .videoType { background: var(--color-secondary-container); color: var(--color-on-secondary-container); }
-.stepStatus_todo { background: var(--color-surface-container-low); color: var(--color-on-surface-variant); }
+.stepStatus_todo { background: #ffedc2; color: #714600; box-shadow: inset 0 0 0 1px #e8c66e; }
 .stepStatus_in_progress { background: var(--color-primary-fixed); color: var(--color-on-primary-container); }
 .stepStatus_done { background: var(--color-secondary-container); color: var(--color-on-secondary-container); }
 .favoriteButton {
@@ -285,5 +285,6 @@
 :global(:root[data-theme="dark"]) .coverType { background: var(--color-surface-container-lowest); color: var(--color-on-surface); }
 :global(:root[data-theme="dark"]) .favoriteButton { background: var(--color-surface-container-lowest); color: var(--color-on-surface); }
 :global(:root[data-theme="dark"]) .favoriteButton[aria-pressed="true"] { color: #f0b429; }
+:global(:root[data-theme="dark"]) .stepStatus_todo { background: #493915; color: #ffe09a; box-shadow: inset 0 0 0 1px #92702d; }
 :global(:root[data-theme="dark"]) .articleLines i { background: #526f80; }
 :global(:root[data-theme="dark"]) .previewIconButton { background: var(--color-surface-container-lowest); color: var(--color-on-surface); }

@@ -12,6 +12,7 @@ import {
 import { useRoadmapGenerationStore, type GenerationLimitNotice } from "../../features/roadmaps/hooks/useRoadmapGenerationStore";
 import { Button } from "../../shared/components/Button";
 import { Icon } from "../../shared/components/Icon";
+import { ActivityLoader } from "../../shared/components/ActivityLoader/ActivityLoader";
 import styles from "./GenerateRoadmapPage.module.scss";
 
 const levels: { value: LearnerLevel; label: string }[] = [
@@ -301,10 +302,10 @@ export function GenerateRoadmapPage() {
                 <span>La génération est terminée.</span>
               </div>
             ) : (
-              <div className={styles.streamStatus} role="status">
-                <span className={styles.streamPulse} aria-hidden="true" />
-                <span>{streamSteps.length} {streamSteps.length === 1 ? "étape reçue" : "étapes reçues"} · génération en cours</span>
-              </div>
+              <ActivityLoader
+                title={streamSteps.length === 0 ? "Préparation de votre roadmap…" : "Votre roadmap se construit…"}
+                description={streamSteps.length === 0 ? "La première étape va bientôt apparaître." : `${streamSteps.length} ${streamSteps.length === 1 ? "étape reçue" : "étapes reçues"} · les suivantes arrivent progressivement.`}
+              />
             )}
 
             {streamSteps.length > 0 ? (
@@ -342,8 +343,6 @@ export function GenerateRoadmapPage() {
                   </li>
                 ))}
               </ol>
-            ) : !streamError ? (
-              <p className={styles.waitingForFirstStep}>En attente de la première étape valide…</p>
             ) : null}
 
             {streamError ? (

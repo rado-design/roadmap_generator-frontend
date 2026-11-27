@@ -27,6 +27,7 @@ import {
 } from "../../features/roadmaps";
 import { Button } from "../../shared/components/Button";
 import { Icon } from "../../shared/components/Icon";
+import { ActivityLoader } from "../../shared/components/ActivityLoader/ActivityLoader";
 import styles from "./RoadmapDetailPage.module.scss";
 import { useStepAdjustmentHistory, useRestoreStepAdjustmentHistory } from "../../features/roadmaps/hooks/useStepAdjustmentHistory";
 import type { StepAdjustmentHistoryItem } from "../../features/roadmaps/api/stepAdjustmentHistory";
@@ -71,7 +72,7 @@ function StepStatusControl({ value, title, disabled, onChange }: {
   return (
     <div className={styles.stepStatusControl} ref={controlRef}>
       <button
-        className={`${styles.stepStatus} ${value === "in_progress" ? styles.activeStatus : ""} ${value === "done" ? styles.doneStatus : ""}`}
+        className={`${styles.stepStatus} ${value === "todo" ? styles.todoStatus : ""} ${value === "in_progress" ? styles.activeStatus : ""} ${value === "done" ? styles.doneStatus : ""}`}
         type="button"
         aria-label={`Statut de l’étape ${title} : ${stepStatusLabels[value]}`}
         aria-haspopup="menu"
@@ -604,7 +605,11 @@ function RoadmapAdaptationDialog({ roadmap, onClose, onAdapted }: {
                   </li>
                 ))}
               </ol>
-            ) : status === "running" ? <p className={styles.adaptationWaiting}>En attente de la première étape adaptée…</p> : null}
+            ) : status === "running" ? (
+              <div className={styles.adaptationLoading}>
+                <ActivityLoader title="Préparation de la première étape adaptée…" description="La roadmap est en cours d’adaptation." />
+              </div>
+            ) : null}
             {canClose ? (
               <footer className={styles.adjustmentActions}>
                 <Button onClick={onClose}>{status === "complete" ? "Terminer" : "Fermer"}</Button>
@@ -859,7 +864,7 @@ function StepAdjustmentDialog({ roadmapId, step, onClose }: {
         </header>
 
         {!proposal ? (
-          <form className={styles.adjustmentForm} onSubmit={submitInstruction}>
+          proposeMutation.isPending ? <div className={styles.adjustmentLoadingPane}><ActivityLoader title="Régénération de l’étape…" description="La nouvelle proposition est en préparation." /></div> : <form className={styles.adjustmentForm} onSubmit={submitInstruction}>
             <p>Expliquez ce que vous souhaitez changer. L’étape actuelle restera en place tant que vous n’aurez pas accepté la proposition.</p>
             <label htmlFor="step-adjustment-instruction">Votre consigne</label>
             <textarea
@@ -1003,7 +1008,7 @@ function ResourceAdjustmentDialog({ roadmapId, step, onClose }: {
         </header>
 
         {!proposal ? (
-          <form className={styles.adjustmentForm} onSubmit={submitInstruction}>
+          proposeMutation.isPending ? <div className={styles.adjustmentLoadingPane}><ActivityLoader title="Régénération des ressources…" description="Les nouvelles ressources sont en cours de recherche." /></div> : <form className={styles.adjustmentForm} onSubmit={submitInstruction}>
             <p>Actualisez les ressources de cette étape, ou précisez le type de contenu recherché. Les ressources actuelles resteront en place tant que vous n’aurez pas accepté la proposition.</p>
             <label htmlFor="resource-adjustment-instruction">Consigne (facultative)</label>
             <textarea

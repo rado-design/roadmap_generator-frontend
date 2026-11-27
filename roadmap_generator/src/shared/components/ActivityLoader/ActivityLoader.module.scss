@@ -1,0 +1,79 @@
+.loader {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--color-on-surface);
+  text-align: center;
+}
+
+.visual {
+  position: relative;
+  display: block;
+  width: min(100%, 340px);
+  height: 82px;
+  margin-bottom: 2px;
+  isolation: isolate;
+}
+
+.lightLine {
+  position: absolute;
+  top: 50%;
+  left: 2%;
+  width: 96%;
+  height: 2px;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, transparent, #315aff 12%, #a9e9ff 50%, #315aff 88%, transparent);
+  box-shadow: 0 0 5px 1px #4277ff, 0 0 15px 3px rgb(56 115 255 / 68%);
+}
+
+.point {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 5px 3px #fff, 0 0 12px 6px #5280ff, 0 0 24px 9px rgb(71 105 255 / 78%);
+  animation: travel 2.1s ease-in-out infinite alternate;
+  animation-delay: calc(var(--point-index) * 180ms);
+}
+
+.spark {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #8cd9ff;
+  box-shadow: 0 0 6px 2px rgb(74 155 255 / 75%);
+  animation: sparkle 1.7s ease-in-out infinite alternate;
+}
+
+.sparkOne { top: 19%; left: 36%; }
+.sparkTwo { top: 31%; left: 57%; animation-delay: 250ms; }
+.sparkThree { top: 16%; left: 68%; animation-delay: 500ms; }
+
+.loader > strong { font-size: 15px; font-weight: 600; line-height: 21px; }
+.description { color: var(--color-on-surface-variant); font-size: 13px; line-height: 19px; }
+
+@keyframes travel {
+  from { transform: translate(calc(-50% - clamp(72px, 25vw, 125px)), -50%); }
+  to { transform: translate(calc(-50% + clamp(72px, 25vw, 125px)), -50%); }
+}
+
+@keyframes sparkle {
+  from { opacity: .15; transform: scale(.65); }
+  to { opacity: 1; transform: scale(1.2); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .point,
+  .spark { animation: none; }
+  .point { transform: translate(-50%, -50%); }
+  .spark { opacity: .6; }
+}

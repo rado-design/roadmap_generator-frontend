@@ -711,3 +711,20 @@ Une fonctionnalité ne passe ici à « terminée » qu'après vérification de s
 ### 2026-11-26 — Couleur des objectifs terminés
 
 - Alignement de la ligne d’objectif cochée, de sa case et de la barre de progression sur le vert menthe de la maquette fournie, avec une variante lisible en mode sombre.
+
+### 2026-11-27 — Loader lumineux pour les générations IA
+
+- Création d’un loader partagé avec ligne lumineuse bleue et points animés en aller-retour, respectant la préférence de mouvement réduit.
+- Affichage avant la première étape puis pendant le flux de génération de roadmap.
+- Remplacement du formulaire par ce loader dans les modals pendant la régénération d’une étape et des ressources.
+
+
+### 2026-11-27 — Loader dans l’adaptation globale
+
+- Ajout du loader lumineux dans le modal d’adaptation de roadmap, à la place du texte d’attente avant la première étape adaptée.
+
+
+### 2026-11-27 — Badge « À faire »
+
+- Application d’un jaune légèrement plus soutenu au statut « À faire » dans le détail des étapes et les cartes de ressources, avec une variante contrastée en mode sombre.
+

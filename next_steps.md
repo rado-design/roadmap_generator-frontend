@@ -526,3 +526,18 @@ Ajouter chaque nouvelle action de reprise tout en bas, avec sa date. La dernièr
 ### 2026-11-26 — Après l’ajustement des couleurs d’objectifs
 
 - Vérifier visuellement l’état coché en thème clair et sombre sur desktop et mobile.
+
+### 2026-11-27 — Après l’ajout du loader lumineux
+
+- Vérifier visuellement le loader dans les trois contextes desktop et mobile, en clair et en sombre.
+
+
+### 2026-11-27 — Après l’ajout du loader d’adaptation globale
+
+- Vérifier le loader dans le modal d’adaptation avant l’arrivée de la première étape, sur mobile et desktop.
+
+
+### 2026-11-27 — Après la couleur du badge « À faire »
+
+- Vérifier le contraste du statut sur les cartes de ressources et dans le sélecteur de statut, en clair et en sombre.
+

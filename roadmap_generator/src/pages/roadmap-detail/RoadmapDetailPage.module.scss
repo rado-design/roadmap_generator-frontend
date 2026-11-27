@@ -414,6 +414,7 @@
 .adjustmentDialogHeader p { color: var(--color-on-surface-variant); font-size: 12px; line-height: 18px; }
 .adjustmentDialogHeader h2 { margin-top: 3px; font-size: 16px; font-weight: 600; line-height: 24px; overflow-wrap: anywhere; }
 .adjustmentForm { display: grid; gap: 12px; overflow: auto; padding: 24px; }
+.adjustmentLoadingPane { display: grid; min-height: 250px; place-items: center; padding: 28px 24px; }
 .adjustmentForm .adjustmentError { margin: 0; }
 .adjustmentForm > p:first-child { color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; }
 .adjustmentForm label { font-size: 14px; font-weight: 500; line-height: 20px; }
@@ -462,7 +463,7 @@
 .adaptationStepResources a { display: inline-flex; width: fit-content; align-items: center; gap: 4px; color: var(--color-primary); font-size: 12px; line-height: 16px; text-decoration: underline; text-underline-offset: 2px; }
 .adaptationStepResources a:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
 .adaptationStepResources a :global(.material-symbols-outlined) { font-size: var(--icon-size-sm); }
-.adaptationWaiting { margin: 16px 24px; color: var(--color-on-surface-variant); font-size: 14px; line-height: 20px; }
+.adaptationLoading { display: grid; min-height: 190px; place-items: center; margin: 12px 24px; }
 .adaptationProgress > .adjustmentActions { padding: 8px 24px 24px; }
 .adaptedStepHistory { display: inline-flex; align-items: center; gap: 6px; width: fit-content; margin-top: 10px; padding: 5px 10px; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-full); background: var(--color-surface-container-low); color: var(--color-primary); font: inherit; font-size: 12px; line-height: 16px; cursor: pointer; }
 .adaptedStepHistory:hover { background: var(--color-surface-container); }
@@ -699,6 +700,7 @@
   cursor: pointer;
 }
 .stepStatusControl > .stepStatus :global(.material-symbols-outlined) { font-size: 18px; }
+.stepStatusControl > .stepStatus.todoStatus { border-color: #e8c66e; background: #ffedc2; color: #714600; }
 .stepStatusControl > .stepStatus.activeStatus { border-color: #b9dce9; background: #eaf5fa; color: var(--color-primary); }
 .stepStatusControl > .stepStatus.doneStatus { border-color: #c8e9d9; background: #e4f4ec; color: #176b50; }
 .stepStatusControl > .stepStatus:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
@@ -769,6 +771,7 @@
 :global(:root[data-theme="dark"]) .timelineStep .objectives li { border-color: var(--color-outline-variant); background: var(--color-surface-container-low); color: var(--color-on-surface-variant); }
 :global(:root[data-theme="dark"]) .resourceTypePill { background: var(--color-surface-container-lowest); color: var(--color-on-surface); }
 :global(:root[data-theme="dark"]) .stepStatusControl > .stepStatus.activeStatus { border-color: var(--color-primary); background: var(--color-primary-fixed); color: var(--color-on-primary-container); }
+:global(:root[data-theme="dark"]) .stepStatusControl > .stepStatus.todoStatus { border-color: #92702d; background: #493915; color: #ffe09a; }
 :global(:root[data-theme="dark"]) .stepStatusControl > .stepStatus.doneStatus { border-color: var(--color-secondary); background: var(--color-secondary-container); color: var(--color-on-secondary-container); }
 :global(:root[data-theme="dark"]) .stepStatusOption { color: var(--color-on-surface); }
 :global(:root[data-theme="dark"]) .stepStatusOption:hover,
